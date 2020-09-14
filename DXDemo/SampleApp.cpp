@@ -681,10 +681,7 @@ namespace DXLib
 		auto grassTex = GTexture::LoadTextureFromFile(L"Data\\Textures\\grass.dds", cmdList);
 		grassTex->SetName(L"grassTex");
 		loader.AddTexture(grassTex);
-
-		auto treeArrayTex = GTexture::LoadTextureFromFile(L"Data\\Textures\\treeArray2.dds", cmdList);
-		treeArrayTex->SetName(L"treeArrayTex");
-		loader.AddTexture(treeArrayTex);
+				
 
 		auto seamless = GTexture::LoadTextureFromFile(L"Data\\Textures\\seamless_grass.jpg", cmdList);
 		seamless->SetName(L"seamless");

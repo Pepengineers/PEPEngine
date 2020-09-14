@@ -288,15 +288,37 @@ std::shared_ptr<GTexture> GTexture::LoadTextureFromFile(std::wstring filepath,
 	}
 	
 
+	auto& device = DXLib::D3DApp::GetDevice();
+	auto queue = DXLib::D3DApp::GetApp().GetCommandQueue();
+
+	auto tex = std::make_shared<GTexture>(filepath, usage);
+
+	auto d3dResource = tex->GetD3D12Resource();
+	
+	
 	DirectX::TexMetadata metadata;
 	DirectX::ScratchImage scratchImage;
-
+		
 
 	UINT resFlags = D3D12_RESOURCE_FLAG_NONE;
 
 	if (filePath.extension() == ".dds" || filePath.extension() == ".DDS")
 	{
-		ThrowIfFailed(DirectX::LoadFromDDSFile(filepath.c_str(), DirectX::DDS_FLAGS_NONE , &metadata, scratchImage));
+		DirectX::ResourceUploadBatch upload(&device);
+		upload.Begin();
+
+		if (filePath.extension() == ".dds" || filePath.extension() == ".DDS")
+		{
+			ThrowIfFailed(DirectX::CreateDDSTextureFromFile(&device, upload, filePath.c_str(), &d3dResource, true));
+		}
+		else
+		{
+			ThrowIfFailed(
+				DirectX::CreateWICTextureFromFile(&device, upload, filePath.c_str(), &d3dResource, true));
+
+		}
+		upload.End(queue->GetD3D12CommandQueue().Get()).wait();		
+		
 	}
 	else if (filePath.extension() == ".hdr" || filePath.extension() == ".HDR")
 	{
@@ -309,28 +331,31 @@ std::shared_ptr<GTexture> GTexture::LoadTextureFromFile(std::wstring filepath,
 	}
 	else
 	{
-		ThrowIfFailed(
-			DirectX::LoadFromWICFile(filepath.c_str(), DirectX::WIC_FLAGS_FORCE_RGB, &metadata, scratchImage));
+		DirectX::ResourceUploadBatch upload(&device);
+		upload.Begin();
+		
+		{
+			ThrowIfFailed(
+				DirectX::CreateWICTextureFromFile(&device, upload, filePath.c_str(), &d3dResource, true));
 
-		//Если это не DDS или "специфичная" текстура, то для нее нужно будет генерировать мипмапы
-		//по этому даем возможность сделать ее UAV
-		resFlags = D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+		}
+		upload.End(queue->GetD3D12CommandQueue().Get()).wait();
 	}
 
-	/*Пока выключил гамма корекцию.*/
-	if (usage == TextureUsage::Albedo && filePath.extension() != ".dds")
+	if(d3dResource != nullptr)
 	{
-		//metadata.format = MakeSRGB(metadata.format);
+		tex->SetD3D12Resource(d3dResource);
+		tex->HasMipMap = true;
+		commandList->TransitionBarrier(tex->GetD3D12Resource(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		commandList->FlushResourceBarriers();
+		return tex;
 	}
+
+	
 
 	D3D12_RESOURCE_DESC desc = {};
 	desc.Width = static_cast<UINT>(metadata.width);
-	desc.Height = static_cast<UINT>(metadata.height);
-	
-	/*
-	 * DDS текстуры нельзя использовать как UAV для генерации мипмап карт.
-	 */
-	
+	desc.Height = static_cast<UINT>(metadata.height);	
 	desc.MipLevels = resFlags == D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS
 		                 ? 0
 		                 : static_cast<UINT16>(metadata.mipLevels);
@@ -341,10 +366,8 @@ std::shared_ptr<GTexture> GTexture::LoadTextureFromFile(std::wstring filepath,
 	desc.Flags = static_cast<D3D12_RESOURCE_FLAGS>(resFlags);
 	desc.SampleDesc.Count = 1;
 	desc.Dimension = static_cast<D3D12_RESOURCE_DIMENSION>(metadata.dimension);
-
-	auto& device = DXLib::D3DApp::GetApp().GetDevice();
-	
-	auto tex = std::make_shared<GTexture>(desc, filepath, usage);
+		
+	tex = std::make_shared<GTexture>(desc, filepath, usage);
 	
 	if (tex->GetD3D12Resource())
 	{
