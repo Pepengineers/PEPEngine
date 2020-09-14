@@ -41,21 +41,21 @@ void SSAA::OnResize(UINT newWidth, UINT newHeight)
 {
 	if (viewport.Width == newWidth * ResolutionMultiplier && viewport.Height == newHeight * ResolutionMultiplier)
 	{
-		return;
+		return;	
 	}
 
 	int width = newWidth * ResolutionMultiplier;
 	int height = newHeight * ResolutionMultiplier;
-
+	
 	viewport.Height = static_cast<float>(height);
 	viewport.Width = static_cast<float>(width);
 	viewport.MinDepth = 0.0f;
 	viewport.MaxDepth = 1.0f;
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
-
-	scissorRect = {0, 0, width, height};
-
+	
+	scissorRect = { 0,0, width , height };
+	
 
 	if (!renderTarget.IsValid())
 	{
@@ -105,15 +105,16 @@ void SSAA::OnResize(UINT newWidth, UINT newHeight)
 	{
 		GTexture::Resize(depthMap, width, height, 1);
 	}
+	
 
-
+	
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
 	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 	rtvDesc.Format = rtvFormat;
 	rtvDesc.Texture2D.MipSlice = 0;
 	rtvDesc.Texture2D.PlaneSlice = 0;
 	renderTarget.CreateRenderTargetView(&rtvDesc, &rtvMemory);
-
+	
 
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;

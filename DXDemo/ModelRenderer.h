@@ -7,16 +7,17 @@ class Transform;
 class GCommandList;
 
 class ModelRenderer : public Renderer
-{
+{	
+
 	ObjectConstants constantData{};
-
+	
 	std::unique_ptr<ConstantBuffer<ObjectConstants>> modelDataBuffer = nullptr;
-
-	custom_vector<std::shared_ptr<Material>> meshesMaterials = DXAllocator::CreateVector<std::shared_ptr<Material>>();
-
-
+	
+	custom_vector<std::shared_ptr<Material>> meshesMaterials = DXAllocator::CreateVector< std::shared_ptr<Material>>();
+	
+	
 protected:
-
+		
 	void Draw(std::shared_ptr<GCommandList> cmdList) override;
 
 	void Update() override;
@@ -29,5 +30,5 @@ public:
 
 	UINT GetMeshesCount() const;
 
-	void SetMeshMaterial(UINT index, std::shared_ptr<Material> material);
+	void SetMeshMaterial(UINT index, const std::shared_ptr<Material> material);
 };

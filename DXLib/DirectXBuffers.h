@@ -23,7 +23,7 @@ public:
 	UINT GetElementCount() const;
 
 	void Reset() override;;
-
+	
 protected:
 	D3D12_GPU_VIRTUAL_ADDRESS address;
 	UINT elementCount = 0;
@@ -42,8 +42,7 @@ public:
 	//  UINT64 OffsetInBytes; // multiple of 256
 	//  UINT  SizeInBytes;  // multiple of 256
 	// } D3D12_CONSTANT_BUFFER_VIEW_DESC;
-	ConstantBuffer(UINT elementCount, std::wstring name = L"") : ShaderBuffer(
-		elementCount, d3dUtil::CalcConstantBufferByteSize(sizeof(T)), name = L"")
+	ConstantBuffer(UINT elementCount, std::wstring name = L"") : ShaderBuffer(elementCount, d3dUtil::CalcConstantBufferByteSize(sizeof(T)), name = L"")
 	{
 	}
 
@@ -57,7 +56,7 @@ template <typename T>
 class UploadBuffer : public virtual ShaderBuffer
 {
 public:
-	UploadBuffer(UINT elementCount, std::wstring name = L"") : ShaderBuffer(elementCount, (sizeof(T)), name)
+	UploadBuffer(UINT elementCount ,std::wstring name = L"") : ShaderBuffer(elementCount, (sizeof(T)), name)
 	{
 	}
 

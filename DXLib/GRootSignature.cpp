@@ -1,7 +1,6 @@
 #include "GRootSignature.h"
 
 #include "d3dApp.h"
-#include "GDevice.h"
 
 std::array<const CD3DX12_STATIC_SAMPLER_DESC, 7> GRootSignature::GetStaticSamplers()
 {
@@ -73,7 +72,7 @@ std::array<const CD3DX12_STATIC_SAMPLER_DESC, 7> GRootSignature::GetStaticSample
 GRootSignature::~GRootSignature()
 {
 	slotRootParameters.clear();
-	staticSampler.clear();
+	staticSampler.clear();	
 }
 
 const D3D12_ROOT_SIGNATURE_DESC& GRootSignature::GetRootSignatureDesc() const
@@ -115,7 +114,7 @@ void GRootSignature::AddParameter(CD3DX12_ROOT_PARAMETER parameter)
 }
 
 void GRootSignature::AddDescriptorParameter(CD3DX12_DESCRIPTOR_RANGE* rangeParameters, UINT size,
-                                            D3D12_SHADER_VISIBILITY visibility)
+                                           D3D12_SHADER_VISIBILITY visibility)
 {
 	CD3DX12_ROOT_PARAMETER slotParameter;
 	slotParameter.InitAsDescriptorTable(size, rangeParameters, visibility);
@@ -123,7 +122,7 @@ void GRootSignature::AddDescriptorParameter(CD3DX12_DESCRIPTOR_RANGE* rangeParam
 }
 
 void GRootSignature::AddConstantBufferParameter(UINT shaderRegister, UINT registerSpace,
-                                                D3D12_SHADER_VISIBILITY visibility)
+                                               D3D12_SHADER_VISIBILITY visibility)
 {
 	CD3DX12_ROOT_PARAMETER slotParameter;
 	slotParameter.InitAsConstantBufferView(shaderRegister, registerSpace, visibility);
@@ -131,7 +130,7 @@ void GRootSignature::AddConstantBufferParameter(UINT shaderRegister, UINT regist
 }
 
 void GRootSignature::AddConstantParameter(UINT valueCount, UINT shaderRegister, UINT registerSpace,
-                                          D3D12_SHADER_VISIBILITY visibility)
+                                         D3D12_SHADER_VISIBILITY visibility)
 {
 	CD3DX12_ROOT_PARAMETER slotParameter;
 	slotParameter.InitAsConstants(valueCount, shaderRegister, registerSpace, visibility);
@@ -165,8 +164,8 @@ void GRootSignature::AddStaticSampler(const D3D12_STATIC_SAMPLER_DESC sampler)
 
 void GRootSignature::Initialize()
 {
-	auto device = DXLib::D3DApp::GetApp().GetDevice()->dxDevice;
-
+	auto& device = DXLib::D3DApp::GetApp().GetDevice();
+	
 	if (!staticSampler.empty())
 	{
 		rootSigDesc = CD3DX12_ROOT_SIGNATURE_DESC(slotRootParameters.size(), slotRootParameters.data(),
@@ -185,7 +184,7 @@ void GRootSignature::Initialize()
 	for (UINT i = 0; i < rootSigDesc.NumParameters; ++i)
 	{
 		descriptorPerTableCount.push_back(0);
-
+		
 		const D3D12_ROOT_PARAMETER& rootParameter = rootSigDesc.pParameters[i];
 
 		if (rootParameter.ParameterType == D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE)
@@ -208,7 +207,7 @@ void GRootSignature::Initialize()
 				}
 			}
 
-
+			
 			// Count the number of descriptors in the descriptor table.
 			for (UINT j = 0; j < numDescriptorRanges; ++j)
 			{
@@ -217,7 +216,7 @@ void GRootSignature::Initialize()
 		}
 	}
 
-
+	
 	ComPtr<ID3DBlob> serializedRootSig = nullptr;
 	ComPtr<ID3DBlob> errorBlob = nullptr;
 	const HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
@@ -229,7 +228,7 @@ void GRootSignature::Initialize()
 	}
 	ThrowIfFailed(hr);
 
-	ThrowIfFailed(device->CreateRootSignature(
+	ThrowIfFailed(device.CreateRootSignature(
 		0,
 		serializedRootSig->GetBufferPointer(),
 		serializedRootSig->GetBufferSize(),

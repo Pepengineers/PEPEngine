@@ -9,38 +9,39 @@
 #include "GraphicPSO.h"
 #include "GRootSignature.h"
 
-void GCommandList::TrackResource(ComPtr<ID3D12Object> object)
+void GCommandList::TrackResource(Microsoft::WRL::ComPtr<ID3D12Object> object)
 {
-	trackedObject.push_back(object);
+    trackedObject.push_back(object);
 }
 
 void GCommandList::TrackResource(const GResource& res)
 {
-	TrackResource(res.GetD3D12Resource());
+    TrackResource(res.GetD3D12Resource());
 }
 
-GCommandList::GCommandList(ComPtr<ID3D12Device> device, D3D12_COMMAND_LIST_TYPE type)
-	: type(type), device(device)
+GCommandList::GCommandList(ComPtr<ID3D12Device> device,D3D12_COMMAND_LIST_TYPE type)
+    : type(type), device(device)
 {
-	ThrowIfFailed(device->CreateCommandAllocator(type, IID_PPV_ARGS(&cmdAllocator)));
 
-	ThrowIfFailed(device->CreateCommandList(0, type, cmdAllocator.Get(),
-		nullptr, IID_PPV_ARGS(&cmdList)));
+    ThrowIfFailed(device->CreateCommandAllocator(type, IID_PPV_ARGS(&cmdAllocator)));
 
-	uploadBuffer = std::make_unique<GDataUploader>();
+    ThrowIfFailed(device->CreateCommandList(0, type, cmdAllocator.Get(),
+        nullptr, IID_PPV_ARGS(&cmdList)));
 
-	tracker = std::make_unique<GResourceStateTracker>();
+    uploadBuffer = std::make_unique<GDataUploader>();
 
-	for (int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i)
-	{
-		setedDescriptorHeaps[i] = nullptr;
-	}
+    tracker = std::make_unique<GResourceStateTracker>();
+
+    for (int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i)
+    {
+        setedDescriptorHeaps[i] = nullptr;
+    }
 }
 
 GCommandList::~GCommandList()
 {
-	uploadBuffer->Clear();
-	uploadBuffer.reset();
+    uploadBuffer->Clear();
+    uploadBuffer.reset();
 }
 
 D3D12_COMMAND_LIST_TYPE GCommandList::GetCommandListType() const
@@ -53,20 +54,20 @@ ComPtr<ID3D12GraphicsCommandList2> GCommandList::GetGraphicsCommandList() const
 	return cmdList;
 }
 
-void GCommandList::SetGMemory(const GMemory* memory)
+void GCommandList::SetGMemory(const GMemory* memory) 
 {
-	if (memory == nullptr || memory->IsNull())
+	if(memory == nullptr || memory->IsNull())
 		assert("Memory Descriptor Heap is null");
 
-	const auto type = memory->GetType();
-	const auto heap = memory->GetDescriptorHeap();
-
-	if (setedDescriptorHeaps[type] != heap)
-	{
-		setedDescriptorHeaps[type] = heap;
-
+    const auto type = memory->GetType();
+    const auto heap = memory->GetDescriptorHeap();
+	
+    if (setedDescriptorHeaps[type] != heap)
+    {
+        setedDescriptorHeaps[type] = heap;
+    	
 		UpdateDescriptorHeaps();
-	}
+    }
 }
 
 void GCommandList::UpdateDescriptorHeaps()
@@ -89,427 +90,410 @@ void GCommandList::UpdateDescriptorHeaps()
 void GCommandList::SetRootSignature(GRootSignature* signature)
 {
 	const auto d3d12RootSignature = signature->GetRootSignature();
-
-	if (setedRootSignature == d3d12RootSignature) return;
-
-	setedRootSignature = d3d12RootSignature;
-
-	if (type == D3D12_COMMAND_LIST_TYPE_DIRECT)
+	
+    if(setedRootSignature == d3d12RootSignature) return;
+    
+    setedRootSignature = d3d12RootSignature;
+	
+	if(type == D3D12_COMMAND_LIST_TYPE_DIRECT)
 	{
-		cmdList->SetGraphicsRootSignature(setedRootSignature.Get());
+        cmdList->SetGraphicsRootSignature(setedRootSignature.Get());
 	}
 
-	if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
+	if(type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
 	{
-		cmdList->SetComputeRootSignature(setedRootSignature.Get());
+        cmdList->SetComputeRootSignature(setedRootSignature.Get());
 	}
-
-	TrackResource(setedRootSignature);
+	
+    TrackResource(setedRootSignature);
 }
 
 void GCommandList::SetRootShaderResourceView(UINT rootSignatureSlot, ShaderBuffer& resource, UINT offset)
 {
-	if (setedRootSignature == nullptr)
-		assert("Root Signature not set into the CommandList");
+    if (setedRootSignature == nullptr) assert("Root Signature not set into the CommandList");
 
-	if (!resource.IsValid())
-		assert("Resource is invalid");
+    if (!resource.IsValid()) assert("Resource is invalid");
 
-	const auto res = resource.GetElementResourceAddress(offset);
-
-	if (type == D3D12_COMMAND_LIST_TYPE_DIRECT)
-	{
-		cmdList->SetGraphicsRootShaderResourceView(rootSignatureSlot, res);
+    const auto res = resource.GetElementResourceAddress(offset);
+	
+	if(type == D3D12_COMMAND_LIST_TYPE_DIRECT)
+	{		
+        cmdList->SetGraphicsRootShaderResourceView(rootSignatureSlot, res);
 	}
 
-	if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
+	if(type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
 	{
-		cmdList->SetComputeRootShaderResourceView(rootSignatureSlot, res);
+        cmdList->SetComputeRootShaderResourceView(rootSignatureSlot, res);
 	}
 
-	TrackResource(resource);
+   TrackResource(resource);
 }
 
 
-void GCommandList::SetRootConstantBufferView(UINT rootSignatureSlot, ShaderBuffer& resource, UINT offset)
+void GCommandList::SetRootConstantBufferView(UINT rootSignatureSlot, ShaderBuffer& resource, UINT offset )
 {
-	if (setedRootSignature == nullptr)
-		assert("Root Signature not set into the CommandList");
+    if (setedRootSignature == nullptr) assert("Root Signature not set into the CommandList");
 
-	if (!resource.IsValid())
-		assert("Resource is invalid");
+    if (!resource.IsValid()) assert("Resource is invalid");
 
-	auto res = resource.GetElementResourceAddress(offset);
+    auto res = resource.GetElementResourceAddress(offset);
+	
+    if (type == D3D12_COMMAND_LIST_TYPE_DIRECT)
+    {
+        cmdList->SetGraphicsRootConstantBufferView(rootSignatureSlot, res);
+    }
 
-	if (type == D3D12_COMMAND_LIST_TYPE_DIRECT)
-	{
-		cmdList->SetGraphicsRootConstantBufferView(rootSignatureSlot, res);
-	}
+    if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
+    {
+        cmdList->SetComputeRootConstantBufferView(rootSignatureSlot, res);
+    }
 
-	if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
-	{
-		cmdList->SetComputeRootConstantBufferView(rootSignatureSlot, res);
-	}
-
-	TrackResource(resource);
+    TrackResource(resource);
 }
 
 
 void GCommandList::SetRootUnorderedAccessView(UINT rootSignatureSlot, ShaderBuffer& resource, UINT offset)
 {
-	if (setedRootSignature == nullptr)
-		assert("Root Signature not set into the CommandList");
+    if (setedRootSignature == nullptr) assert("Root Signature not set into the CommandList");
 
-	if (!resource.IsValid())
-		assert("Resource is invalid");
+    if (!resource.IsValid()) assert("Resource is invalid");
 
-	auto res = resource.GetElementResourceAddress(offset);
+    auto res = resource.GetElementResourceAddress(offset);
 
-	if (type == D3D12_COMMAND_LIST_TYPE_DIRECT)
-	{
-		cmdList->SetGraphicsRootUnorderedAccessView(rootSignatureSlot, res);
-	}
+    if (type == D3D12_COMMAND_LIST_TYPE_DIRECT)
+    {
+        cmdList->SetGraphicsRootUnorderedAccessView(rootSignatureSlot, res);
+    }
 
-	if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
-	{
-		cmdList->SetComputeRootUnorderedAccessView(rootSignatureSlot, res);
-	}
+    if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
+    {
+        cmdList->SetComputeRootUnorderedAccessView(rootSignatureSlot, res);
+    }
 
-	TrackResource(resource);
+    TrackResource(resource);
 }
 
 
-void GCommandList::SetRoot32BitConstants(UINT rootSignatureSlot, UINT Count32BitValueToSet, const void* data,
-                                         UINT DestOffsetIn32BitValueToSet) const
+void GCommandList::SetRoot32BitConstants(UINT rootSignatureSlot, UINT Count32BitValueToSet, const void* data, UINT DestOffsetIn32BitValueToSet ) const
 {
-	if (type == D3D12_COMMAND_LIST_TYPE_DIRECT)
-	{
-		cmdList->SetGraphicsRoot32BitConstants(rootSignatureSlot, Count32BitValueToSet, data,
-		                                       DestOffsetIn32BitValueToSet);
-	}
+	
+    if (type == D3D12_COMMAND_LIST_TYPE_DIRECT)
+    {
+        cmdList->SetGraphicsRoot32BitConstants(rootSignatureSlot, Count32BitValueToSet, data, DestOffsetIn32BitValueToSet);
+    }
 
-	if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
-	{
-		cmdList->SetComputeRoot32BitConstants(rootSignatureSlot, Count32BitValueToSet, data,
-		                                      DestOffsetIn32BitValueToSet);
-	}
+    if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
+    {
+        cmdList->SetComputeRoot32BitConstants(rootSignatureSlot, Count32BitValueToSet, data,DestOffsetIn32BitValueToSet);
+    }
+
 }
 
 void GCommandList::SetRoot32BitConstant(UINT shaderRegister, UINT value, UINT offset) const
 {
-	if (type == D3D12_COMMAND_LIST_TYPE_DIRECT)
-	{
-		cmdList->SetGraphicsRoot32BitConstant(shaderRegister, value, offset);
-	}
+    if (type == D3D12_COMMAND_LIST_TYPE_DIRECT)
+    {
+        cmdList->SetGraphicsRoot32BitConstant(shaderRegister, value, offset);
+    }
 
-	if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
-	{
-		cmdList->SetComputeRoot32BitConstant(shaderRegister, value, offset);
-	}
+    if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
+    {
+        cmdList->SetComputeRoot32BitConstant(shaderRegister, value, offset);
+    }	
 }
 
 
-void GCommandList::SetRootDescriptorTable(UINT rootSignatureSlot, const GMemory* memory, UINT offset) const
+void GCommandList::SetRootDescriptorTable(UINT rootSignatureSlot,const GMemory* memory, UINT offset) const
 {
-	if (memory == nullptr || memory->IsNull())
-	{
-		assert("Memory null");
-	}
+    if(memory == nullptr || memory->IsNull())
+    {
+        assert("Memory null");
+    }
 
+	
+    if (type == D3D12_COMMAND_LIST_TYPE_DIRECT)
+    {
+        cmdList->SetGraphicsRootDescriptorTable(rootSignatureSlot, memory->GetGPUHandle(offset));
+    }
 
-	if (type == D3D12_COMMAND_LIST_TYPE_DIRECT)
-	{
-		cmdList->SetGraphicsRootDescriptorTable(rootSignatureSlot, memory->GetGPUHandle(offset));
-	}
-
-	if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
-	{
-		cmdList->SetComputeRootDescriptorTable(rootSignatureSlot, memory->GetGPUHandle(offset));
-	}
+    if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
+    {
+        cmdList->SetComputeRootDescriptorTable(rootSignatureSlot, memory->GetGPUHandle(offset));
+    }
 }
 
 UploadAllocation GCommandList::UploadData(size_t sizeInBytes, const void* bufferData, size_t alignment = 8) const
 {
-	const auto allocation = uploadBuffer->Allocate(sizeInBytes, alignment);
-	if (bufferData != nullptr)
-		memcpy(allocation.CPU, bufferData, sizeInBytes);
-	return allocation;
+    const auto allocation = uploadBuffer->Allocate(sizeInBytes, alignment);
+    if (bufferData != nullptr)
+        memcpy(allocation.CPU, bufferData, sizeInBytes);
+    return allocation;
 }
 
 void GCommandList::UpdateSubresource(GResource& destResource, D3D12_SUBRESOURCE_DATA* subresources,
-                                     size_t countSubresources)
+                                      size_t countSubresources)
 {
-	auto res = destResource.GetD3D12Resource();
+    auto res = destResource.GetD3D12Resource();
+	
+    const UINT64 uploadBufferSize = GetRequiredIntermediateSize(res.Get(),
+        0, countSubresources);
 
-	const UINT64 uploadBufferSize = GetRequiredIntermediateSize(res.Get(),
-	                                                            0, countSubresources);
+    auto upload = UploadData(uploadBufferSize, nullptr, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
 
-	auto upload = UploadData(uploadBufferSize, nullptr, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
+    tracker->TransitionResource(res.Get(), D3D12_RESOURCE_STATE_COPY_DEST);
+    FlushResourceBarriers();
+	
+    UpdateSubresources(cmdList.Get(),
+        res.Get(), &upload.d3d12Resource,
+        upload.Offset, 0, countSubresources,
+        subresources);
 
-	tracker->TransitionResource(res.Get(), D3D12_RESOURCE_STATE_COPY_DEST);
-	FlushResourceBarriers();
-
-	UpdateSubresources(cmdList.Get(),
-	                   res.Get(), &upload.d3d12Resource,
-	                   upload.Offset, 0, countSubresources,
-	                   subresources);
-
-	TrackResource(res.Get());
+    TrackResource(res.Get());
 }
 
 void GCommandList::SetViewports(const D3D12_VIEWPORT* viewports, size_t count) const
 {
-	assert(count < D3D12_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE);
-	cmdList->RSSetViewports(count, viewports);
+    assert(count < D3D12_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE);
+    cmdList->RSSetViewports(count, viewports);
 }
 
 void GCommandList::SetScissorRects(const D3D12_RECT* scissorRects, size_t count) const
 {
-	assert(count < D3D12_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE);
-	cmdList->RSSetScissorRects(count, scissorRects);
+    assert(count < D3D12_VIEWPORT_AND_SCISSORRECT_OBJECT_COUNT_PER_PIPELINE);
+    cmdList->RSSetScissorRects(count, scissorRects);
 }
 
 void GCommandList::SetPipelineState(GraphicPSO& pso)
 {
 	const auto pipeState = pso.GetPSO();
 
-	if (pipeState == setedPSO) return;
+	if(pipeState == setedPSO) return;
 
-	setedPSO = pipeState;
+    setedPSO = pipeState;
 
-	cmdList->SetPipelineState(setedPSO.Get());
+    cmdList->SetPipelineState(setedPSO.Get());
 
-	TrackResource(pipeState);
+    TrackResource(pipeState);
 }
 
 void GCommandList::SetPipelineState(ComputePSO& pso)
 {
-	const auto pipeState = pso.GetPSO();
+    const auto pipeState = pso.GetPSO();
 
-	if (pipeState == setedPSO) return;
+    if (pipeState == setedPSO) return;
 
-	setedPSO = pipeState;
+    setedPSO = pipeState;
 
-	cmdList->SetPipelineState(setedPSO.Get());
+    cmdList->SetPipelineState(setedPSO.Get());
 
-	TrackResource(pipeState);
+    TrackResource(pipeState);
 }
 
 void GCommandList::SetVBuffer(UINT slot, UINT count, D3D12_VERTEX_BUFFER_VIEW* views) const
 {
-	cmdList->IASetVertexBuffers(slot, count, views);
+    cmdList->IASetVertexBuffers(slot, count, views);
 }
 
 void GCommandList::SetIBuffer(D3D12_INDEX_BUFFER_VIEW* views) const
 {
-	cmdList->IASetIndexBuffer(views);
+    cmdList->IASetIndexBuffer(views);
 }
 
 
-void GCommandList::TransitionBarrier(ComPtr<ID3D12Resource> resource, D3D12_RESOURCE_STATES stateAfter,
-                                     UINT subresource, bool flushBarriers) const
+void GCommandList::TransitionBarrier(Microsoft::WRL::ComPtr<ID3D12Resource> resource, D3D12_RESOURCE_STATES stateAfter, UINT subresource, bool flushBarriers) const
 {
-	if (resource)
-	{
-		const auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(resource.Get(), D3D12_RESOURCE_STATE_COMMON,
-		                                                          stateAfter, subresource);
-		tracker->ResourceBarrier(barrier);
-	}
+    if (resource)
+    {
+        const auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(resource.Get(), D3D12_RESOURCE_STATE_COMMON, stateAfter, subresource);
+        tracker->ResourceBarrier(barrier);
+    }
 
-	if (flushBarriers)
-	{
-		FlushResourceBarriers();
-	}
+    if (flushBarriers)
+    {
+        FlushResourceBarriers();
+    }
 }
 
 void GCommandList::UAVBarrier(const GResource& resource, bool flushBarriers) const
-{
-	UAVBarrier(resource.GetD3D12Resource(), flushBarriers);
+{	
+    UAVBarrier(resource.GetD3D12Resource(), flushBarriers);
 }
 
-void GCommandList::UAVBarrier(ComPtr<ID3D12Resource> resource, bool flushBarriers) const
+void GCommandList::UAVBarrier(Microsoft::WRL::ComPtr<ID3D12Resource> resource, bool flushBarriers) const
 {
-	const auto barrier = CD3DX12_RESOURCE_BARRIER::UAV(resource.Get());
+    const auto barrier = CD3DX12_RESOURCE_BARRIER::UAV(resource.Get());
 
-	tracker->ResourceBarrier(barrier);
+    tracker->ResourceBarrier(barrier);
 
-	if (flushBarriers)
-	{
-		FlushResourceBarriers();
-	}
+    if (flushBarriers)
+    {
+        FlushResourceBarriers();
+    }   
 }
 
-void GCommandList::AliasingBarrier(const GResource& beforeResource, const GResource& afterResource,
-                                   bool flushBarriers) const
+void GCommandList::AliasingBarrier(const GResource& beforeResource, const GResource& afterResource, bool flushBarriers) const
 {
-	AliasingBarrier(beforeResource.GetD3D12Resource(), afterResource.GetD3D12Resource(), flushBarriers);
+    AliasingBarrier(beforeResource.GetD3D12Resource(), afterResource.GetD3D12Resource(), flushBarriers);	
 }
 
-void GCommandList::AliasingBarrier(ComPtr<ID3D12Resource> beforeResource,
-                                   ComPtr<ID3D12Resource> afterResource, bool flushBarriers) const
+void GCommandList::AliasingBarrier(Microsoft::WRL::ComPtr<ID3D12Resource> beforeResource,
+	Microsoft::WRL::ComPtr<ID3D12Resource> afterResource, bool flushBarriers) const
 {
-	const auto barrier = CD3DX12_RESOURCE_BARRIER::Aliasing(beforeResource.Get(), afterResource.Get());
+    const auto barrier = CD3DX12_RESOURCE_BARRIER::Aliasing(beforeResource.Get(), afterResource.Get());
 
-	tracker->ResourceBarrier(barrier);
+    tracker->ResourceBarrier(barrier);
 
-	if (flushBarriers)
-	{
-		FlushResourceBarriers();
-	}
+    if (flushBarriers)
+    {
+        FlushResourceBarriers();
+    }
 }
 
 void GCommandList::FlushResourceBarriers() const
 {
-	tracker->FlushResourceBarriers(*cmdList.Get());
+    tracker->FlushResourceBarriers(*cmdList.Get());
 }
 
-void GCommandList::TransitionBarrier(const GResource& resource, D3D12_RESOURCE_STATES stateAfter, UINT subresource,
-                                     bool flushBarriers) const
+void GCommandList::TransitionBarrier(const GResource& resource, D3D12_RESOURCE_STATES stateAfter, UINT subresource, bool flushBarriers) const
 {
-	TransitionBarrier(resource.GetD3D12Resource(), stateAfter, subresource, flushBarriers);
+    TransitionBarrier(resource.GetD3D12Resource(), stateAfter, subresource, flushBarriers);
 }
 
-void GCommandList::CopyResource(ComPtr<ID3D12Resource> dstRes, ComPtr<ID3D12Resource> srcRes)
+void GCommandList::CopyResource(Microsoft::WRL::ComPtr<ID3D12Resource> dstRes, Microsoft::WRL::ComPtr<ID3D12Resource> srcRes)
 {
-	TransitionBarrier(dstRes, D3D12_RESOURCE_STATE_COPY_DEST);
-	TransitionBarrier(srcRes, D3D12_RESOURCE_STATE_COPY_SOURCE);
+    TransitionBarrier(dstRes, D3D12_RESOURCE_STATE_COPY_DEST);
+    TransitionBarrier(srcRes, D3D12_RESOURCE_STATE_COPY_SOURCE);
 
-	FlushResourceBarriers();
+    FlushResourceBarriers();
 
-	cmdList->CopyResource(dstRes.Get(), srcRes.Get());
+    cmdList->CopyResource(dstRes.Get(), srcRes.Get());
 
-	TrackResource(dstRes.Get());
-	TrackResource(srcRes.Get());
+    TrackResource(dstRes.Get());
+    TrackResource(srcRes.Get());
 }
 
 void GCommandList::CopyResource(GResource& dstRes, const GResource& srcRes)
 {
-	CopyResource(dstRes.GetD3D12Resource(), srcRes.GetD3D12Resource());
+    CopyResource(dstRes.GetD3D12Resource(), srcRes.GetD3D12Resource());
 }
 
-void GCommandList::ResolveSubresource(GResource& dstRes, const GResource& srcRes, uint32_t dstSubresource,
-                                      uint32_t srcSubresource)
+void GCommandList::ResolveSubresource(GResource& dstRes, const GResource& srcRes, uint32_t dstSubresource, uint32_t srcSubresource)
 {
-	TransitionBarrier(dstRes, D3D12_RESOURCE_STATE_RESOLVE_DEST, dstSubresource);
-	TransitionBarrier(srcRes, D3D12_RESOURCE_STATE_RESOLVE_SOURCE, srcSubresource);
+    TransitionBarrier(dstRes, D3D12_RESOURCE_STATE_RESOLVE_DEST, dstSubresource);
+    TransitionBarrier(srcRes, D3D12_RESOURCE_STATE_RESOLVE_SOURCE, srcSubresource);
 
-	FlushResourceBarriers();
+    FlushResourceBarriers();
 
-	cmdList->ResolveSubresource(dstRes.GetD3D12Resource().Get(), dstSubresource, srcRes.GetD3D12Resource().Get(),
-	                            srcSubresource, dstRes.GetD3D12ResourceDesc().Format);
+    cmdList->ResolveSubresource(dstRes.GetD3D12Resource().Get(), dstSubresource, srcRes.GetD3D12Resource().Get(), srcSubresource, dstRes.GetD3D12ResourceDesc().Format);
 
-	TrackResource(srcRes);
-	TrackResource(dstRes);
+    TrackResource(srcRes);
+    TrackResource(dstRes);
 }
 
-void GCommandList::Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t startVertex,
-                        uint32_t startInstance) const
+void GCommandList::Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t startVertex, uint32_t startInstance) const
 {
-	FlushResourceBarriers();
+    FlushResourceBarriers();
 
-	cmdList->DrawInstanced(vertexCount, instanceCount, startVertex, startInstance);
+    cmdList->DrawInstanced(vertexCount, instanceCount, startVertex, startInstance);
 }
 
-void GCommandList::DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t startIndex, int32_t baseVertex,
-                               uint32_t startInstance) const
+void GCommandList::DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t startIndex, int32_t baseVertex,	uint32_t startInstance) const
 {
-	FlushResourceBarriers();
+    FlushResourceBarriers();
 
-	cmdList->DrawIndexedInstanced(indexCount, instanceCount, startIndex, baseVertex, startInstance);
+    cmdList->DrawIndexedInstanced(indexCount, instanceCount, startIndex, baseVertex, startInstance);
 }
 
 void GCommandList::Dispatch(uint32_t numGroupsX, uint32_t numGroupsY, uint32_t numGroupsZ) const
-{
-	FlushResourceBarriers();
-	cmdList->Dispatch(numGroupsX, numGroupsY, numGroupsZ);
+{	
+    FlushResourceBarriers();
+    cmdList->Dispatch(numGroupsX, numGroupsY, numGroupsZ);
 }
 
 void GCommandList::ReleaseTrackedObjects()
 {
-	trackedObject.clear();
+    trackedObject.clear();
 }
 
 void GCommandList::Reset(GraphicPSO* pso)
-{
+{	
 	ThrowIfFailed(cmdAllocator->Reset());
 
-	tracker->Reset();
-	uploadBuffer->Reset();
+    tracker->Reset();
+    uploadBuffer->Reset();
 
-	ReleaseTrackedObjects();
+    ReleaseTrackedObjects();
 
-	setedRootSignature = nullptr;
-	setedPSO = nullptr;
-	setedPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
+    setedRootSignature = nullptr;
+    setedPSO = nullptr;
+    setedPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_UNDEFINED;
 
-	for (int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i)
-	{
-		setedDescriptorHeaps[i] = nullptr;
-	}
-
-	if (pso != nullptr)
-	{
-		setedPSO = pso->GetPSO();
-		TrackResource(setedPSO);
-	}
-
+    for (int i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i)
+    {
+        setedDescriptorHeaps[i] = nullptr;
+    }
+	
+    if (pso != nullptr)
+    {
+	    setedPSO = pso->GetPSO();
+        TrackResource(setedPSO);
+    }
+	
 	ThrowIfFailed(cmdList->Reset(cmdAllocator.Get(), setedPSO.Get()));
 }
 
 bool GCommandList::Close(GCommandList& pendingCommandList) const
 {
-	// Flush any remaining barriers.
-	FlushResourceBarriers();
+    // Flush any remaining barriers.
+    FlushResourceBarriers();
 
-	cmdList->Close();
+    cmdList->Close();
 
-	const auto peddingCmdList = pendingCommandList.GetGraphicsCommandList();
+    const auto peddingCmdList = pendingCommandList.GetGraphicsCommandList();
+	
+    // Flush pending resource barriers.
+    const uint32_t numPendingBarriers = tracker->FlushPendingResourceBarriers(*peddingCmdList.Get());
+    // Commit the final resource state to the global state.
+    tracker->CommitFinalResourceStates();
 
-	// Flush pending resource barriers.
-	const uint32_t numPendingBarriers = tracker->FlushPendingResourceBarriers(*peddingCmdList.Get());
-	// Commit the final resource state to the global state.
-	tracker->CommitFinalResourceStates();
-
-	return numPendingBarriers > 0;
+    return numPendingBarriers > 0;
 }
 
 void GCommandList::Close() const
 {
-	FlushResourceBarriers();
-	cmdList->Close();
+    FlushResourceBarriers();
+    cmdList->Close();
 }
 
 void GCommandList::SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY primitiveTopology)
 {
-	if (setedPrimitiveTopology == primitiveTopology) return;
-
-	setedPrimitiveTopology = primitiveTopology;
-	cmdList->IASetPrimitiveTopology(setedPrimitiveTopology);
+	if(setedPrimitiveTopology == primitiveTopology) return;
+	
+    setedPrimitiveTopology = primitiveTopology;
+    cmdList->IASetPrimitiveTopology(setedPrimitiveTopology);
 }
 
 void GCommandList::ClearRenderTarget(GMemory* memory, size_t offset, const FLOAT rgba[4], D3D12_RECT* rects,
-                                     size_t rectCount) const
+	size_t rectCount) const
 {
-	if (memory == nullptr || memory->IsNull())
-	{
-		assert("Bad Clear Render Target");
-	}
-	cmdList->ClearRenderTargetView(memory->GetCPUHandle(offset), rgba, rectCount, rects);
+    if(memory == nullptr || memory->IsNull())
+    {
+        assert("Bad Clear Render Target");
+    }	
+    cmdList->ClearRenderTargetView(memory->GetCPUHandle(offset), rgba, rectCount, rects);
 }
 
 void GCommandList::SetRenderTargets(size_t RTCount, GMemory* rtvMemory, size_t rtvOffset, GMemory* dsvMemory,
-                                    size_t dsvOffset) const
+	size_t dsvOffset) const
 {
-	auto* rtvPtr = (rtvMemory == nullptr || rtvMemory->IsNull()) ? nullptr : &rtvMemory->GetCPUHandle(rtvOffset);
+    auto* rtvPtr = (rtvMemory == nullptr || rtvMemory->IsNull()) ? nullptr : &rtvMemory->GetCPUHandle(rtvOffset);
 
-	auto* dsvPtr = (dsvMemory == nullptr || dsvMemory->IsNull()) ? nullptr : &dsvMemory->GetCPUHandle(dsvOffset);
-
-	cmdList->OMSetRenderTargets(RTCount, rtvPtr, RTCount == 1, dsvPtr);
+    auto* dsvPtr = (dsvMemory == nullptr || dsvMemory->IsNull()) ? nullptr : &dsvMemory->GetCPUHandle(dsvOffset);
+	
+    cmdList->OMSetRenderTargets(RTCount, rtvPtr, RTCount == 1, dsvPtr);
 }
 
-void GCommandList::ClearDepthStencil(GMemory* dsvMemory, size_t dsvOffset, D3D12_CLEAR_FLAGS flags, FLOAT depthValue,
-                                     UINT stencilValue, D3D12_RECT* rects, size_t rectCount) const
+void GCommandList::ClearDepthStencil(GMemory* dsvMemory, size_t dsvOffset, D3D12_CLEAR_FLAGS flags, FLOAT depthValue,  UINT stencilValue, D3D12_RECT* rects, size_t rectCount ) const
 {
-	cmdList->ClearDepthStencilView(dsvMemory->GetCPUHandle(dsvOffset), flags, depthValue, stencilValue, rectCount,
-	                               rects);
+    cmdList->ClearDepthStencilView(dsvMemory->GetCPUHandle(dsvOffset), flags, depthValue, stencilValue, rectCount, rects);
 }

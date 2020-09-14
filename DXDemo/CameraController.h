@@ -7,7 +7,6 @@ class Mouse;
 class Keyboard;
 
 using namespace DirectX::SimpleMath;
-
 class CameraController :
 	public Component
 {
@@ -16,13 +15,11 @@ class CameraController :
 	GameTimer* timer;
 
 
-	
+	double xMouseSpeed = 100;
+	double yMouseSpeed = 70;
 
 public:
-	float cameraSpeed = 6.0f;
-	float xMouseSpeed = 50;
-	float yMouseSpeed = 35;
-	
+
 	CameraController();
 
 	void Update() override;;

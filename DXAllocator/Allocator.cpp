@@ -6,7 +6,6 @@ Allocator::Allocator(const std::size_t totalSize)
 {
 }
 
-Allocator::~Allocator()
-{
-	totalSize = 0;
+Allocator::~Allocator(){
+    totalSize = 0;
 }

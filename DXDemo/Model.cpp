@@ -23,14 +23,14 @@ Model::Model(const std::wstring modelName): name(modelName)
 {
 }
 
-Model::Model(const Model& copy): name(copy.name)
+Model::Model(const Model& copy):  name(copy.name)
 {
 	meshes.resize(copy.meshes.size());
 
 	for (int i = 0; i < copy.meshes.size(); ++i)
 	{
-		meshes[i] = std::move(std::make_shared<Mesh>(*copy.meshes[i]));
-	}
+		meshes[i] = std::move( std::make_shared<Mesh>(*copy.meshes[i]));
+	}	
 }
 
 
@@ -43,3 +43,4 @@ void Model::AddMesh(const std::shared_ptr<Mesh> mesh)
 {
 	meshes.push_back(mesh);
 }
+

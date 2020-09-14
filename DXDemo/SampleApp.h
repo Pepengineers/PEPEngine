@@ -29,11 +29,11 @@ namespace DXLib
 		SampleApp(HINSTANCE hInstance);
 		SampleApp(const SampleApp& rhs) = delete;
 		SampleApp& operator=(const SampleApp& rhs) = delete;
-		~SampleApp();
+		~SampleApp();	
 
 		void GeneratedMipMap();
 		void BuildSsaoRootSignature();
-
+		
 		bool Initialize() override;
 
 
@@ -51,7 +51,7 @@ namespace DXLib
 	private:
 
 		LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
-
+		
 		void OnResize() override;
 		void UpdateShadowTransform(const GameTimer& gt);
 		void UpdateShadowPassCB(const GameTimer& gt);
@@ -72,7 +72,7 @@ namespace DXLib
 		void UpdateMainPassCB(const GameTimer& gt);
 
 
-		void LoadTextures(std::shared_ptr<GCommandList> cmdList);
+		void LoadTextures( std::shared_ptr<GCommandList> cmdList);
 		void BuildRootSignature();
 		void BuildShadersAndInputLayout();
 		void BuildShapeGeometry();
@@ -84,57 +84,46 @@ namespace DXLib
 		static void DrawGameObjects(std::shared_ptr<GCommandList> cmdList, const custom_vector<GameObject*>& ritems);
 		static std::array<const CD3DX12_STATIC_SAMPLER_DESC, 7> GetStaticSamplers();
 		void SortGO();
-
+		
 	private:
 
 
-		int backBufferIndex = 0;
-		DXGI_FORMAT backBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-		DXGI_FORMAT depthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+		custom_unordered_map<std::wstring, std::shared_ptr<Model>> models = DXAllocator::CreateUnorderedMap<std::wstring, std::shared_ptr<Model>>();
+	
 
 
-		custom_unordered_map<std::wstring, std::shared_ptr<Model>> models = DXAllocator::CreateUnorderedMap<
-			std::wstring, std::shared_ptr<Model>>();
-
-
+		
 		Keyboard keyboard;
 		Mouse mouse;
 		std::unique_ptr<Camera> camera = nullptr;
 
-		custom_vector<std::unique_ptr<FrameResource>> frameResources = DXAllocator::CreateVector<std::unique_ptr<
-			FrameResource>>();
-
+		custom_vector<std::unique_ptr<FrameResource>> frameResources = DXAllocator::CreateVector<std::unique_ptr<FrameResource>>();
+		
 		FrameResource* currentFrameResource = nullptr;
 		int currentFrameResourceIndex = 0;
 
-
+		
 		std::unique_ptr<GRootSignature> rootSignature = nullptr;
 		std::unique_ptr<GRootSignature> ssaoRootSignature = nullptr;
 		std::unique_ptr<Ssao> ssao;
 		std::unique_ptr<SSAA> ssaa;
-
+		
 		GMemory srvHeap;
 		AssetsLoader loader;
+				
+		
+		custom_unordered_map<std::string, std::unique_ptr<GShader>> shaders = DXAllocator::CreateUnorderedMap<std::string, std::unique_ptr<GShader>>();
+				
+		custom_unordered_map<PsoType::Type, std::unique_ptr<GraphicPSO>> psos = DXAllocator::CreateUnorderedMap<PsoType::Type, std::unique_ptr<GraphicPSO>>();
+		
+		custom_vector<Light*> lights = DXAllocator::CreateVector<Light*>();		
 
+		custom_vector<D3D12_INPUT_ELEMENT_DESC> defaultInputLayout = DXAllocator::CreateVector<D3D12_INPUT_ELEMENT_DESC>();
+		custom_vector<D3D12_INPUT_ELEMENT_DESC> treeSpriteInputLayout = DXAllocator::CreateVector<D3D12_INPUT_ELEMENT_DESC>();
 
-		custom_unordered_map<std::string, std::unique_ptr<GShader>> shaders = DXAllocator::CreateUnorderedMap<
-			std::string, std::unique_ptr<GShader>>();
-
-		custom_unordered_map<PsoType::Type, std::unique_ptr<GraphicPSO>> psos = DXAllocator::CreateUnorderedMap<
-			PsoType::Type, std::unique_ptr<GraphicPSO>>();
-
-		custom_vector<Light*> lights = DXAllocator::CreateVector<Light*>();
-
-		custom_vector<D3D12_INPUT_ELEMENT_DESC> defaultInputLayout = DXAllocator::CreateVector<D3D12_INPUT_ELEMENT_DESC
-		>();
-		custom_vector<D3D12_INPUT_ELEMENT_DESC> treeSpriteInputLayout = DXAllocator::CreateVector<
-			D3D12_INPUT_ELEMENT_DESC>();
-
-		custom_vector<std::unique_ptr<GameObject>> gameObjects = DXAllocator::CreateVector<std::unique_ptr<GameObject>
-		>();
-
-		custom_vector<custom_vector<GameObject*>> typedGameObjects = DXAllocator::CreateVector<custom_vector<GameObject*
-		>>();
+		custom_vector<std::unique_ptr<GameObject>> gameObjects = DXAllocator::CreateVector<std::unique_ptr<GameObject>>();
+		
+		custom_vector<custom_vector<GameObject*>> typedGameObjects = DXAllocator::CreateVector<custom_vector<GameObject*>>();
 
 		GameObject* player;
 		PassConstants mainPassCB;
@@ -159,4 +148,6 @@ namespace DXLib
 
 		BoundingSphere mSceneBounds;
 	};
+
+	
 }

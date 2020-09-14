@@ -35,44 +35,46 @@ T DivideByMultiple(T value, size_t alignment)
 }
 
 
+
+
 inline HRESULT ReadDataFromFile(LPCWSTR filename, byte** data, UINT* size)
 {
-	using namespace Microsoft::WRL;
+    using namespace Microsoft::WRL;
 
-	CREATEFILE2_EXTENDED_PARAMETERS extendedParams = {};
-	extendedParams.dwSize = sizeof(CREATEFILE2_EXTENDED_PARAMETERS);
-	extendedParams.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
-	extendedParams.dwFileFlags = FILE_FLAG_SEQUENTIAL_SCAN;
-	extendedParams.dwSecurityQosFlags = SECURITY_ANONYMOUS;
-	extendedParams.lpSecurityAttributes = nullptr;
-	extendedParams.hTemplateFile = nullptr;
+    CREATEFILE2_EXTENDED_PARAMETERS extendedParams = {};
+    extendedParams.dwSize = sizeof(CREATEFILE2_EXTENDED_PARAMETERS);
+    extendedParams.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
+    extendedParams.dwFileFlags = FILE_FLAG_SEQUENTIAL_SCAN;
+    extendedParams.dwSecurityQosFlags = SECURITY_ANONYMOUS;
+    extendedParams.lpSecurityAttributes = nullptr;
+    extendedParams.hTemplateFile = nullptr;
 
-	Wrappers::FileHandle file(CreateFile2(filename, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, &extendedParams));
-	if (file.Get() == INVALID_HANDLE_VALUE)
-	{
-		throw std::exception();
-	}
+    Wrappers::FileHandle file(CreateFile2(filename, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, &extendedParams));
+    if (file.Get() == INVALID_HANDLE_VALUE)
+    {
+        throw std::exception();
+    }
 
-	FILE_STANDARD_INFO fileInfo = {};
-	if (!GetFileInformationByHandleEx(file.Get(), FileStandardInfo, &fileInfo, sizeof(fileInfo)))
-	{
-		throw std::exception();
-	}
+    FILE_STANDARD_INFO fileInfo = {};
+    if (!GetFileInformationByHandleEx(file.Get(), FileStandardInfo, &fileInfo, sizeof(fileInfo)))
+    {
+        throw std::exception();
+    }
 
-	if (fileInfo.EndOfFile.HighPart != 0)
-	{
-		throw std::exception();
-	}
+    if (fileInfo.EndOfFile.HighPart != 0)
+    {
+        throw std::exception();
+    }
 
-	*data = reinterpret_cast<byte*>(malloc(fileInfo.EndOfFile.LowPart));
-	*size = fileInfo.EndOfFile.LowPart;
+    *data = reinterpret_cast<byte*>(malloc(fileInfo.EndOfFile.LowPart));
+    *size = fileInfo.EndOfFile.LowPart;
 
-	if (!ReadFile(file.Get(), *data, fileInfo.EndOfFile.LowPart, nullptr, nullptr))
-	{
-		throw std::exception();
-	}
+    if (!ReadFile(file.Get(), *data, fileInfo.EndOfFile.LowPart, nullptr, nullptr))
+    {
+        throw std::exception();
+    }
 
-	return S_OK;
+    return S_OK;
 }
 
 
@@ -190,16 +192,16 @@ public:
 		return (byteSize + 255) & ~255;
 	}
 
-	static ComPtr<ID3DBlob> LoadBinary(const std::wstring& filename);
+	static Microsoft::WRL::ComPtr<ID3DBlob> LoadBinary(const std::wstring& filename);
 
-	static ComPtr<ID3D12Resource> CreateDefaultBuffer(
+	static Microsoft::WRL::ComPtr<ID3D12Resource> CreateDefaultBuffer(
 		ID3D12Device* device,
 		ID3D12GraphicsCommandList* commandList,
 		const void* initData,
 		UINT64 byteSize,
-		ComPtr<ID3D12Resource>& uploadBuffer);
+		Microsoft::WRL::ComPtr<ID3D12Resource>& uploadBuffer);
 
-	static ComPtr<ID3DBlob> CompileShader(
+	static Microsoft::WRL::ComPtr<ID3DBlob> CompileShader(
 		const std::wstring& filename,
 		const D3D_SHADER_MACRO* defines,
 		const std::string& entrypoint,
@@ -244,14 +246,14 @@ struct MeshGeometry
 
 	// System memory copies.  Use Blobs because the vertex/index format can be generic.
 	// It is up to the client to cast appropriately.  
-	ComPtr<ID3DBlob> VertexBufferCPU = nullptr;
-	ComPtr<ID3DBlob> IndexBufferCPU = nullptr;
+	Microsoft::WRL::ComPtr<ID3DBlob> VertexBufferCPU = nullptr;
+	Microsoft::WRL::ComPtr<ID3DBlob> IndexBufferCPU = nullptr;
 
-	ComPtr<ID3D12Resource> VertexBufferGPU = nullptr;
-	ComPtr<ID3D12Resource> IndexBufferGPU = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> VertexBufferGPU = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> IndexBufferGPU = nullptr;
 
-	ComPtr<ID3D12Resource> VertexBufferUploader = nullptr;
-	ComPtr<ID3D12Resource> IndexBufferUploader = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> VertexBufferUploader = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> IndexBufferUploader = nullptr;
 
 	// Data about the buffers.
 	UINT VertexByteStride = 0;
@@ -293,266 +295,266 @@ struct MeshGeometry
 };
 
 
+
 // Hashers for view descriptions.
 namespace std
 {
-	// Source: https://stackoverflow.com/questions/2590677/how-do-i-combine-hash-values-in-c0x
-	template <typename T>
-	void hash_combine(std::size_t& seed, const T& v)
-	{
-		std::hash<T> hasher;
-		seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-	}
+    // Source: https://stackoverflow.com/questions/2590677/how-do-i-combine-hash-values-in-c0x
+    template <typename T>
+    inline void hash_combine(std::size_t& seed, const T& v)
+    {
+        std::hash<T> hasher;
+        seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
 
-	template <>
-	struct hash<D3D12_SHADER_RESOURCE_VIEW_DESC>
-	{
-		std::size_t operator()(const D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc) const noexcept
-		{
-			std::size_t seed = 0;
+    template<>
+    struct hash<D3D12_SHADER_RESOURCE_VIEW_DESC>
+    {
+        std::size_t operator()(const D3D12_SHADER_RESOURCE_VIEW_DESC& srvDesc) const noexcept
+        {
+            std::size_t seed = 0;
 
-			hash_combine(seed, srvDesc.Format);
-			hash_combine(seed, srvDesc.ViewDimension);
-			hash_combine(seed, srvDesc.Shader4ComponentMapping);
+            hash_combine(seed, srvDesc.Format);
+            hash_combine(seed, srvDesc.ViewDimension);
+            hash_combine(seed, srvDesc.Shader4ComponentMapping);
 
-			switch (srvDesc.ViewDimension)
-			{
-			case D3D12_SRV_DIMENSION_BUFFER:
-				hash_combine(seed, srvDesc.Buffer.FirstElement);
-				hash_combine(seed, srvDesc.Buffer.NumElements);
-				hash_combine(seed, srvDesc.Buffer.StructureByteStride);
-				hash_combine(seed, srvDesc.Buffer.Flags);
-				break;
-			case D3D12_SRV_DIMENSION_TEXTURE1D:
-				hash_combine(seed, srvDesc.Texture1D.MostDetailedMip);
-				hash_combine(seed, srvDesc.Texture1D.MipLevels);
-				hash_combine(seed, srvDesc.Texture1D.ResourceMinLODClamp);
-				break;
-			case D3D12_SRV_DIMENSION_TEXTURE1DARRAY:
-				hash_combine(seed, srvDesc.Texture1DArray.MostDetailedMip);
-				hash_combine(seed, srvDesc.Texture1DArray.MipLevels);
-				hash_combine(seed, srvDesc.Texture1DArray.FirstArraySlice);
-				hash_combine(seed, srvDesc.Texture1DArray.ArraySize);
-				hash_combine(seed, srvDesc.Texture1DArray.ResourceMinLODClamp);
-				break;
-			case D3D12_SRV_DIMENSION_TEXTURE2D:
-				hash_combine(seed, srvDesc.Texture2D.MostDetailedMip);
-				hash_combine(seed, srvDesc.Texture2D.MipLevels);
-				hash_combine(seed, srvDesc.Texture2D.PlaneSlice);
-				hash_combine(seed, srvDesc.Texture2D.ResourceMinLODClamp);
-				break;
-			case D3D12_SRV_DIMENSION_TEXTURE2DARRAY:
-				hash_combine(seed, srvDesc.Texture2DArray.MostDetailedMip);
-				hash_combine(seed, srvDesc.Texture2DArray.MipLevels);
-				hash_combine(seed, srvDesc.Texture2DArray.FirstArraySlice);
-				hash_combine(seed, srvDesc.Texture2DArray.ArraySize);
-				hash_combine(seed, srvDesc.Texture2DArray.PlaneSlice);
-				hash_combine(seed, srvDesc.Texture2DArray.ResourceMinLODClamp);
-				break;
-			case D3D12_SRV_DIMENSION_TEXTURE2DMS:
-				//                hash_combine(seed, srvDesc.Texture2DMS.UnusedField_NothingToDefine);
-				break;
-			case D3D12_SRV_DIMENSION_TEXTURE2DMSARRAY:
-				hash_combine(seed, srvDesc.Texture2DMSArray.FirstArraySlice);
-				hash_combine(seed, srvDesc.Texture2DMSArray.ArraySize);
-				break;
-			case D3D12_SRV_DIMENSION_TEXTURE3D:
-				hash_combine(seed, srvDesc.Texture3D.MostDetailedMip);
-				hash_combine(seed, srvDesc.Texture3D.MipLevels);
-				hash_combine(seed, srvDesc.Texture3D.ResourceMinLODClamp);
-				break;
-			case D3D12_SRV_DIMENSION_TEXTURECUBE:
-				hash_combine(seed, srvDesc.TextureCube.MostDetailedMip);
-				hash_combine(seed, srvDesc.TextureCube.MipLevels);
-				hash_combine(seed, srvDesc.TextureCube.ResourceMinLODClamp);
-				break;
-			case D3D12_SRV_DIMENSION_TEXTURECUBEARRAY:
-				hash_combine(seed, srvDesc.TextureCubeArray.MostDetailedMip);
-				hash_combine(seed, srvDesc.TextureCubeArray.MipLevels);
-				hash_combine(seed, srvDesc.TextureCubeArray.First2DArrayFace);
-				hash_combine(seed, srvDesc.TextureCubeArray.NumCubes);
-				hash_combine(seed, srvDesc.TextureCubeArray.ResourceMinLODClamp);
-				break;
-				// TODO: Update Visual Studio?
-				//case D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE:
-				//    hash_combine(seed, srvDesc.RaytracingAccelerationStructure.Location);
-				//    break;
-			}
+            switch (srvDesc.ViewDimension)
+            {
+            case D3D12_SRV_DIMENSION_BUFFER:
+                hash_combine(seed, srvDesc.Buffer.FirstElement);
+                hash_combine(seed, srvDesc.Buffer.NumElements);
+                hash_combine(seed, srvDesc.Buffer.StructureByteStride);
+                hash_combine(seed, srvDesc.Buffer.Flags);
+                break;
+            case D3D12_SRV_DIMENSION_TEXTURE1D:
+                hash_combine(seed, srvDesc.Texture1D.MostDetailedMip);
+                hash_combine(seed, srvDesc.Texture1D.MipLevels);
+                hash_combine(seed, srvDesc.Texture1D.ResourceMinLODClamp);
+                break;
+            case D3D12_SRV_DIMENSION_TEXTURE1DARRAY:
+                hash_combine(seed, srvDesc.Texture1DArray.MostDetailedMip);
+                hash_combine(seed, srvDesc.Texture1DArray.MipLevels);
+                hash_combine(seed, srvDesc.Texture1DArray.FirstArraySlice);
+                hash_combine(seed, srvDesc.Texture1DArray.ArraySize);
+                hash_combine(seed, srvDesc.Texture1DArray.ResourceMinLODClamp);
+                break;
+            case D3D12_SRV_DIMENSION_TEXTURE2D:
+                hash_combine(seed, srvDesc.Texture2D.MostDetailedMip);
+                hash_combine(seed, srvDesc.Texture2D.MipLevels);
+                hash_combine(seed, srvDesc.Texture2D.PlaneSlice);
+                hash_combine(seed, srvDesc.Texture2D.ResourceMinLODClamp);
+                break;
+            case D3D12_SRV_DIMENSION_TEXTURE2DARRAY:
+                hash_combine(seed, srvDesc.Texture2DArray.MostDetailedMip);
+                hash_combine(seed, srvDesc.Texture2DArray.MipLevels);
+                hash_combine(seed, srvDesc.Texture2DArray.FirstArraySlice);
+                hash_combine(seed, srvDesc.Texture2DArray.ArraySize);
+                hash_combine(seed, srvDesc.Texture2DArray.PlaneSlice);
+                hash_combine(seed, srvDesc.Texture2DArray.ResourceMinLODClamp);
+                break;
+            case D3D12_SRV_DIMENSION_TEXTURE2DMS:
+                //                hash_combine(seed, srvDesc.Texture2DMS.UnusedField_NothingToDefine);
+                break;
+            case D3D12_SRV_DIMENSION_TEXTURE2DMSARRAY:
+                hash_combine(seed, srvDesc.Texture2DMSArray.FirstArraySlice);
+                hash_combine(seed, srvDesc.Texture2DMSArray.ArraySize);
+                break;
+            case D3D12_SRV_DIMENSION_TEXTURE3D:
+                hash_combine(seed, srvDesc.Texture3D.MostDetailedMip);
+                hash_combine(seed, srvDesc.Texture3D.MipLevels);
+                hash_combine(seed, srvDesc.Texture3D.ResourceMinLODClamp);
+                break;
+            case D3D12_SRV_DIMENSION_TEXTURECUBE:
+                hash_combine(seed, srvDesc.TextureCube.MostDetailedMip);
+                hash_combine(seed, srvDesc.TextureCube.MipLevels);
+                hash_combine(seed, srvDesc.TextureCube.ResourceMinLODClamp);
+                break;
+            case D3D12_SRV_DIMENSION_TEXTURECUBEARRAY:
+                hash_combine(seed, srvDesc.TextureCubeArray.MostDetailedMip);
+                hash_combine(seed, srvDesc.TextureCubeArray.MipLevels);
+                hash_combine(seed, srvDesc.TextureCubeArray.First2DArrayFace);
+                hash_combine(seed, srvDesc.TextureCubeArray.NumCubes);
+                hash_combine(seed, srvDesc.TextureCubeArray.ResourceMinLODClamp);
+                break;
+                // TODO: Update Visual Studio?
+                //case D3D12_SRV_DIMENSION_RAYTRACING_ACCELERATION_STRUCTURE:
+                //    hash_combine(seed, srvDesc.RaytracingAccelerationStructure.Location);
+                //    break;
+            }
 
-			return seed;
-		}
-	};
+            return seed;
+        }
+    };
 
-	template <>
-	struct hash<D3D12_UNORDERED_ACCESS_VIEW_DESC>
-	{
-		std::size_t operator()(const D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc) const noexcept
-		{
-			std::size_t seed = 0;
+    template<>
+    struct hash<D3D12_UNORDERED_ACCESS_VIEW_DESC>
+    {
+        std::size_t operator()(const D3D12_UNORDERED_ACCESS_VIEW_DESC& uavDesc) const noexcept
+        {
+            std::size_t seed = 0;
 
-			hash_combine(seed, uavDesc.Format);
-			hash_combine(seed, uavDesc.ViewDimension);
+            hash_combine(seed, uavDesc.Format);
+            hash_combine(seed, uavDesc.ViewDimension);
 
-			switch (uavDesc.ViewDimension)
-			{
-			case D3D12_UAV_DIMENSION_BUFFER:
-				hash_combine(seed, uavDesc.Buffer.FirstElement);
-				hash_combine(seed, uavDesc.Buffer.NumElements);
-				hash_combine(seed, uavDesc.Buffer.StructureByteStride);
-				hash_combine(seed, uavDesc.Buffer.CounterOffsetInBytes);
-				hash_combine(seed, uavDesc.Buffer.Flags);
-				break;
-			case D3D12_UAV_DIMENSION_TEXTURE1D:
-				hash_combine(seed, uavDesc.Texture1D.MipSlice);
-				break;
-			case D3D12_UAV_DIMENSION_TEXTURE1DARRAY:
-				hash_combine(seed, uavDesc.Texture1DArray.MipSlice);
-				hash_combine(seed, uavDesc.Texture1DArray.FirstArraySlice);
-				hash_combine(seed, uavDesc.Texture1DArray.ArraySize);
-				break;
-			case D3D12_UAV_DIMENSION_TEXTURE2D:
-				hash_combine(seed, uavDesc.Texture2D.MipSlice);
-				hash_combine(seed, uavDesc.Texture2D.PlaneSlice);
-				break;
-			case D3D12_UAV_DIMENSION_TEXTURE2DARRAY:
-				hash_combine(seed, uavDesc.Texture2DArray.MipSlice);
-				hash_combine(seed, uavDesc.Texture2DArray.FirstArraySlice);
-				hash_combine(seed, uavDesc.Texture2DArray.ArraySize);
-				hash_combine(seed, uavDesc.Texture2DArray.PlaneSlice);
-				break;
-			case D3D12_UAV_DIMENSION_TEXTURE3D:
-				hash_combine(seed, uavDesc.Texture3D.MipSlice);
-				hash_combine(seed, uavDesc.Texture3D.FirstWSlice);
-				hash_combine(seed, uavDesc.Texture3D.WSize);
-				break;
-			}
+            switch (uavDesc.ViewDimension)
+            {
+            case D3D12_UAV_DIMENSION_BUFFER:
+                hash_combine(seed, uavDesc.Buffer.FirstElement);
+                hash_combine(seed, uavDesc.Buffer.NumElements);
+                hash_combine(seed, uavDesc.Buffer.StructureByteStride);
+                hash_combine(seed, uavDesc.Buffer.CounterOffsetInBytes);
+                hash_combine(seed, uavDesc.Buffer.Flags);
+                break;
+            case D3D12_UAV_DIMENSION_TEXTURE1D:
+                hash_combine(seed, uavDesc.Texture1D.MipSlice);
+                break;
+            case D3D12_UAV_DIMENSION_TEXTURE1DARRAY:
+                hash_combine(seed, uavDesc.Texture1DArray.MipSlice);
+                hash_combine(seed, uavDesc.Texture1DArray.FirstArraySlice);
+                hash_combine(seed, uavDesc.Texture1DArray.ArraySize);
+                break;
+            case D3D12_UAV_DIMENSION_TEXTURE2D:
+                hash_combine(seed, uavDesc.Texture2D.MipSlice);
+                hash_combine(seed, uavDesc.Texture2D.PlaneSlice);
+                break;
+            case D3D12_UAV_DIMENSION_TEXTURE2DARRAY:
+                hash_combine(seed, uavDesc.Texture2DArray.MipSlice);
+                hash_combine(seed, uavDesc.Texture2DArray.FirstArraySlice);
+                hash_combine(seed, uavDesc.Texture2DArray.ArraySize);
+                hash_combine(seed, uavDesc.Texture2DArray.PlaneSlice);
+                break;
+            case D3D12_UAV_DIMENSION_TEXTURE3D:
+                hash_combine(seed, uavDesc.Texture3D.MipSlice);
+                hash_combine(seed, uavDesc.Texture3D.FirstWSlice);
+                hash_combine(seed, uavDesc.Texture3D.WSize);
+                break;
+            }
 
-			return seed;
-		}
-	};
+            return seed;
+        }
+    };
 }
 
 namespace Math
 {
-	constexpr float PI = 3.1415926535897932384626433832795f;
-	constexpr float _2PI = 2.0f * PI;
-	// Convert radians to degrees.
-	constexpr float Degrees(const float radians)
-	{
-		return radians * (180.0f / PI);
-	}
+    constexpr float PI = 3.1415926535897932384626433832795f;
+    constexpr float _2PI = 2.0f * PI;
+    // Convert radians to degrees.
+    constexpr float Degrees(const float radians)
+    {
+        return radians * (180.0f / PI);
+    }
 
-	// Convert degrees to radians.
-	constexpr float Radians(const float degrees)
-	{
-		return degrees * (PI / 180.0f);
-	}
+    // Convert degrees to radians.
+    constexpr float Radians(const float degrees)
+    {
+        return degrees * (PI / 180.0f);
+    }
 
-	template <typename T>
-	T Deadzone(T val, T deadzone)
-	{
-		if (std::abs(val) < deadzone)
-		{
-			return T(0);
-		}
+    template<typename T>
+    inline T Deadzone(T val, T deadzone)
+    {
+        if (std::abs(val) < deadzone)
+        {
+            return T(0);
+        }
 
-		return val;
-	}
+        return val;
+    }
 
-	// Normalize a value in the range [min - max]
-	template <typename T, typename U>
-	T NormalizeRange(U x, U min, U max)
-	{
-		return T(x - min) / T(max - min);
-	}
+    // Normalize a value in the range [min - max]
+    template<typename T, typename U>
+    inline T NormalizeRange(U x, U min, U max)
+    {
+        return T(x - min) / T(max - min);
+    }
 
-	// Shift and bias a value into another range.
-	template <typename T, typename U>
-	T ShiftBias(U x, U shift, U bias)
-	{
-		return T(x * bias) + T(shift);
-	}
+    // Shift and bias a value into another range.
+    template<typename T, typename U>
+    inline T ShiftBias(U x, U shift, U bias)
+    {
+        return T(x * bias) + T(shift);
+    }
 
-	/***************************************************************************
-	* These functions were taken from the MiniEngine.
-	* Source code available here:
-	* https://github.com/Microsoft/DirectX-Graphics-Samples/blob/master/MiniEngine/Core/Math/Common.h
-	* Retrieved: January 13, 2016
-	**************************************************************************/
-	template <typename T>
-	T AlignUpWithMask(T value, size_t mask)
-	{
-		return static_cast<T>((static_cast<size_t>(value) + mask) & ~mask);
-	}
+    /***************************************************************************
+    * These functions were taken from the MiniEngine.
+    * Source code available here:
+    * https://github.com/Microsoft/DirectX-Graphics-Samples/blob/master/MiniEngine/Core/Math/Common.h
+    * Retrieved: January 13, 2016
+    **************************************************************************/
+    template <typename T>
+    inline T AlignUpWithMask(T value, size_t mask)
+    {
+        return (T)(((size_t)value + mask) & ~mask);
+    }
 
-	template <typename T>
-	T AlignDownWithMask(T value, size_t mask)
-	{
-		return static_cast<T>(static_cast<size_t>(value) & ~mask);
-	}
+    template <typename T>
+    inline T AlignDownWithMask(T value, size_t mask)
+    {
+        return (T)((size_t)value & ~mask);
+    }
 
-	template <typename T>
-	T AlignUp(T value, size_t alignment)
-	{
-		return AlignUpWithMask(value, alignment - 1);
-	}
+    template <typename T>
+    inline T AlignUp(T value, size_t alignment)
+    {
+        return AlignUpWithMask(value, alignment - 1);
+    }
 
-	template <typename T>
-	T AlignDown(T value, size_t alignment)
-	{
-		return AlignDownWithMask(value, alignment - 1);
-	}
+    template <typename T>
+    inline T AlignDown(T value, size_t alignment)
+    {
+        return AlignDownWithMask(value, alignment - 1);
+    }
 
-	template <typename T>
-	bool IsAligned(T value, size_t alignment)
-	{
-		return 0 == (static_cast<size_t>(value) & (alignment - 1));
-	}
+    template <typename T>
+    inline bool IsAligned(T value, size_t alignment)
+    {
+        return 0 == ((size_t)value & (alignment - 1));
+    }
 
-	template <typename T>
-	T DivideByMultiple(T value, size_t alignment)
-	{
-		return static_cast<T>((value + alignment - 1) / alignment);
-	}
+    template <typename T>
+    inline T DivideByMultiple(T value, size_t alignment)
+    {
+        return (T)((value + alignment - 1) / alignment);
+    }
+    /***************************************************************************/
 
-	/***************************************************************************/
+    /**
+    * Round up to the next highest power of 2.
+    * @source: http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+    * @retrieved: January 16, 2016
+    */
+    inline uint32_t NextHighestPow2(uint32_t v)
+    {
+        v--;
+        v |= v >> 1;
+        v |= v >> 2;
+        v |= v >> 4;
+        v |= v >> 8;
+        v |= v >> 16;
+        v++;
 
-	/**
-	* Round up to the next highest power of 2.
-	* @source: http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
-	* @retrieved: January 16, 2016
-	*/
-	inline uint32_t NextHighestPow2(uint32_t v)
-	{
-		v--;
-		v |= v >> 1;
-		v |= v >> 2;
-		v |= v >> 4;
-		v |= v >> 8;
-		v |= v >> 16;
-		v++;
+        return v;
+    }
 
-		return v;
-	}
+    /**
+    * Round up to the next highest power of 2.
+    * @source: http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
+    * @retrieved: January 16, 2016
+    */
+    inline uint64_t NextHighestPow2(uint64_t v)
+    {
+        v--;
+        v |= v >> 1;
+        v |= v >> 2;
+        v |= v >> 4;
+        v |= v >> 8;
+        v |= v >> 16;
+        v |= v >> 32;
+        v++;
 
-	/**
-	* Round up to the next highest power of 2.
-	* @source: http://graphics.stanford.edu/~seander/bithacks.html#RoundUpPowerOf2
-	* @retrieved: January 16, 2016
-	*/
-	inline uint64_t NextHighestPow2(uint64_t v)
-	{
-		v--;
-		v |= v >> 1;
-		v |= v >> 2;
-		v |= v >> 4;
-		v |= v >> 8;
-		v |= v >> 16;
-		v |= v >> 32;
-		v++;
-
-		return v;
-	}
+        return v;
+    }
 }
 
 

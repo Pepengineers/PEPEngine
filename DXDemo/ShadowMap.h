@@ -4,7 +4,6 @@
 #include "GMemory.h"
 #include "GTexture.h"
 using namespace Microsoft::WRL;
-
 class ShadowMap
 {
 public:
@@ -27,7 +26,7 @@ public:
 	{
 		return &dsvMemory;
 	}
-
+	
 	D3D12_VIEWPORT Viewport() const;
 	D3D12_RECT ScissorRect() const;
 
@@ -36,7 +35,7 @@ public:
 	void OnResize(UINT newWidth, UINT newHeight);
 
 private:
-
+	
 	void BuildResource();
 
 private:
@@ -50,8 +49,9 @@ private:
 	DXGI_FORMAT mFormat = DXGI_FORMAT_R24G8_TYPELESS;
 
 	GMemory srvMemory;
-
+	
 	GMemory dsvMemory;
 
 	GTexture mShadowMap;
+
 };

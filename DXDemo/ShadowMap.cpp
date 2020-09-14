@@ -12,10 +12,10 @@ ShadowMap::ShadowMap(UINT width, UINT height)
 
 	mViewport = {0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, 1.0f};
 	mScissorRect = {0, 0, static_cast<int>(width), static_cast<int>(height)};
-
+		
 	srvMemory = DXAllocator::AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1);
 	dsvMemory = DXAllocator::AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1);
-
+	
 	BuildResource();
 }
 
@@ -58,7 +58,7 @@ void ShadowMap::OnResize(UINT newWidth, UINT newHeight)
 }
 
 void ShadowMap::BuildDescriptors()
-{
+{		
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 	srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
@@ -79,7 +79,7 @@ void ShadowMap::BuildDescriptors()
 
 void ShadowMap::BuildResource()
 {
-	if (mShadowMap.GetD3D12Resource() == nullptr)
+	if(mShadowMap.GetD3D12Resource() == nullptr)
 	{
 		D3D12_RESOURCE_DESC texDesc;
 		ZeroMemory(&texDesc, sizeof(D3D12_RESOURCE_DESC));
@@ -104,6 +104,6 @@ void ShadowMap::BuildResource()
 	}
 	else
 	{
-		GTexture::Resize(mShadowMap, mWidth, mHeight, 1);
-	}
+		GTexture::Resize(mShadowMap, mWidth, mHeight,1);
+	}	
 }

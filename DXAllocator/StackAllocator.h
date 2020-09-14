@@ -3,28 +3,27 @@
 #include "pch.h"
 #include "Allocator.h"
 
-class StackAllocator : public Allocator
-{
+class StackAllocator : public Allocator {
 protected:
-	void* m_start_ptr = nullptr;
-	std::size_t m_offset;
+    void* m_start_ptr = nullptr;
+    std::size_t m_offset;
 public:
-	StackAllocator(std::size_t totalSize);
+    StackAllocator(const std::size_t totalSize);
 
-	virtual ~StackAllocator();
+    virtual ~StackAllocator();
 
-	void* Allocate(std::size_t size, std::size_t alignment = 0) override;
+    virtual void* Allocate(const std::size_t size, const std::size_t alignment = 0) override;
 
-	void Free(void* ptr) override;
+    virtual void Free(void* ptr);
 
-	void Init() override;
+    virtual void Init() override;
 
-	virtual void Reset();
+    virtual void Reset();
 private:
-	StackAllocator(StackAllocator& stackAllocator);
+    StackAllocator(StackAllocator &stackAllocator);
 
-	struct AllocationHeader
-	{
-		char padding;
-	};
+    struct AllocationHeader {
+        char padding;
+    };
+
 };

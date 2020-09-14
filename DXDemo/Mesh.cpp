@@ -12,11 +12,11 @@ D3D12_PRIMITIVE_TOPOLOGY Mesh::GetPrimitiveType() const
 
 D3D12_VERTEX_BUFFER_VIEW* Mesh::GetVertexView() const
 {
-	if (vertexView == nullptr)
+	if(vertexView == nullptr)
 	{
 		vertexView = std::make_shared<D3D12_VERTEX_BUFFER_VIEW>((vertexBuffer->VertexBufferView()));
 	}
-
+	
 	return vertexView.get();
 }
 
@@ -37,14 +37,13 @@ UINT Mesh::GetIndexCount() const
 
 Mesh::Mesh(const std::wstring name): meshName(std::move(name)), primitiveTopology(D3D_PRIMITIVE_TOPOLOGY_UNDEFINED)
 {
+	
 }
 
 Mesh::Mesh(const Mesh& copy) : meshName(copy.meshName), primitiveTopology(copy.primitiveTopology),
-                               vertices(copy.vertices), indexes(copy.indexes), vertexBuffer(copy.vertexBuffer),
-                               indexBuffer(copy.indexBuffer), vertexView(copy.vertexView), indexView((copy.indexView))
-{
-}
-
+vertices(copy.vertices), indexes(copy.indexes), vertexBuffer(copy.vertexBuffer), indexBuffer(copy.indexBuffer), vertexView(copy.vertexView), indexView((copy.indexView))
+{}
+	
 
 void Mesh::ChangeIndexes(std::shared_ptr<GCommandList> cmdList, const DWORD* indices, size_t indexesCount)
 {
@@ -56,9 +55,9 @@ void Mesh::ChangeIndexes(std::shared_ptr<GCommandList> cmdList, const DWORD* ind
 	{
 		indexes[i] = indices[i];
 	}
-
-	indexBuffer = std::make_shared<GBuffer>(std::move(
-		GBuffer::CreateBuffer(cmdList, indexes.data(), sizeof(DWORD), indexes.size(), meshName + L" Indexes")));
+	
+	indexBuffer = std::make_shared<GBuffer>(std::move(GBuffer::CreateBuffer(cmdList, indexes.data(), sizeof(DWORD), indexes.size(),  meshName + L" Indexes")));
+	
 }
 
 void Mesh::ChangeVertices(std::shared_ptr<GCommandList> cmdList, const Vertex* vertixes, size_t vertexesCount)
@@ -71,9 +70,8 @@ void Mesh::ChangeVertices(std::shared_ptr<GCommandList> cmdList, const Vertex* v
 	{
 		vertices[i] = vertixes[i];
 	}
-
-	vertexBuffer = std::make_shared<GBuffer>(std::move(
-		GBuffer::CreateBuffer(cmdList, vertices.data(), sizeof(Vertex), vertices.size(), meshName + L" Vertexes")));
+		
+	vertexBuffer = std::make_shared<GBuffer>(std::move(GBuffer::CreateBuffer(cmdList, vertices.data(), sizeof(Vertex), vertices.size(), meshName + L" Vertexes")));
 }
 
 void Mesh::SetName(const std::wstring& name)

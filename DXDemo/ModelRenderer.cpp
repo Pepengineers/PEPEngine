@@ -10,18 +10,18 @@ void ModelRenderer::Draw(std::shared_ptr<GCommandList> cmdList)
 	if (material != nullptr)
 		material->Draw(cmdList);
 
-	if (model != nullptr)
+	if(model != nullptr)
 	{
 		for (int i = 0; i < model->GetMeshesCount(); ++i)
 		{
 			const auto mesh = model->GetMesh(i);
 			cmdList->SetRootConstantBufferView(StandardShaderSlot::ObjectData,
-			                                   *modelDataBuffer, i);
+				*modelDataBuffer, i);
 			cmdList->SetVBuffer(0, 1, mesh->GetVertexView());
 			cmdList->SetIBuffer(mesh->GetIndexView());
 			cmdList->SetPrimitiveTopology(mesh->GetPrimitiveType());
 			cmdList->DrawIndexed(mesh->GetIndexCount());
-		}
+		}		
 	}
 }
 
@@ -39,23 +39,23 @@ void ModelRenderer::Update()
 		{
 			constantData.MaterialIndex = meshesMaterials[i]->GetIndex();
 			modelDataBuffer->CopyData(i, constantData);
-		}
+		}		
 	}
 }
 
 void ModelRenderer::SetModel(std::shared_ptr<Model> asset)
 {
-	if (meshesMaterials.size() < asset->GetMeshesCount())
+	if(meshesMaterials.size() < asset->GetMeshesCount())
 	{
 		meshesMaterials.resize(asset->GetMeshesCount());
 	}
-
-	if (modelDataBuffer == nullptr || modelDataBuffer->GetElementCount() < asset->GetMeshesCount())
+	
+	if(modelDataBuffer == nullptr || modelDataBuffer->GetElementCount() < asset->GetMeshesCount() )
 	{
 		modelDataBuffer.reset();
 		modelDataBuffer = std::make_unique<ConstantBuffer<ObjectConstants>>(asset->GetMeshesCount(), asset->GetName());
 	}
-
+	
 	model = asset;
 }
 
@@ -66,5 +66,5 @@ UINT ModelRenderer::GetMeshesCount() const
 
 void ModelRenderer::SetMeshMaterial(UINT index, const std::shared_ptr<Material> material)
 {
-	meshesMaterials[index] = material;
+	meshesMaterials[index] = material;	
 }

@@ -18,7 +18,7 @@ class Material
 	UINT materialIndex = -1;
 
 	std::wstring Name;
-
+	
 	PsoType::Type type = PsoType::Opaque;
 
 	MaterialConstants matConstants{};
@@ -27,7 +27,7 @@ class Material
 
 	std::shared_ptr<GTexture> diffuseMap = nullptr;
 	std::shared_ptr<GTexture> normalMap = nullptr;
-
+	
 
 	UINT DiffuseMapIndex = -1;
 	UINT NormalMapIndex = -1;

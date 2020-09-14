@@ -3,21 +3,22 @@
 #include "pch.h"
 #include "Allocator.h"
 
-class LinearAllocator : public Allocator
-{
+class LinearAllocator : public Allocator {
 protected:
 	void* startPtr = nullptr;
 	std::size_t offset;
 public:
-	LinearAllocator(std::size_t totalSize);
+	LinearAllocator(const std::size_t totalSize);
 
 	virtual ~LinearAllocator();
 
-	void* Allocate(std::size_t size, std::size_t alignment = 0) override;
+	virtual void* Allocate(const std::size_t size, const std::size_t alignment = 0) override;
+	
+	virtual void Free(void* ptr) override;
 
-	void Free(void* ptr) override;
-
-	void Init() override;
+	virtual void Init() override;
 
 	virtual void Reset();
+
 };
+

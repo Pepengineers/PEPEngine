@@ -3,13 +3,13 @@
 #include <cassert>
 
 
+
 #include "d3dApp.h"
 #include "GCommandQueue.h"
 #include "d3dUtil.h"
 #include "GResourceStateTracker.h"
 #include "Lazy.h"
 #include "GCommandList.h"
-#include "GDevice.h"
 
 namespace DXLib
 {
@@ -34,7 +34,7 @@ namespace DXLib
 			hWnd = nullptr;
 		}
 
-		for (auto&& back_buffer : backBuffers)
+		for (auto && back_buffer : backBuffers)
 		{
 			back_buffer.Reset();
 		}
@@ -144,7 +144,7 @@ namespace DXLib
 		return rtvDescriptorHeap.GetCPUHandle(currentBackBufferIndex);
 	}
 
-	GTexture& Window::GetCurrentBackBuffer()
+	GTexture& Window::GetCurrentBackBuffer() 
 	{
 		return backBuffers[currentBackBufferIndex];
 	}
@@ -196,11 +196,11 @@ namespace DXLib
 
 		for (int i = 0; i < BufferCount; ++i)
 		{
-			backBuffers.push_back(GTexture(windowName + L" Backbuffer[" + std::to_wstring(i) + L"]",
-			                               TextureUsage::RenderTarget));
+			backBuffers.push_back(GTexture(windowName + L" Backbuffer[" + std::to_wstring(i) + L"]", TextureUsage::RenderTarget));
 		}
 
-		D3DApp::GetApp().Flush();
+		auto queue = D3DApp::GetApp().GetCommandQueue();
+		queue->Flush();
 	}
 
 	Window::Window(WNDCLASS hwnd, const std::wstring& windowName, int clientWidth, int clientHeight, bool vSync)
@@ -212,19 +212,20 @@ namespace DXLib
 		  , fullscreen(false)
 		  , frameCounter(0)
 	{
-		RECT R = {0, 0, clientWidth, clientHeight};
+
+		RECT R = { 0, 0, clientWidth, clientHeight };
 		AdjustWindowRect(&R, WS_OVERLAPPEDWINDOW, FALSE);
 		int width = R.right - R.left;
 		int height = R.bottom - R.top;
 
 		hWnd = CreateWindowW(windowClass.lpszClassName, windowName.c_str(),
-		                     WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
-		                     width,
-		                     height,
-		                     nullptr, nullptr, windowClass.hInstance, nullptr);
+			WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
+			width,
+			height,
+			nullptr, nullptr, windowClass.hInstance, nullptr);
 
 
-		assert(hWnd, "Could not create the render window.");
+		assert(hWnd, "Could not create the render window.");	
 
 		ShowWindow(hWnd, SW_SHOW);
 		UpdateWindow(hWnd);
@@ -248,10 +249,10 @@ namespace DXLib
 	}
 
 	Window::~Window()
-	{
+	{	
 		Destroy();
 		assert(!hWnd && "Use Application::DestroyWindow before destruction.");
-		CloseHandle(m_SwapChainEvent);
+		::CloseHandle(m_SwapChainEvent);
 	}
 
 	void Window::OnUpdate()
@@ -260,11 +261,14 @@ namespace DXLib
 	}
 
 	void Window::CalculateFrameStats()
-	{
+	{		
+
 		frameCnt++;
 
 		if ((renderClock.TotalTime() - timeElapsed) >= 1.0f)
 		{
+			
+			
 			float fps = static_cast<float>(frameCnt); // fps = frameCnt / 1
 			float mspf = 1000.0f / fps;
 
@@ -287,6 +291,7 @@ namespace DXLib
 		renderClock.Tick();
 
 		CalculateFrameStats();
+
 	}
 
 	void Window::ResetTimer()
@@ -299,14 +304,16 @@ namespace DXLib
 	{
 		assert(swapChain);
 
-		D3DApp::GetApp().Flush();
+		auto queue = D3DApp::GetApp().GetCommandQueue();
+
+		queue->Flush();
 
 		for (int i = 0; i < BufferCount; ++i)
 		{
 			GResourceStateTracker::RemoveGlobalResourceState(backBuffers[i].GetD3D12Resource().Get());
 			backBuffers[i].Reset();
 		}
-
+		
 		for (int i = 0; i < BufferCount; ++i)
 		{
 			backBuffers[i].Reset();
@@ -319,9 +326,9 @@ namespace DXLib
 			isTearingSupported ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH));
 
 		currentBackBufferIndex = swapChain->GetCurrentBackBufferIndex();
-
+		
 		UpdateRenderTargets();
-
+		
 
 		screenViewport.TopLeftX = 0;
 		screenViewport.TopLeftY = 0;
@@ -373,10 +380,8 @@ namespace DXLib
 		swapChainDesc.Flags = isTearingSupported
 			                      ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING
 			                      : DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-
-		const auto pCommandQueue = app.GetDevice()->GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT)->
-		                               GetD3D12CommandQueue().
-		                               Get();
+		ID3D12CommandQueue* pCommandQueue = app.GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT)->GetD3D12CommandQueue().
+		                                        Get();
 
 		ComPtr<IDXGISwapChain1> swapChain1;
 		ThrowIfFailed(dxgiFactory4->CreateSwapChainForHwnd(
@@ -412,7 +417,7 @@ namespace DXLib
 			ComPtr<ID3D12Resource> backBuffer;
 			ThrowIfFailed(swapChain->GetBuffer(i, IID_PPV_ARGS(&backBuffer)));
 			GResourceStateTracker::AddGlobalResourceState(backBuffer.Get(), D3D12_RESOURCE_STATE_COMMON);
-
+			
 			backBuffers[i].SetD3D12Resource(backBuffer);
 			backBuffers[i].CreateRenderTargetView(&rtvDesc, &rtvDescriptorHeap, i);
 		}

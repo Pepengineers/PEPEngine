@@ -1,8 +1,5 @@
 #include "GraphicPSO.h"
 
-#include "d3dApp.h"
-#include "GDevice.h"
-
 GraphicPSO::GraphicPSO(PsoType::Type type): type(type)
 {
 	ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
@@ -136,13 +133,9 @@ PsoType::Type GraphicPSO::GetType() const
 	return type;
 }
 
-void GraphicPSO::Initialize()
+void GraphicPSO::Initialize(ID3D12Device* device)
 {
 	if (isInitial) return;
-
-	DXLib::D3DApp& app = DXLib::D3DApp::GetApp();
-
-	auto device = app.GetDevice()->dxDevice;
 
 	ThrowIfFailed(device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineStateObject)));
 

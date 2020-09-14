@@ -167,8 +167,8 @@ GeometryGenerator::MeshData GeometryGenerator::CreateSphere(float radius, uint32
 			XMVECTOR p = XMLoadFloat3(&v.Position);
 			XMStoreFloat3(&v.Normal, XMVector3Normalize(p));
 
-			v.UV.x = theta / XM_2PI;
-			v.UV.y = phi / XM_PI;
+			v.TexCord.x = theta / XM_2PI;
+			v.TexCord.y = phi / XM_PI;
 
 			meshData.Vertices.push_back(v);
 		}
@@ -305,8 +305,8 @@ Vertex GeometryGenerator::MidPoint(const Vertex& v0, const Vertex& v1)
 	XMVECTOR tan0 = XMLoadFloat3(&v0.TangentU);
 	XMVECTOR tan1 = XMLoadFloat3(&v1.TangentU);
 
-	XMVECTOR tex0 = XMLoadFloat2(&v0.UV);
-	XMVECTOR tex1 = XMLoadFloat2(&v1.UV);
+	XMVECTOR tex0 = XMLoadFloat2(&v0.TexCord);
+	XMVECTOR tex1 = XMLoadFloat2(&v1.TexCord);
 
 	// Compute the midpoints of all the attributes.  Vectors need to be normalized
 	// since linear interpolating can make them not unit length.  
@@ -319,7 +319,7 @@ Vertex GeometryGenerator::MidPoint(const Vertex& v0, const Vertex& v1)
 	XMStoreFloat3(&v.Position, pos);
 	XMStoreFloat3(&v.Normal, normal);
 	XMStoreFloat3(&v.TangentU, tangent);
-	XMStoreFloat2(&v.UV, tex);
+	XMStoreFloat2(&v.TexCord, tex);
 
 	return v;
 }
@@ -384,8 +384,8 @@ GeometryGenerator::MeshData GeometryGenerator::CreateGeosphere(float radius, uin
 
 		float phi = acosf(meshData.Vertices[i].Position.y / radius);
 
-		meshData.Vertices[i].UV.x = theta / XM_2PI;
-		meshData.Vertices[i].UV.y = phi / XM_PI;
+		meshData.Vertices[i].TexCord.x = theta / XM_2PI;
+		meshData.Vertices[i].TexCord.y = phi / XM_PI;
 
 		// Partial derivative of P with respect to theta
 		meshData.Vertices[i].TangentU.x = -radius * sinf(phi) * sinf(theta);
@@ -432,8 +432,8 @@ GeometryGenerator::MeshData GeometryGenerator::CreateCylinder(float bottomRadius
 
 			vertex.Position = XMFLOAT3(r * c, y, r * s);
 
-			vertex.UV.x = static_cast<float>(j) / sliceCount;
-			vertex.UV.y = 1.0f - static_cast<float>(i) / stackCount;
+			vertex.TexCord.x = static_cast<float>(j) / sliceCount;
+			vertex.TexCord.y = 1.0f - static_cast<float>(i) / stackCount;
 
 			// Cylinder can be parameterized as follows, where we introduce v
 			// parameter that goes in the same direction as the v tex-coord
@@ -602,8 +602,8 @@ GeometryGenerator::MeshData GeometryGenerator::CreateGrid(float width, float dep
 			meshData.Vertices[i * n + j].TangentU = XMFLOAT3(1.0f, 0.0f, 0.0f);
 
 			// Stretch texture over grid.
-			meshData.Vertices[i * n + j].UV.x = j * du;
-			meshData.Vertices[i * n + j].UV.y = i * dv;
+			meshData.Vertices[i * n + j].TexCord.x = j * du;
+			meshData.Vertices[i * n + j].TexCord.y = i * dv;
 		}
 	}
 
@@ -634,119 +634,45 @@ GeometryGenerator::MeshData GeometryGenerator::CreateGrid(float width, float dep
 	return meshData;
 }
 
-GeometryGenerator::MeshData GeometryGenerator::CreateQuad(float depth)
+GeometryGenerator::MeshData GeometryGenerator::CreateQuad(float x, float y, float w, float h, float depth)
 {
 	MeshData meshData;
-		
+
 	meshData.Vertices.resize(4);
-	meshData.Indices32.resize(4);
+	meshData.Indices32.resize(6);
 
 	// Position coordinates specified in NDC space.
 	meshData.Vertices[0] = Vertex(
-		-1.0f, -1.0f, depth,
+		-1, -1, depth,
+		0.0f, 0.0f, -1.0f,
+		1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f);
+
+	meshData.Vertices[1] = Vertex(
+		-1, 1, depth,
 		0.0f, 0.0f, -1.0f,
 		1.0f, 0.0f, 0.0f,
 		0.0f, 0.0f);
 
-	meshData.Vertices[1] = Vertex(
-		-1.0f, 1.0f, depth,
+	meshData.Vertices[2] = Vertex(
+		1, -1, depth,
 		0.0f, 0.0f, -1.0f,
 		1.0f, 0.0f, 0.0f,
-		0.0f, 1.0f);
+		1.0f, 1.0f);
 
-	meshData.Vertices[2] = Vertex(
-		1.0f, -1.0f, depth,
+	meshData.Vertices[3] = Vertex(
+		1, 1, depth,
 		0.0f, 0.0f, -1.0f,
 		1.0f, 0.0f, 0.0f,
 		1.0f, 0.0f);
 
-	meshData.Vertices[3] = Vertex(
-		1.0f, 1.0f, depth,
-		0.0f, 0.0f, -1.0f,
-		1.0f, 0.0f, 0.0f,
-		1.0f, 1.0f);
-
 	meshData.Indices32[0] = 0;
 	meshData.Indices32[1] = 1;
 	meshData.Indices32[2] = 2;
-	meshData.Indices32[3] = 3;
 
-	return meshData;
-}
-
-GeometryGenerator::MeshData GeometryGenerator::CreateTopQuad(float percent, float depth)
-{
-	MeshData meshData;
-
-	meshData.Vertices.resize(4);
-	meshData.Indices32.resize(4);
-
-	// Position coordinates specified in NDC space.
-	meshData.Vertices[0] = Vertex(
-		-1.0f, -1.0f * (percent * 2 - 1) , depth,
-		0.0f, 0.0f, -1.0f,
-		1.0f, 0.0f, 0.0f,
-		0.0f, static_cast<float>(1.0 - percent));
-
-	meshData.Vertices[1] = Vertex(
-		-1.0f, 1.0f, depth,
-		0.0f, 0.0f, -1.0f,
-		1.0f, 0.0f, 0.0f,
-		0.0f, 1.0f);
-
-	meshData.Vertices[2] = Vertex(
-		1.0f, -1.0f * (percent * 2 - 1), depth,
-		0.0f, 0.0f, -1.0f,
-		1.0f, 0.0f, 0.0f,
-		1.0f, static_cast<float>(1.0 - percent));
-
-	meshData.Vertices[3] = Vertex(
-		1.0f, 1.0f, depth,
-		0.0f, 0.0f, -1.0f,
-		1.0f, 0.0f, 0.0f,
-		1.0f, 1.0f);
-
-	meshData.Indices32[0] = 0;
-	meshData.Indices32[1] = 1;
-	meshData.Indices32[2] = 2;
-	meshData.Indices32[3] = 3;
-
-	return meshData;
-}
-
-GeometryGenerator::MeshData GeometryGenerator::CreateBottomQuad(float percent, float depth)
-{
-	MeshData meshData;
-
-	meshData.Vertices.resize(4);
-	meshData.Indices32.resize(4);
-
-	meshData.Vertices[0].Position = Vector3{ -1.0f, -1.0f, 0.0f };
-	meshData.Vertices[0].Normal = Vector3{ 0.0f, 0.0f, -1.0f, };
-	meshData.Vertices[0].TangentU = Vector3{ 1.0f, 0.0f, 0.0f, };
-	meshData.Vertices[0].UV = Vector2{ 0.0f, 0.0f };
-
-
-	meshData.Vertices[1].Position = Vector3{ -1.0f, -1.0f * (percent * 2 - 1), 0.0f };
-	meshData.Vertices[1].Normal = Vector3{ 0.0f, 0.0f, -1.0f, };
-	meshData.Vertices[1].TangentU = Vector3{ 1.0f, 0.0f, 0.0f, };
-	meshData.Vertices[1].UV = Vector2{ 0.0f, static_cast<float>(1.0 - percent) };
-
-	meshData.Vertices[2].Position = Vector3{ 1.0f, -1.0f, 0.0f,};
-	meshData.Vertices[2].Normal = Vector3{ 0.0f, 0.0f, -1.0f, };
-	meshData.Vertices[2].TangentU = Vector3{ 1.0f, 0.0f, 0.0f, };
-	meshData.Vertices[2].UV = Vector2{ 1.0f, 0.0f };
-
-	meshData.Vertices[3].Position = Vector3{ 1.0f, -1.0f * (percent * 2 - 1), 0.0f };
-	meshData.Vertices[3].Normal = Vector3{ 0.0f, 0.0f, -1.0f, };
-	meshData.Vertices[3].TangentU = Vector3{ 1.0f, 0.0f, 0.0f, };
-	meshData.Vertices[3].UV = Vector2{ 1.0f, static_cast<float>(1.0 - percent) };
-	
-
-	meshData.Indices32[0] = 0;
-	meshData.Indices32[1] = 1;
-	meshData.Indices32[2] = 2;
-	meshData.Indices32[3] = 3;
+	meshData.Indices32[3] = 1;
+	meshData.Indices32[4] = 3;
+	meshData.Indices32[5] = 2;
 
 	return meshData;
 }

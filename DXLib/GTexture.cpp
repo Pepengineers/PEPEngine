@@ -1,25 +1,24 @@
 #include "GTexture.h"
-#include <winrt/base.h>
-#include "DDSTextureLoader.h"
 #include "DirectXTex.h"
 #include "filesystem"
-#include "ResourceUploadBatch.h"
+#include "DDSTextureLoader.h"
 #include "WICTextureLoader.h"
+#include "ResourceUploadBatch.h"
+#include <winrt/base.h>
 
 #include "d3dApp.h"
-#include "GCommandList.h"
 #include "GDataUploader.h"
-#include "GDevice.h"
 #include "GMemory.h"
 #include "GResourceStateTracker.h"
+#include "GCommandList.h"
 #include "GShader.h"
 
 UINT GTexture::textureIndexGlobal = 0;
 
 void GTexture::Resize(GTexture& texture, uint32_t width, uint32_t height, uint32_t depthOrArraySize)
 {
-	if (texture.dxResource)
-	{
+	if(texture.dxResource)
+	{	
 		GResourceStateTracker::RemoveGlobalResourceState(texture.dxResource.Get());
 
 		CD3DX12_RESOURCE_DESC resDesc(texture.dxResource->GetDesc());
@@ -27,9 +26,9 @@ void GTexture::Resize(GTexture& texture, uint32_t width, uint32_t height, uint32
 		resDesc.Height = std::max(height, 1u);
 		resDesc.DepthOrArraySize = depthOrArraySize;
 
-		auto device = DXLib::D3DApp::GetApp().GetDevice()->dxDevice;
+		auto& device = DXLib::D3DApp::GetApp().GetDevice();
 
-		ThrowIfFailed(device->CreateCommittedResource(
+		ThrowIfFailed(device.CreateCommittedResource(
 			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
 			D3D12_HEAP_FLAG_NONE,
 			&resDesc,
@@ -48,7 +47,7 @@ void GTexture::GenerateMipMaps(std::shared_ptr<GCommandList> cmdList, GTexture**
 {
 	UINT requiredHeapSize = 0;
 
-	for (int i = 0; i < count; ++i)
+	for (int i =0; i < count; ++i)
 	{
 		requiredHeapSize += textures[i]->GetD3D12Resource()->GetDesc().MipLevels - 1;
 	}
@@ -58,14 +57,15 @@ void GTexture::GenerateMipMaps(std::shared_ptr<GCommandList> cmdList, GTexture**
 		return;
 	}
 
+	
+	
+	auto mipMapsMemory = DXAllocator::AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 2 * requiredHeapSize);	
 
-	auto mipMapsMemory = DXAllocator::AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 2 * requiredHeapSize);
-
-
+		
 	CD3DX12_DESCRIPTOR_RANGE srvCbvRanges[2];
 	srvCbvRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 0);
 	srvCbvRanges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0, 0);
-
+		
 	D3D12_STATIC_SAMPLER_DESC samplerDesc = {};
 	samplerDesc.Filter = D3D12_FILTER_MIN_MAG_LINEAR_MIP_POINT;
 	samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
@@ -89,15 +89,15 @@ void GTexture::GenerateMipMaps(std::shared_ptr<GCommandList> cmdList, GTexture**
 	signature.Initialize();
 
 	auto shader = std::make_unique<GShader>(L"Shaders\\MipMapCS.hlsl", ComputeShader, nullptr, "GenerateMipMaps",
-	                                        "cs_5_1");
+		"cs_5_1");
 	shader->LoadAndCompile();
 
-
+	
 	ComputePSO genMipMapPSO;
 	genMipMapPSO.SetShader(shader.get());
 	genMipMapPSO.SetRootSignature(signature);
 	genMipMapPSO.Initialize();
-
+	
 	cmdList->SetRootSignature(&signature);
 	cmdList->SetPipelineState(genMipMapPSO);
 
@@ -109,7 +109,7 @@ void GTexture::GenerateMipMaps(std::shared_ptr<GCommandList> cmdList, GTexture**
 
 	D3D12_UNORDERED_ACCESS_VIEW_DESC destTextureUAVDesc = {};
 	destTextureUAVDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
-
+	
 
 	size_t cpuOffset = 0;
 	size_t gpuOffset = 0;
@@ -117,7 +117,7 @@ void GTexture::GenerateMipMaps(std::shared_ptr<GCommandList> cmdList, GTexture**
 	for (int i = 0; i < count; ++i)
 	{
 		auto tex = textures[i];
-
+		
 		auto texture = tex->GetD3D12Resource().Get();
 		auto textureDesc = texture->GetDesc();
 
@@ -126,33 +126,31 @@ void GTexture::GenerateMipMaps(std::shared_ptr<GCommandList> cmdList, GTexture**
 			uint32_t dstWidth = std::max(uint32_t(textureDesc.Width >> (TopMip + 1)), uint32_t(1));
 			uint32_t dstHeight = std::max(uint32_t(textureDesc.Height >> (TopMip + 1)), uint32_t(1));
 
-			srcTextureSRVDesc.Format = GetUAVCompatableFormat(textureDesc.Format);
+			srcTextureSRVDesc.Format = GTexture::GetUAVCompatableFormat(textureDesc.Format);
 			srcTextureSRVDesc.Texture2D.MipLevels = 1;
 			srcTextureSRVDesc.Texture2D.MostDetailedMip = TopMip;
 			textures[i]->CreateShaderResourceView(&srcTextureSRVDesc, &mipMapsMemory, (cpuOffset));
 			cpuOffset++;
 
-			destTextureUAVDesc.Format = GetUAVCompatableFormat(textureDesc.Format);
+			destTextureUAVDesc.Format = GTexture::GetUAVCompatableFormat(textureDesc.Format);
 			destTextureUAVDesc.Texture2D.MipSlice = TopMip + 1;
-			textures[i]->CreateUnorderedAccessView(&destTextureUAVDesc, &mipMapsMemory, (cpuOffset));
+			textures[i]->CreateUnorderedAccessView(&destTextureUAVDesc, &mipMapsMemory,(cpuOffset));
 			cpuOffset++;
 
 
-			DirectX::SimpleMath::Vector2 texelSize = DirectX::SimpleMath::Vector2{
-				(1.0f / dstWidth), (1.0f / dstHeight)
-			};
+			DirectX::SimpleMath::Vector2 texelSize = DirectX::SimpleMath::Vector2{ (1.0f / dstWidth), (1.0f / dstHeight) };
 			cmdList->SetRoot32BitConstants(0, 2, &texelSize, 0);
 			cmdList->SetRootDescriptorTable(1, &mipMapsMemory, gpuOffset);
 			gpuOffset++;
-
+			
 			cmdList->SetRootDescriptorTable(2, &mipMapsMemory, gpuOffset);
 			gpuOffset++;
 
 			cmdList->Dispatch(std::max(dstWidth / 8, 1u), std::max(dstHeight / 8, 1u), 1);
-
+			
 			cmdList->UAVBarrier((texture));
 		}
-	}
+	}	
 }
 
 TextureUsage GTexture::GetTextureType() const
@@ -165,21 +163,20 @@ UINT GTexture::GetTextureIndex() const
 	return textureIndex;
 }
 
-GTexture::GTexture(std::wstring name, TextureUsage use): GResource(name),
-                                                         usage(use)
+GTexture::GTexture(std::wstring name, TextureUsage use): GResource( name),
+                                                                              usage(use)
 {
 	textureIndex = textureIndexGlobal++;
 }
 
-GTexture::GTexture(const D3D12_RESOURCE_DESC& resourceDesc, const std::wstring& name, TextureUsage textureUsage,
-                   const D3D12_CLEAR_VALUE* clearValue) : GResource(resourceDesc, name, clearValue),
-                                                          usage(textureUsage)
+GTexture::GTexture(const D3D12_RESOURCE_DESC& resourceDesc, const std::wstring& name, TextureUsage textureUsage, const D3D12_CLEAR_VALUE* clearValue) : GResource(resourceDesc, name, clearValue),
+                                                                        usage(textureUsage)
 {
 	textureIndex = textureIndexGlobal++;
 }
 
 GTexture::GTexture(ComPtr<ID3D12Resource> resource, TextureUsage textureUsage,
-                   const std::wstring& name) : GResource(resource, name), usage(textureUsage)
+                 const std::wstring& name) : GResource(resource, name), usage(textureUsage)
 {
 	textureIndex = textureIndexGlobal++;
 }
@@ -212,44 +209,45 @@ GTexture& GTexture::operator=(GTexture&& other)
 	return *this;
 }
 
-void GTexture::CreateShaderResourceView(const D3D12_SHADER_RESOURCE_VIEW_DESC* srvDesc, GMemory* memory,
-                                        size_t offset) const
+void GTexture::CreateShaderResourceView(const D3D12_SHADER_RESOURCE_VIEW_DESC* srvDesc, GMemory* memory, size_t offset) const
 {
 	auto& app = DXLib::D3DApp::GetApp();
-	auto device = app.GetDevice()->dxDevice;
-	device->CreateShaderResourceView(dxResource.Get(), srvDesc, memory->GetCPUHandle(offset));
+	auto& device = app.GetDevice();
+	device.CreateShaderResourceView(dxResource.Get(), srvDesc, memory->GetCPUHandle(offset));
+	
 }
 
-void GTexture::CreateUnorderedAccessView(const D3D12_UNORDERED_ACCESS_VIEW_DESC* uavDesc, GMemory* memory,
-                                         size_t offset) const
+void GTexture::CreateUnorderedAccessView(const D3D12_UNORDERED_ACCESS_VIEW_DESC* uavDesc, GMemory* memory, size_t offset) const
 {
 	auto& app = DXLib::D3DApp::GetApp();
-	auto& device = app.GetDevice()->dxDevice;
+	auto& device = app.GetDevice();
 
-	device->CreateUnorderedAccessView(dxResource.Get(), nullptr, uavDesc, memory->GetCPUHandle(offset));
+	device.CreateUnorderedAccessView(dxResource.Get(), nullptr, uavDesc, memory->GetCPUHandle(offset));
+
 }
 
-void GTexture::CreateRenderTargetView(const D3D12_RENDER_TARGET_VIEW_DESC* rtvDesc, GMemory* memory,
-                                      size_t offset) const
+void GTexture::CreateRenderTargetView(const D3D12_RENDER_TARGET_VIEW_DESC* rtvDesc, GMemory* memory, size_t offset ) const
 {
 	auto& app = DXLib::D3DApp::GetApp();
-	auto& device = app.GetDevice()->dxDevice;
+	auto& device = app.GetDevice();
 
-	device->CreateRenderTargetView(dxResource.Get(), rtvDesc, memory->GetCPUHandle(offset));
+	device.CreateRenderTargetView(dxResource.Get(), rtvDesc, memory->GetCPUHandle(offset));
+
 }
 
-void GTexture::CreateDepthStencilView(const D3D12_DEPTH_STENCIL_VIEW_DESC* dsvDesc, GMemory* memory,
-                                      size_t offset) const
+void GTexture::CreateDepthStencilView(const D3D12_DEPTH_STENCIL_VIEW_DESC* dsvDesc, GMemory* memory, size_t offset) const
 {
 	auto& app = DXLib::D3DApp::GetApp();
-	auto& device = app.GetDevice()->dxDevice;
-	device->CreateDepthStencilView(dxResource.Get(), dsvDesc, memory->GetCPUHandle(offset));
+	auto& device = app.GetDevice();
+	device.CreateDepthStencilView(dxResource.Get(), dsvDesc, memory->GetCPUHandle(offset));
 }
 
 
 GTexture::~GTexture()
 {
 }
+
+
 
 
 DXGI_FORMAT GTexture::GetUAVCompatableFormat(DXGI_FORMAT format)
@@ -279,14 +277,16 @@ DXGI_FORMAT GTexture::GetUAVCompatableFormat(DXGI_FORMAT format)
 
 
 std::shared_ptr<GTexture> GTexture::LoadTextureFromFile(std::wstring filepath,
-                                                        std::shared_ptr<GCommandList> commandList, TextureUsage usage)
+                                     std::shared_ptr<GCommandList> commandList, TextureUsage usage)
 {
+	
+		
 	std::filesystem::path filePath(filepath);
 	if (!exists(filePath))
 	{
 		assert("File not found.");
 	}
-
+	
 
 	DirectX::TexMetadata metadata;
 	DirectX::ScratchImage scratchImage;
@@ -326,11 +326,11 @@ std::shared_ptr<GTexture> GTexture::LoadTextureFromFile(std::wstring filepath,
 	D3D12_RESOURCE_DESC desc = {};
 	desc.Width = static_cast<UINT>(metadata.width);
 	desc.Height = static_cast<UINT>(metadata.height);
-
+	
 	/*
 	 * DDS текстуры нельз€ использовать как UAV дл€ генерации мипмап карт.
 	 */
-
+	
 	desc.MipLevels = resFlags == D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS
 		                 ? 0
 		                 : static_cast<UINT16>(metadata.mipLevels);
@@ -342,23 +342,22 @@ std::shared_ptr<GTexture> GTexture::LoadTextureFromFile(std::wstring filepath,
 	desc.SampleDesc.Count = 1;
 	desc.Dimension = static_cast<D3D12_RESOURCE_DIMENSION>(metadata.dimension);
 
-	auto device = DXLib::D3DApp::GetApp().GetDevice()->dxDevice;
-
+	auto& device = DXLib::D3DApp::GetApp().GetDevice();
+	
 	auto tex = std::make_shared<GTexture>(desc, filepath, usage);
-
+	
 	if (tex->GetD3D12Resource())
 	{
 		std::vector<D3D12_SUBRESOURCE_DATA> subresources(scratchImage.GetImageCount());
 		ThrowIfFailed(
-			PrepareUpload(device.Get(), scratchImage.GetImages(), scratchImage.GetImageCount(), scratchImage.GetMetadata
-				(),
+			PrepareUpload(&device, scratchImage.GetImages(), scratchImage.GetImageCount(), scratchImage.GetMetadata(),
 				subresources));
-
+		
 		commandList->TransitionBarrier(tex->GetD3D12Resource(), D3D12_RESOURCE_STATE_COPY_DEST);
 		commandList->FlushResourceBarriers();
 
-
-		commandList->UpdateSubresource(*tex.get(), subresources.data(), subresources.size());
+		
+		commandList->UpdateSubresource(*tex.get(), subresources.data(), subresources.size());		
 
 		commandList->TransitionBarrier(tex->GetD3D12Resource(), D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		commandList->FlushResourceBarriers();
@@ -370,6 +369,7 @@ std::shared_ptr<GTexture> GTexture::LoadTextureFromFile(std::wstring filepath,
 	}
 
 	return tex;
+		
 }
 
 void GTexture::ClearTrack()
@@ -564,3 +564,4 @@ std::wstring& GTexture::GetName()
 {
 	return resourceName;
 }
+

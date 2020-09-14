@@ -26,9 +26,9 @@ static void CalculateTangent(UINT i1, UINT i2, UINT i3, Vertex* vertices)
 	normals[2] = vertices[i3].Normal;
 
 	DirectX::XMFLOAT2 t[3];
-	t[0] = vertices[i1].UV;
-	t[1] = vertices[i2].UV;
-	t[2] = vertices[i3].UV;
+	t[0] = vertices[i1].TexCord;
+	t[1] = vertices[i2].TexCord;
+	t[2] = vertices[i3].TexCord;
 
 	DirectX::XMFLOAT4 tangent[3];
 
@@ -113,9 +113,7 @@ public:
 	///<summary>
 	/// Creates a quad aligned with the screen.  This is useful for postprocessing and screen effects.
 	///</summary>
-	MeshData CreateQuad(float depth);
-	MeshData CreateTopQuad(float percent, float depth);
-	MeshData CreateBottomQuad(float percent, float depth);
+	MeshData CreateQuad(float x, float y, float w, float h, float depth);
 
 private:
 	void Subdivide(MeshData& meshData);

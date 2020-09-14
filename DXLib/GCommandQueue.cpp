@@ -35,6 +35,8 @@ namespace DXLib
 
 
 		CommandListExecutorThread = std::thread(&GCommandQueue::ProccessInFlightCommandLists, this);
+
+
 	}
 
 	GCommandQueue::~GCommandQueue()
@@ -60,12 +62,12 @@ namespace DXLib
 		if (IsFenceComplete(fenceValue))
 			return;
 
-		auto event = ::CreateEvent(nullptr, FALSE, FALSE, NULL);
+		auto event = ::CreateEvent(NULL, FALSE, FALSE, NULL);
 		assert(event && "Failed to create fence event handle.");
-
+		
 		fence->SetEventOnCompletion(fenceValue, event);
-		WaitForSingleObject(event, DWORD_MAX);
-		CloseHandle(event);
+		::WaitForSingleObject(event, DWORD_MAX);
+		::CloseHandle(event);
 	}
 
 	void GCommandQueue::Flush()
@@ -75,18 +77,17 @@ namespace DXLib
 
 		WaitForFenceValue(Signal());
 	}
-
 	std::shared_ptr<GCommandList> GCommandQueue::GetCommandList()
 	{
 		std::shared_ptr<GCommandList> commandList;
 
 		if (m_AvailableCommandLists.Empty())
 		{
-			commandList = std::make_shared<GCommandList>(this->device, this->CommandListType);
+			commandList = std::make_shared<GCommandList>(this->device ,this->CommandListType);
 			return commandList;
 		}
-
-		if (m_AvailableCommandLists.TryPop(commandList))
+		
+		if(m_AvailableCommandLists.TryPop(commandList))
 		{
 			return commandList;
 		}
@@ -103,15 +104,16 @@ namespace DXLib
 		GResourceStateTracker::Lock();
 
 		// Command lists that need to put back on the command list queue.
-		std::vector<std::shared_ptr<GCommandList>> toBeQueued;
-		toBeQueued.reserve(size * 2); // 2x since each command list will have a pending command list.
+		std::vector<std::shared_ptr<GCommandList> > toBeQueued;
+		toBeQueued.reserve(size * 2);        // 2x since each command list will have a pending command list.
 
+		
 
 		// Command lists that need to be executed.
 		std::vector<ID3D12CommandList*> d3d12CommandLists;
 		d3d12CommandLists.reserve(size * 2); // 2x since each command list will have a pending command list.
 
-		for (size_t i = 0; i < size; ++i)
+		for (size_t i =0; i < size; ++i)
 		{
 			auto commandList = commandLists[i];
 
@@ -127,7 +129,7 @@ namespace DXLib
 			d3d12CommandLists.push_back(commandList->GetGraphicsCommandList().Get());
 
 			toBeQueued.push_back(pendingCommandList);
-			toBeQueued.push_back(commandList);
+			toBeQueued.push_back(commandList);			
 		}
 
 		const UINT count = static_cast<UINT>(d3d12CommandLists.size());
@@ -139,8 +141,8 @@ namespace DXLib
 		// Queue command lists for reuse.
 		for (const auto commandList : toBeQueued)
 		{
-			m_InFlightCommandLists.Push({fenceValue, commandList});
-		}
+			m_InFlightCommandLists.Push({ fenceValue, commandList });
+		}		
 
 		return fenceValue;
 	}
@@ -149,7 +151,7 @@ namespace DXLib
 	{
 		commandQueue->Wait(other.fence.Get(), other.FenceValue);
 	}
-
+	
 
 	ComPtr<ID3D12CommandQueue> GCommandQueue::GetD3D12CommandQueue() const
 	{
@@ -178,6 +180,7 @@ namespace DXLib
 			lock.lock();
 			while (m_InFlightCommandLists.TryPop(commandListEntry))
 			{
+				
 				auto fenceValue = commandListEntry.fenceValue;
 				auto commandList = commandListEntry.commandList;
 
@@ -193,4 +196,5 @@ namespace DXLib
 			std::this_thread::yield();
 		}
 	}
+	
 }

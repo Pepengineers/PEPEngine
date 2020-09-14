@@ -10,9 +10,9 @@ class Ssao
 {
 public:
 
-	Ssao(
-		std::shared_ptr<GCommandList> cmdList,
-		UINT width, UINT height);
+	Ssao(ID3D12Device* device,
+	     std::shared_ptr<GCommandList> cmdList,
+	     UINT width, UINT height);
 	Ssao(const Ssao& rhs) = delete;
 	Ssao& operator=(const Ssao& rhs) = delete;
 	~Ssao();
@@ -47,7 +47,7 @@ public:
 
 	void OnResize(UINT newWidth, UINT newHeight);
 
-
+	
 	void ComputeSsao(
 		std::shared_ptr<GCommandList> cmdList,
 		FrameResource* currFrame,
@@ -56,7 +56,7 @@ public:
 
 
 private:
-
+		
 	void BlurAmbientMap(std::shared_ptr<GCommandList> cmdList, FrameResource* currFrame, int blurCount);
 	void BlurAmbientMap(std::shared_ptr<GCommandList> cmdList, bool horzBlur);
 	GTexture CreateNormalMap() const;
@@ -81,18 +81,18 @@ private:
 	GTexture ambientMap1;
 	GTexture depthMap;
 
-
-	GMemory normalMapSrvMemory = DXAllocator::AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1);
+	
+	GMemory normalMapSrvMemory = DXAllocator::AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,1);
 	GMemory normalMapRtvMemory = DXAllocator::AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 1);
-
+	
 	GMemory depthMapSrvMemory = DXAllocator::AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1);
 	GMemory depthMapDSVMemory = DXAllocator::AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1);
-
+	
 	GMemory randomVectorSrvMemory = DXAllocator::AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1);
-
+	
 	GMemory ambientMapMapSrvMemory = DXAllocator::AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 2);
 	GMemory ambientMapRtvMemory = DXAllocator::AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2);
-
+	
 
 	UINT mRenderTargetWidth;
 	UINT mRenderTargetHeight;

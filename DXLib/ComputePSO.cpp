@@ -2,7 +2,6 @@
 
 #include "d3dApp.h"
 #include "GShader.h"
-#include "GDevice.h"
 
 ComputePSO::ComputePSO()
 {
@@ -11,8 +10,9 @@ ComputePSO::ComputePSO()
 
 void ComputePSO::Initialize()
 {
-	auto device = DXLib::D3DApp::GetApp().GetDevice()->dxDevice;
-	ThrowIfFailed(device->CreateComputePipelineState(&computePSOdesc, IID_PPV_ARGS(&m_PipelineState)));
+	auto& device = DXLib::D3DApp::GetApp().GetDevice();
+	ThrowIfFailed(device.CreateComputePipelineState(&computePSOdesc, IID_PPV_ARGS(&m_PipelineState)));
+
 }
 
 ComPtr<ID3D12PipelineState> ComputePSO::GetPSO() const

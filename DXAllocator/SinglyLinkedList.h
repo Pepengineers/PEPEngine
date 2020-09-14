@@ -1,22 +1,20 @@
 #pragma once
 
 #include "pch.h"
-
 template <class T>
-class SinglyLinkedList
-{
+class SinglyLinkedList {
 public:
-	struct Node
-	{
-		T data;
-		Node* next;
-	};
-
-	Node* head;
-
+    struct Node {
+        T data;
+        Node * next;
+    };
+    
+    Node * head;
+    
 public:
-	SinglyLinkedList();
+    SinglyLinkedList();
 
-	void insert(Node* previousNode, Node* newNode);
-	void remove(Node* previousNode, Node* deleteNode);
+    void insert(Node * previousNode, Node * newNode);
+    void remove(Node * previousNode, Node * deleteNode);
 };
+

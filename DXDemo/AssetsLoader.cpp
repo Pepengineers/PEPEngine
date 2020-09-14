@@ -15,13 +15,12 @@ using namespace DXLib;
 
 static Assimp::Importer importer;
 
-std::shared_ptr<Model> AssetsLoader::GenerateSphere(std::shared_ptr<GCommandList> cmdList, float radius,
-                                                    UINT sliceCount, UINT stackCount)
+std::shared_ptr<Model> AssetsLoader::GenerateSphere(std::shared_ptr<GCommandList> cmdList, float radius, UINT sliceCount, UINT stackCount)
 {
 	auto it = models.find(L"sphere");
-	if (it != models.end()) return it->second;
-
-	GeometryGenerator::MeshData sphere = geoGen.CreateSphere(radius, sliceCount, stackCount);
+	if (it != models.end()) return  it->second;
+		
+    GeometryGenerator::MeshData sphere = geoGen.CreateSphere(radius, sliceCount, stackCount);
 
 	auto sphereMesh = std::make_shared<Mesh>();
 	sphereMesh->ChangeVertices(cmdList, sphere.Vertices.data(), sphere.Vertices.size());
@@ -31,21 +30,22 @@ std::shared_ptr<Model> AssetsLoader::GenerateSphere(std::shared_ptr<GCommandList
 	sphereModel->AddMesh(sphereMesh);
 	models[sphereModel->GetName()] = std::move(sphereModel);
 	trackGeneratedData.push_back(sphere);
-
+	
 	return models[L"sphere"];
 }
 
-std::shared_ptr<Model> AssetsLoader::GenerateQuad(std::shared_ptr<GCommandList> cmdList, float depth)
+std::shared_ptr<Model> AssetsLoader::GenerateQuad(std::shared_ptr<GCommandList> cmdList, float x, float y, float w,
+	float h, float depth)
 {
 	auto it = models.find(L"quad");
-	if (it != models.end()) return it->second;
+	if (it != models.end()) return  it->second;
 
-	GeometryGenerator::MeshData genMesh = geoGen.CreateQuad(depth);
+	GeometryGenerator::MeshData genMesh = geoGen.CreateQuad(x,y,w,h,depth);
 
 	auto mesh = std::make_shared<Mesh>();
 	mesh->ChangeVertices(cmdList, genMesh.Vertices.data(), genMesh.Vertices.size());
 	mesh->ChangeIndexes(cmdList, genMesh.Indices32.data(), genMesh.Indices32.size());
-	mesh->SetTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	mesh->SetTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	auto model = std::make_shared<Model>(L"quad");
 	model->AddMesh(mesh);
 	models[model->GetName()] = std::move(model);
@@ -53,45 +53,6 @@ std::shared_ptr<Model> AssetsLoader::GenerateQuad(std::shared_ptr<GCommandList> 
 	return models[L"quad"];
 }
 
-std::shared_ptr<Model> AssetsLoader::GenerateTopQuad(std::shared_ptr<GCommandList> cmdList, float percent, float depth)
-{
-	auto it = models.find(L"topQuad");
-	if (it != models.end()) return it->second;
-
-	percent = std::clamp(percent, 0.0f, 1.0f);
-	
-	GeometryGenerator::MeshData genMesh = geoGen.CreateTopQuad(percent,depth);
-
-	auto mesh = std::make_shared<Mesh>();
-	mesh->ChangeVertices(cmdList, genMesh.Vertices.data(), genMesh.Vertices.size());
-	mesh->ChangeIndexes(cmdList, genMesh.Indices32.data(), genMesh.Indices32.size());
-	mesh->SetTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	auto model = std::make_shared<Model>(L"topQuad");
-	model->AddMesh(mesh);
-	models[model->GetName()] = std::move(model);
-	trackGeneratedData.push_back(genMesh);
-	return models[L"topQuad"];
-}
-
-std::shared_ptr<Model> AssetsLoader::GenerateButtomQuad(std::shared_ptr<GCommandList> cmdList, float percent, float depth)
-{
-	auto it = models.find(L"buttomQuad");
-	if (it != models.end()) return it->second;
-
-	percent = std::clamp(percent, 0.0f, 1.0f);
-	
-	GeometryGenerator::MeshData genMesh = geoGen.CreateBottomQuad(percent,depth);
-
-	auto mesh = std::make_shared<Mesh>();
-	mesh->ChangeVertices(cmdList, genMesh.Vertices.data(), genMesh.Vertices.size());
-	mesh->ChangeIndexes(cmdList, genMesh.Indices32.data(), genMesh.Indices32.size());
-	mesh->SetTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	auto model = std::make_shared<Model>(L"buttomQuad");
-	model->AddMesh(mesh);
-	models[model->GetName()] = std::move(model);
-	trackGeneratedData.push_back(genMesh);
-	return models[L"buttomQuad"];
-}
 
 std::shared_ptr<Mesh> CreateSubMesh(aiMesh* mesh, std::wstring name, std::shared_ptr<GCommandList> cmdList)
 {
@@ -114,8 +75,8 @@ std::shared_ptr<Mesh> CreateSubMesh(aiMesh* mesh, std::wstring name, std::shared
 
 		if (mesh->HasTextureCoords(0))
 		{
-			vertex.UV.x = mesh->mTextureCoords[0][i].x;
-			vertex.UV.y = mesh->mTextureCoords[0][i].y;
+			vertex.TexCord.x = mesh->mTextureCoords[0][i].x;
+			vertex.TexCord.y = mesh->mTextureCoords[0][i].y;
 		}
 
 		if (mesh->HasTangentsAndBitangents())
@@ -141,7 +102,7 @@ std::shared_ptr<Mesh> CreateSubMesh(aiMesh* mesh, std::wstring name, std::shared
 
 	auto submesh = std::make_shared<Mesh>(name + L" " + AnsiToWString(mesh->mName.C_Str()));
 
-	submesh->SetTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	submesh->SetTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);	
 
 	RecalculateTangent(indices.data(), indices.size(), vertices.data());
 
@@ -155,39 +116,35 @@ std::shared_ptr<GTexture> AssetsLoader::LoadOrGetTexture(const aiMaterial* mater
                                                          const std::wstring directory,
                                                          std::shared_ptr<GCommandList> cmdList)
 {
+		
 	aiString str;
-	auto result = material->GetTexture(type, 0, &str);
+	auto result = material->GetTexture(type, 0, &str);	
 
 	std::wstring modelTexturePath(AnsiToWString(str.C_Str()));
 
-	if (modelTexturePath.find(L"\\") != std::wstring::npos)
+	if(modelTexturePath.find(L"\\") != std::wstring::npos)
 	{
-		auto fileName = modelTexturePath.substr(modelTexturePath.find_last_of('\\'),
-		                                        modelTexturePath.size() - modelTexturePath.find_last_of('\\'));
+		auto fileName = modelTexturePath.substr(modelTexturePath.find_last_of('\\'), modelTexturePath.size() - modelTexturePath.find_last_of('\\'));
 
 		modelTexturePath = fileName.replace(fileName.find(L"\\"), 1, L"");
 	}
-
+	
 	std::wstring textureName = modelTexturePath;
 	std::wstring texturePath = directory + L"\\" + textureName;
 
 	const auto it = textures.find(textureName);
 	if (it != textures.end()) return it->second;
-
+	
 	OutputDebugStringW((texturePath + L"\n").c_str());
 
-	auto texture = GTexture::LoadTextureFromFile(texturePath, cmdList,
-	                                             type == aiTextureType_DIFFUSE
-		                                             ? TextureUsage::Albedo
-		                                             : TextureUsage::Normalmap);
+	auto texture = GTexture::LoadTextureFromFile(texturePath, cmdList, type == aiTextureType_DIFFUSE ? TextureUsage::Albedo : TextureUsage::Normalmap);
 	texture->SetName(textureName);
-
+	
 	textures[textureName] = std::move(texture);
 	return textures[textureName];
 }
 
-void AssetsLoader::CreateMaterialForMesh(std::shared_ptr<Mesh> mesh, const aiMaterial* material,
-                                         const std::shared_ptr<GCommandList> cmdList)
+void  AssetsLoader::CreateMaterialForMesh(std::shared_ptr<Mesh> mesh, const aiMaterial* material, const std::shared_ptr<GCommandList> cmdList)
 {
 	aiString name;
 	material->Get(AI_MATKEY_NAME, name);
@@ -196,23 +153,25 @@ void AssetsLoader::CreateMaterialForMesh(std::shared_ptr<Mesh> mesh, const aiMat
 	const auto it = materials.find(materialName);
 	if (it != materials.end())
 	{
-		defaultMaterialForMeshFromFile[mesh] = it->second;
+		defaultMaterialForMeshFromFile[mesh] = it->second;		
 		return;
 	}
 
 
+	
 	auto directory = mesh->GetName().substr(0, mesh->GetName().find_last_of('\\'));
 
 	auto count = material->GetTextureCount(aiTextureType_DIFFUSE);
 
 	std::shared_ptr<GTexture> diffuse;
 
-	if (count > 0)
+	if(count > 0)
 	{
 		diffuse = LoadOrGetTexture(material, aiTextureType_DIFFUSE, directory, cmdList);
 	}
 	else
 	{
+
 		const auto textureIt = textures.find(L"seamless");
 		if (textureIt != textures.end())
 		{
@@ -221,19 +180,19 @@ void AssetsLoader::CreateMaterialForMesh(std::shared_ptr<Mesh> mesh, const aiMat
 		else
 		{
 			auto defaultNormal = GTexture::LoadTextureFromFile(L"Data\\Textures\\seamless_grass.jpg", cmdList,
-			                                                   TextureUsage::Diffuse);
+				TextureUsage::Diffuse);
 			defaultNormal->SetName(L"seamless");
 
 			textures[defaultNormal->GetName()] = std::move(defaultNormal);
 
 			diffuse = textures[L"seamless"];
-		}
+		}		
 	}
 
 	count = material->GetTextureCount(aiTextureType_HEIGHT);
 
 	std::shared_ptr<GTexture> normal;
-
+	
 	if (count > 0)
 	{
 		normal = LoadOrGetTexture(material, aiTextureType_HEIGHT, directory, cmdList);
@@ -242,12 +201,12 @@ void AssetsLoader::CreateMaterialForMesh(std::shared_ptr<Mesh> mesh, const aiMat
 	{
 		count = material->GetTextureCount(aiTextureType_NORMALS);
 
-		if (count > 0)
+		if(count > 0)
 		{
 			normal = LoadOrGetTexture(material, aiTextureType_NORMALS, directory, cmdList);
 		}
-		else
-		{
+		else {
+
 			const auto textureIt = textures.find(L"defaultNormalMap");
 			if (textureIt != textures.end())
 			{
@@ -256,7 +215,7 @@ void AssetsLoader::CreateMaterialForMesh(std::shared_ptr<Mesh> mesh, const aiMat
 			else
 			{
 				auto defaultNormal = GTexture::LoadTextureFromFile(L"Data\\Textures\\default_nmap.dds", cmdList,
-				                                                   TextureUsage::Normalmap);
+					TextureUsage::Normalmap);
 				defaultNormal->SetName(L"defaultNormalMap");
 
 				textures[defaultNormal->GetName()] = std::move(defaultNormal);
@@ -264,9 +223,10 @@ void AssetsLoader::CreateMaterialForMesh(std::shared_ptr<Mesh> mesh, const aiMat
 				normal = textures[L"defaultNormalMap"];
 			}
 		}
-	}
+	}	 
 
 
+	
 	auto mat = std::make_shared<Material>(materialName);
 	mat->SetDiffuseTexture(diffuse);
 	mat->SetNormalMap(normal);
@@ -278,17 +238,17 @@ void AssetsLoader::CreateMaterialForMesh(std::shared_ptr<Mesh> mesh, const aiMat
 }
 
 
-void AssetsLoader::RecursivlyLoadMeshes(std::shared_ptr<Model> model, aiNode* node, const aiScene* scene,
-                                        const std::shared_ptr<GCommandList> cmdList)
+void  AssetsLoader::RecursivlyLoadMeshes(std::shared_ptr<Model> model, aiNode* node, const aiScene* scene, const std::shared_ptr<GCommandList> cmdList)
 {
 	for (UINT i = 0; i < node->mNumMeshes; i++)
 	{
-		aiMesh* aMesh = scene->mMeshes[node->mMeshes[i]];
-
+		aiMesh* aMesh = scene->mMeshes[node->mMeshes[i]];				
+		
 		auto mesh = CreateSubMesh(aMesh, model->GetName(), cmdList);
 		CreateMaterialForMesh(mesh, scene->mMaterials[aMesh->mMaterialIndex], cmdList);
 		meshes.push_back(std::move(mesh));
 		model->AddMesh(meshes.back());
+		
 	}
 
 	for (UINT i = 0; i < node->mNumChildren; i++)
@@ -304,7 +264,7 @@ size_t AssetsLoader::GetLoadTexturesCount() const
 
 void AssetsLoader::AddMaterial(std::shared_ptr<Material> material)
 {
-	materials[material->GetName()] = std::move(material);
+	materials[material->GetName()] = std::move( material);
 }
 
 void AssetsLoader::AddTexture(std::shared_ptr<GTexture> texture)
@@ -367,13 +327,15 @@ std::shared_ptr<Model> AssetsLoader::GetOrCreateModelFromFile(std::shared_ptr<GC
 
 
 	const aiScene* sceneModel = importer.ReadFile(filePath,
-	                                              aiProcess_Triangulate | aiProcess_GenNormals |
-	                                              aiProcess_ConvertToLeftHanded);
+		 aiProcess_Triangulate   | aiProcess_GenNormals |
+	                                          aiProcess_ConvertToLeftHanded);
 
 
+	
 	auto basePath = filePath;
-
-
+	
+	
+	
 	if (sceneModel == nullptr)
 	{
 		assert("Model Path dosen't exist or wrong file");
@@ -383,7 +345,7 @@ std::shared_ptr<Model> AssetsLoader::GetOrCreateModelFromFile(std::shared_ptr<GC
 	auto model = std::make_shared<Model>(AnsiToWString(filePath));
 
 	const auto cmdList = queue->GetCommandList();
-
+		
 	RecursivlyLoadMeshes(model, sceneModel->mRootNode, sceneModel, cmdList);
 
 	queue->WaitForFenceValue(queue->ExecuteCommandList(cmdList));
@@ -391,11 +353,13 @@ std::shared_ptr<Model> AssetsLoader::GetOrCreateModelFromFile(std::shared_ptr<GC
 	models[model->GetName()] = std::move(model);
 
 	importer.FreeScene();
-
-	return models[AnsiToWString(filePath)];
+	
+	return models[AnsiToWString(filePath)];	
 }
 
 void AssetsLoader::ClearTrackedObjects()
 {
-	trackGeneratedData.clear();
+	trackGeneratedData.clear();	
 }
+
+

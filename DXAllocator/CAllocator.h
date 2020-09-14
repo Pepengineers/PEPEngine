@@ -3,16 +3,16 @@
 #include "pch.h"
 #include "Allocator.h"
 
-class CAllocator : public Allocator
-{
+class CAllocator : public Allocator {
 public:
 	CAllocator();
 
 	virtual ~CAllocator();
 
-	void* Allocate(std::size_t size, std::size_t alignment = 0) override;
+	virtual void* Allocate(const std::size_t size, const std::size_t alignment = 0) override;
 
-	void Free(void* ptr) override;
+	virtual void Free(void* ptr) override;
 
-	void Init() override;
+	virtual void Init() override;
 };
+

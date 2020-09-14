@@ -1,7 +1,6 @@
 #pragma once
 #include "d3dUtil.h"
 using namespace Microsoft::WRL;
-
 enum ShaderType
 {
 	VertexShader,
@@ -22,8 +21,8 @@ class GShader
 	std::string target;
 public:
 
-	GShader(std::wstring fileName, ShaderType type, const D3D_SHADER_MACRO* defines = nullptr,
-	        std::string entryPoint = "Main", std::string target = "ps_5_1");
+	GShader(const std::wstring fileName, const ShaderType type, const D3D_SHADER_MACRO* defines = nullptr,
+	        const std::string entryPoint = "Main", const std::string target = "ps_5_1");
 
 	void LoadAndCompile();
 

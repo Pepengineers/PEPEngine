@@ -18,7 +18,7 @@ struct Vertex
 		Vector2& uv) :
 		Position(p),
 		Normal(n),
-		UV(uv),
+		TexCord(uv),
 		TangentU(t)
 	{
 	}
@@ -30,14 +30,14 @@ struct Vertex
 		float u, float v) :
 		Position(px, py, pz),
 		Normal(nx, ny, nz),
-		UV(u, v),
+		TexCord(u, v),
 		TangentU(tx, ty, tz)
 	{
 	}
 
 	Vector3 Position;
 	Vector3 Normal;
-	Vector2 UV;
+	Vector2 TexCord;
 	Vector3 TangentU;
 };
 

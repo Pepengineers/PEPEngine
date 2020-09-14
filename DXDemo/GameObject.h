@@ -11,11 +11,11 @@ class GameObject
 {
 public:
 
-	GameObject();
+	GameObject(ID3D12Device* device);
 
-	GameObject(std::string name);
+	GameObject(ID3D12Device* device, std::string name);
 
-	GameObject(std::string name, Vector3 position, Vector3 scale, Quaternion rotate);
+	GameObject(ID3D12Device* device, std::string name, Vector3 position, Vector3 scale, Quaternion rotate);
 
 	void virtual Update();
 
@@ -35,8 +35,8 @@ public:
 
 	void SetScale(Vector3& scale) const;
 
-	std::string& GetName() { return name; }
-
+	std::string& GetName() { return  name; }
+	
 protected:
 
 

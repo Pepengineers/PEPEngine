@@ -8,27 +8,28 @@ class GCommandList;
 
 class Model
 {
-	friend class ModelRenderer;
+	friend class ModelRenderer;	
 	std::vector<std::shared_ptr<Mesh>> meshes;
 	std::wstring name;
 
 public:
 
 	Matrix scaleMatrix = Matrix::CreateScale(1);
-
+	
 	UINT GetMeshesCount() const;
 
 	std::wstring GetName() const;
 
-	Model(std::wstring modelName = L"");
+	Model(const std::wstring modelName = L"");
 
 	Model(const Model& copy);
+	
+	~Model() {};
 
-	~Model()
-	{
-	};
+	std::shared_ptr<Mesh> GetMesh(const UINT submesh);
 
-	std::shared_ptr<Mesh> GetMesh(UINT submesh);
-
-	void AddMesh(std::shared_ptr<Mesh> mesh);
+	void AddMesh(const std::shared_ptr<Mesh> mesh);
 };
+
+
+

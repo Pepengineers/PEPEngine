@@ -4,7 +4,7 @@
 #include "SampleApp.h"
 #include "SimpleMath.h"
 
-using namespace SimpleMath;
+using namespace DirectX::SimpleMath;
 
 void ObjectMover::Draw(std::shared_ptr<GCommandList> cmdList)
 {
@@ -20,7 +20,7 @@ void ObjectMover::Update()
 	{
 		speed = 100;
 	}
-
+	
 	Vector3 offset = Vector3::Zero;
 	if (keyboard->KeyIsPressed(VK_UP))
 	{
@@ -48,18 +48,16 @@ void ObjectMover::Update()
 		offset.y += speed * dt;
 	}
 
-
+	
 	if (offset != Vector3::Zero)
 		gameObject->GetTransform()->AdjustPosition(offset);
 
 	auto position = gameObject->GetTransform()->GetWorldPosition();
-
-	OutputDebugStringW(
-		(std::to_wstring(position.x) + L" " + std::to_wstring(position.y) + L" " + std::to_wstring(position.z) + L" " +
-			L"\n").c_str());
+	
+	OutputDebugStringW((std::to_wstring(position.x) + L" " + std::to_wstring(position.y) + L" "+ std::to_wstring(position.z) + L" " + L"\n").c_str());
 }
 
 ObjectMover::ObjectMover()
 {
-	keyboard = static_cast<DXLib::SampleApp&>(DXLib::SampleApp::GetApp()).GetKeyboard();
+	keyboard = ((DXLib::SampleApp&)DXLib::SampleApp::GetApp()).GetKeyboard();
 }

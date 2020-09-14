@@ -120,12 +120,12 @@ namespace DXLib
 		static const UINT BufferCount = 3;
 		DXGI_FORMAT backBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		ComPtr<IDXGISwapChain4> CreateSwapChain();
-		ComPtr<IDXGISwapChain4> swapChain;
-
-
+		ComPtr<IDXGISwapChain4> swapChain;		
+	
+		
 		std::vector<GTexture> backBuffers;
 		GMemory rtvDescriptorHeap = DXAllocator::AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, BufferCount);
-
+		
 		D3D12_VIEWPORT screenViewport;
 		D3D12_RECT scissorRect;
 

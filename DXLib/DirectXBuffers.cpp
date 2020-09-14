@@ -4,9 +4,7 @@
 
 
 ShaderBuffer::ShaderBuffer(UINT elementCount, UINT elementByteSize, std::wstring name):
-	GResource(CD3DX12_RESOURCE_DESC::Buffer(elementCount * elementByteSize), name, nullptr,
-	          D3D12_RESOURCE_STATE_GENERIC_READ, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD)),
-	elementCount(elementCount), elementByteSize(elementByteSize)
+GResource(CD3DX12_RESOURCE_DESC::Buffer(elementCount * elementByteSize), name, nullptr, D3D12_RESOURCE_STATE_GENERIC_READ, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD)), elementByteSize(elementByteSize), elementCount(elementCount)
 {
 	ThrowIfFailed(dxResource->Map(0, nullptr, reinterpret_cast<void**>(&mappedData)));
 

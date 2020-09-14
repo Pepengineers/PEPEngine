@@ -79,5 +79,5 @@ public:
 
 	PsoType::Type GetType() const;
 
-	void Initialize();
+	void Initialize(ID3D12Device* device);
 };

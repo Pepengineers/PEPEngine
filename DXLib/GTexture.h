@@ -32,7 +32,7 @@ class GTexture : public GResource
 
 	mutable std::mutex shaderResourceViewsMutex;
 	mutable std::mutex unorderedAccessViewsMutex;
-
+	
 
 public:
 	bool HasMipMap;
@@ -48,31 +48,28 @@ public:
 	GTexture(std::wstring name = L"", TextureUsage use = TextureUsage::Diffuse);
 
 	GTexture(const D3D12_RESOURCE_DESC& resourceDesc,
-	         const std::wstring& name = L"", TextureUsage textureUsage = TextureUsage::Albedo,
-	         const D3D12_CLEAR_VALUE* clearValue = nullptr);
+		const std::wstring& name = L"", TextureUsage textureUsage = TextureUsage::Albedo,
+		const D3D12_CLEAR_VALUE* clearValue = nullptr);
 	GTexture(ComPtr<ID3D12Resource> resource,
-	         TextureUsage textureUsage = TextureUsage::Albedo,
-	         const std::wstring& name = L"");
+	                 TextureUsage textureUsage = TextureUsage::Albedo,
+	                 const std::wstring& name = L"");
 
 	GTexture(const GTexture& copy);
 	GTexture(GTexture&& copy);
 
 	GTexture& operator=(const GTexture& other);
 	GTexture& operator=(GTexture&& other);
-
-	void CreateShaderResourceView(const D3D12_SHADER_RESOURCE_VIEW_DESC* srvDesc, GMemory* memory,
-	                              size_t offset = 0) const;
-	void CreateUnorderedAccessView(const D3D12_UNORDERED_ACCESS_VIEW_DESC* uavDesc, GMemory* memory,
-	                               size_t offset = 0) const;
+	
+	void CreateShaderResourceView(const D3D12_SHADER_RESOURCE_VIEW_DESC* srvDesc, GMemory* memory, size_t offset = 0) const;
+	void CreateUnorderedAccessView(const D3D12_UNORDERED_ACCESS_VIEW_DESC* uavDesc, GMemory* memory, size_t offset = 0) const;
 	void CreateRenderTargetView(const D3D12_RENDER_TARGET_VIEW_DESC* rtvDesc, GMemory* memory, size_t offset = 0) const;
 	void CreateDepthStencilView(const D3D12_DEPTH_STENCIL_VIEW_DESC* dsvDesc, GMemory* memory, size_t offset = 0) const;
-
+	
 	virtual ~GTexture();
 
 
 	static std::shared_ptr<GTexture> LoadTextureFromFile(std::wstring filepath,
-	                                                     std::shared_ptr<GCommandList> commandList,
-	                                                     TextureUsage usage = TextureUsage::Diffuse);
+	                                                    std::shared_ptr<GCommandList> commandList, TextureUsage usage = TextureUsage::Diffuse);
 
 	void ClearTrack();
 
@@ -80,7 +77,7 @@ public:
 	std::wstring& GetName();
 
 	static DXGI_FORMAT GetUAVCompatableFormat(DXGI_FORMAT format);
-
+	
 	static bool IsUAVCompatibleFormat(DXGI_FORMAT format);
 
 	static bool IsSRGBFormat(DXGI_FORMAT format);

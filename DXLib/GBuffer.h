@@ -10,34 +10,34 @@ class GBuffer : public GResource
 {
 protected:
 	ComPtr<ID3DBlob> bufferCPU;
-	UINT stride;
-	UINT count;
-	DWORD bufferSize = 0;
+    UINT stride;
+    UINT count;
+    DWORD bufferSize = 0;
 	const DXGI_FORMAT IndexFormat = DXGI_FORMAT_R32_UINT;
-
+	
 public:
-
+	
 	static GBuffer CreateBuffer(std::shared_ptr<GCommandList> cmdList, void* data, UINT elementSize, UINT count,
 	                            const std::wstring& name = L"");
 
 	GBuffer(const GBuffer& rhs) : GResource(rhs)
-	{
+	{		
 		this->bufferCPU = rhs.bufferCPU;
 		this->bufferSize = rhs.bufferSize;
 		this->stride = rhs.stride;
 		this->count = rhs.count;
 	}
 
-	GBuffer& operator=(const GBuffer& a)
+	GBuffer& operator=(const GBuffer& a) 
 	{
-		GResource::operator=(a);
+		GResource::operator=(a);		
 		this->bufferCPU = a.bufferCPU;
 		this->bufferSize = a.bufferSize;
 		this->stride = a.stride;
 		this->count = a.count;
 		return *this;
 	}
-
+	
 
 	UINT GetElementsCount() const;
 
@@ -57,4 +57,5 @@ public:
 	        void* data);
 
 private:
+
 };

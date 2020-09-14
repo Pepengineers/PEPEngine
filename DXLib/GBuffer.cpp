@@ -40,8 +40,7 @@ D3D12_VERTEX_BUFFER_VIEW GBuffer::VertexBufferView() const
 }
 
 
-GBuffer GBuffer::CreateBuffer(std::shared_ptr<GCommandList> cmdList, void* data, UINT elementSize, UINT count,
-                              const std::wstring& name)
+GBuffer GBuffer::CreateBuffer(std::shared_ptr<GCommandList> cmdList, void* data, UINT elementSize, UINT count, const std::wstring& name)
 {
 	const auto desc = CD3DX12_RESOURCE_DESC::Buffer(elementSize * count);
 	GBuffer buffer(name, desc, elementSize, count, data);
@@ -50,7 +49,7 @@ GBuffer GBuffer::CreateBuffer(std::shared_ptr<GCommandList> cmdList, void* data,
 	subResourceData.pData = data;
 	subResourceData.RowPitch = buffer.bufferSize;
 	subResourceData.SlicePitch = subResourceData.RowPitch;
-
+	
 	cmdList->UpdateSubresource(buffer, &subResourceData, 1);
 	cmdList->TransitionBarrier(buffer, D3D12_RESOURCE_STATE_GENERIC_READ);
 	cmdList->FlushResourceBarriers();
