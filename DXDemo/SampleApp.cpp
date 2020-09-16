@@ -101,7 +101,7 @@ namespace DXLib
 		shadowMap = std::make_unique<ShadowMap>(4096, 4096);
 
 		ssao = std::make_unique<Ssao>(
-			dxDevice.Get(),
+			GetMainDevice().Get(),
 			cmdList,
 			MainWindow->GetClientWidth(), MainWindow->GetClientHeight());
 
@@ -459,7 +459,7 @@ namespace DXLib
 		commandQueue->EndPixEvent();
 		commandQueue->EndPixEvent();
 
-		currBackBufferIndex = MainWindow->Present();
+		backBufferIndex = MainWindow->Present();
 	}
 	
 	void SampleApp::UpdateGameObjects(const GameTimer& gt)
@@ -681,7 +681,10 @@ namespace DXLib
 		auto grassTex = GTexture::LoadTextureFromFile(L"Data\\Textures\\grass.dds", cmdList);
 		grassTex->SetName(L"grassTex");
 		loader.AddTexture(grassTex);
-				
+
+		auto treeArrayTex = GTexture::LoadTextureFromFile(L"Data\\Textures\\treeArray2.dds", cmdList);
+		treeArrayTex->SetName(L"treeArrayTex");
+		loader.AddTexture(treeArrayTex);
 
 		auto seamless = GTexture::LoadTextureFromFile(L"Data\\Textures\\seamless_grass.jpg", cmdList);
 		seamless->SetName(L"seamless");
@@ -1177,7 +1180,7 @@ namespace DXLib
 
 		for (auto& pso : psos)
 		{
-			pso.second->Initialize(dxDevice.Get());
+			pso.second->Initialize(GetMainDevice().Get());
 		}
 	}
 
@@ -1223,7 +1226,7 @@ namespace DXLib
 		
 
 		
-		auto skySphere = std::make_unique<GameObject>(dxDevice.Get(), "Sky");
+		auto skySphere = std::make_unique<GameObject>( "Sky");
 		skySphere->GetTransform()->SetScale({500, 500, 500});
 		auto renderer = new ModelRenderer();
 		renderer->material = loader.GetMaterials(L"sky").get();
@@ -1233,7 +1236,7 @@ namespace DXLib
 		typedGameObjects[PsoType::SkyBox].push_back(skySphere.get());
 		gameObjects.push_back(std::move(skySphere));
 
-		auto quadRitem = std::make_unique<GameObject>(dxDevice.Get(), "Quad");
+		auto quadRitem = std::make_unique<GameObject>( "Quad");
 		renderer = new ModelRenderer();
 		renderer->material = loader.GetMaterials(L"seamless").get();
 		renderer->SetModel(models[L"quad"]);
@@ -1243,21 +1246,21 @@ namespace DXLib
 		typedGameObjects[PsoType::Quad].push_back(quadRitem.get());
 		gameObjects.push_back(std::move(quadRitem));
 		
-		auto sun1 = std::make_unique<GameObject>(dxDevice.Get(), "Directional Light");
+		auto sun1 = std::make_unique<GameObject>("Directional Light");
 		auto light = new Light(Directional);
 		light->Direction({0.57735f, -0.57735f, 0.57735f});
 		light->Strength({0.8f, 0.8f, 0.8f});
 		sun1->AddComponent(light);
 		gameObjects.push_back(std::move(sun1));
 
-		auto sun2 = std::make_unique<GameObject>(dxDevice.Get());
+		auto sun2 = std::make_unique<GameObject>();
 		light = new Light();
 		light->Direction({-0.57735f, -0.57735f, 0.57735f});
 		light->Strength({0.4f, 0.4f, 0.4f});
 		sun2->AddComponent(light);
 		gameObjects.push_back(std::move(sun2));
 
-		auto sun3 = std::make_unique<GameObject>(dxDevice.Get());
+		auto sun3 = std::make_unique<GameObject>();
 		light = new Light();
 		light->Direction({0.0f, -0.707f, -0.707f});
 		light->Strength({0.2f, 0.2f, 0.2f});
@@ -1309,14 +1312,14 @@ namespace DXLib
 		platform->GetTransform()->SetPosition(Vector3::Backward * -130);
 		typedGameObjects[PsoType::Opaque].push_back(platform.get());
 				
-		auto rotater = std::make_unique<GameObject>(dxDevice.Get());
+		auto rotater = std::make_unique<GameObject>();
 		rotater->GetTransform()->SetParent(platform->GetTransform());
 		rotater->GetTransform()->SetPosition(Vector3::Forward * 325 + Vector3::Left * 625);
 		rotater->GetTransform()->SetEulerRotate(Vector3(0, -90, 90));
 		rotater->AddComponent(new Rotater(10));	
 		
 
-		auto camera = std::make_unique<GameObject>(dxDevice.Get(), "MainCamera");
+		auto camera = std::make_unique<GameObject>( "MainCamera");
 		camera->GetTransform()->SetParent(rotater->GetTransform());
 		camera->GetTransform()->SetEulerRotate(Vector3(-30, 270, 0));
 		camera->GetTransform()->SetPosition(Vector3(-1000, 190, -32));
@@ -1390,7 +1393,7 @@ namespace DXLib
 
 	std::unique_ptr<GameObject> SampleApp::CreateGOWithRenderer(std::shared_ptr<Model> model) 
 	{
-		auto man = std::make_unique<GameObject>(dxDevice.Get());
+		auto man = std::make_unique<GameObject>();
 		auto renderer = new ModelRenderer();
 		man->AddComponent(renderer);
 		renderer->SetModel(model);				

@@ -1,32 +1,33 @@
 #include "GDevice.h"
-#include "d3dUtil.h"
 #include "GCommandQueue.h"
 #include "DXAllocator.h"
-
-DXLib::GDevice::GDevice(IDXGIAdapter* adapter)
+GDevice::GDevice(ComPtr<IDXGIAdapter3> adapter) : adapter(adapter)
 {
-	auto res = D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&dxDevice));
-
-	if (SUCCEEDED(res))
+	if(adapter == nullptr)
 	{
-		DXGI_ADAPTER_DESC desc;
-		adapter->GetDesc(&desc);
-		dxDevice->SetName(desc.Description);
-	}
-	else
-	{
-		// Use the default device
-		ThrowIfFailed(D3D12CreateDevice(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&dxDevice)));
+		assert("Cant create device. Null Adapter");
 	}
 
+	DXGI_ADAPTER_DESC desc;
+	ThrowIfFailed(adapter->GetDesc(&desc));
+
+	name = desc.Description;
+	
+	ThrowIfFailed(D3D12CreateDevice(
+		adapter.Get(), // default adapter
+		D3D_FEATURE_LEVEL_11_0,
+		IID_PPV_ARGS(&device)));	
+	
+	ThrowIfFailed(device->SetName(desc.Description));
+	
 #if defined(DEBUG) || defined(_DEBUG)
 
 	ComPtr<ID3D12InfoQueue> pInfoQueue;
-	if (SUCCEEDED(dxDevice.As(&pInfoQueue)))
+	if (SUCCEEDED(device.As(&pInfoQueue)))
 	{
-		pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
-		pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
-		pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, TRUE);
+		ThrowIfFailed(pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE));
+		ThrowIfFailed(pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE));
+		ThrowIfFailed(pInfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, TRUE));
 
 
 		// Suppress messages based on their severity level
@@ -56,26 +57,32 @@ DXLib::GDevice::GDevice(IDXGIAdapter* adapter)
 #endif
 
 
-	directCommandQueue = std::make_shared<GCommandQueue>(dxDevice, D3D12_COMMAND_LIST_TYPE_DIRECT);
-	computeCommandQueue = std::make_shared<GCommandQueue>(dxDevice, D3D12_COMMAND_LIST_TYPE_COMPUTE);
-	copyCommandQueue = std::make_shared<GCommandQueue>(dxDevice, D3D12_COMMAND_LIST_TYPE_COPY);
+	directCommandQueue = std::make_shared<DXLib::GCommandQueue>(device, D3D12_COMMAND_LIST_TYPE_DIRECT);
+	computeCommandQueue = std::make_shared<DXLib::GCommandQueue>(device, D3D12_COMMAND_LIST_TYPE_COMPUTE);
+	copyCommandQueue = std::make_shared<DXLib::GCommandQueue>(device, D3D12_COMMAND_LIST_TYPE_COPY);
+	
 }
 
-DXLib::GDevice::~GDevice()
+ComPtr<ID3D12Device2> GDevice::GetDevice() const
+{
+	return device;
+}
+
+GDevice::~GDevice()
 {
 	Flush();
 	directCommandQueue.reset();
 	computeCommandQueue.reset();
 	copyCommandQueue.reset();
-	dxDevice->Release();
+	device->Release();
 }
 
 custom_unordered_map<D3D12_DESCRIPTOR_HEAP_TYPE, UINT> descriptorHandlerSize = DXAllocator::CreateUnorderedMap<
 	D3D12_DESCRIPTOR_HEAP_TYPE, UINT>();
 
-std::shared_ptr<DXLib::GCommandQueue> DXLib::GDevice::GetCommandQueue(D3D12_COMMAND_LIST_TYPE type) const
+std::shared_ptr<DXLib::GCommandQueue> GDevice::GetCommandQueue(D3D12_COMMAND_LIST_TYPE type) const
 {
-	std::shared_ptr<GCommandQueue> queue;
+	std::shared_ptr<DXLib::GCommandQueue> queue;
 
 	switch (type)
 	{
@@ -85,19 +92,19 @@ std::shared_ptr<DXLib::GCommandQueue> DXLib::GDevice::GetCommandQueue(D3D12_COMM
 		break;
 	case D3D12_COMMAND_LIST_TYPE_COPY: queue = copyCommandQueue;
 		break;
-	default: ;
+	default:;
 	}
 
 	return queue;
 }
 
-UINT DXLib::GDevice::GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE type) const
+UINT GDevice::GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE type) const
 {
 	const auto it = descriptorHandlerSize.find(type);
 
 	if (it == descriptorHandlerSize.end())
 	{
-		const auto size = dxDevice->GetDescriptorHandleIncrementSize(type);
+		const auto size = device->GetDescriptorHandleIncrementSize(type);
 		descriptorHandlerSize[type] = size;
 		return size;
 	}
@@ -105,7 +112,7 @@ UINT DXLib::GDevice::GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE
 	return it->second;
 }
 
-void DXLib::GDevice::Flush() const
+void GDevice::Flush() const
 {
 	directCommandQueue->Signal();
 	directCommandQueue->Flush();

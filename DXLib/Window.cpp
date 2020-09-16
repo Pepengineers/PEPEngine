@@ -10,6 +10,7 @@
 #include "GResourceStateTracker.h"
 #include "Lazy.h"
 #include "GCommandList.h"
+#include "GDevice.h"
 
 namespace DXLib
 {
@@ -275,7 +276,9 @@ namespace DXLib
 			auto fpsStr = std::to_wstring(fps);
 			std::wstring mspfStr = std::to_wstring(mspf);
 
-			std::wstring windowText = windowName +
+			auto device = D3DApp::GetApp().GetGDevice();
+			
+			std::wstring windowText = device->name + L"  " + windowName +
 				L"    fps: " + fpsStr +
 				L"   mspf: " + mspfStr;
 
