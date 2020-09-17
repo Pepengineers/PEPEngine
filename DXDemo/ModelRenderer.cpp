@@ -3,7 +3,7 @@
 #include "GameObject.h"
 #include "GCommandList.h"
 #include "Transform.h"
-
+#include "Material.h"
 
 void ModelRenderer::Draw(std::shared_ptr<GCommandList> cmdList)
 {
@@ -17,6 +17,8 @@ void ModelRenderer::Draw(std::shared_ptr<GCommandList> cmdList)
 			const auto mesh = model->GetMesh(i);
 			cmdList->SetRootConstantBufferView(StandardShaderSlot::ObjectData,
 				*modelDataBuffer, i);
+			cmdList->SetRootConstantBufferView(StandardShaderSlot::MaterialData,
+				*materialsDataBuffer, i);
 			cmdList->SetVBuffer(0, 1, mesh->GetVertexView());
 			cmdList->SetIBuffer(mesh->GetIndexView());
 			cmdList->SetPrimitiveTopology(mesh->GetPrimitiveType());
@@ -39,6 +41,7 @@ void ModelRenderer::Update()
 		{
 			constantData.MaterialIndex = meshesMaterials[i]->GetIndex();
 			modelDataBuffer->CopyData(i, constantData);
+			materialsDataBuffer->CopyData(i, meshesMaterials[i]->GetMaterialConstantData());
 		}		
 	}
 }
@@ -53,7 +56,9 @@ void ModelRenderer::SetModel(std::shared_ptr<Model> asset)
 	if(modelDataBuffer == nullptr || modelDataBuffer->GetElementCount() < asset->GetMeshesCount() )
 	{
 		modelDataBuffer.reset();
+		materialsDataBuffer.reset();
 		modelDataBuffer = std::make_unique<ConstantBuffer<ObjectConstants>>(asset->GetMeshesCount(), asset->GetName());
+		materialsDataBuffer = std::make_unique<ConstantBuffer<MaterialConstants>>(asset->GetMeshesCount(), asset->GetName() + L"Materials");
 	}
 	
 	model = asset;

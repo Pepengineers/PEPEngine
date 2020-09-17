@@ -18,9 +18,6 @@ private:
 	std::shared_ptr<DXLib::GCommandQueue> copyCommandQueue;
 	
 public:
-
-	std::wstring name;
-	
 	GDevice(ComPtr<IDXGIAdapter3> adapter);
 
 	std::shared_ptr<DXLib::GCommandQueue> GetCommandQueue(

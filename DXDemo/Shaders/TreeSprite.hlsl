@@ -95,12 +95,15 @@ void GS(point VertexOut gin[1], uint primID : SV_PrimitiveID,
 
 float4 PS(GeoOut pin) : SV_Target
 {
-	MaterialData materialBuffer = materialData[objectBuffer.materialIndex];
+	//MaterialData matData = materialData[objectBuffer.materialIndex];
+    MaterialData matData = materialData;
 	float3 uvw = float3(pin.TexC, pin.PrimID % 3);
+
+	
 	/*загрузили все текстуры как один большой массив, по этому идексу лежит Texture2DArray
 	 *поэтому Общаемся с текстурой как с массивом текстур. POG*/
-	float4 diffuseAlbedo = texturesMaps[materialBuffer.DiffuseMapIndex].Sample(gsamAnisotropicWrap, uvw) *
-		materialBuffer.DiffuseAlbedo;
+    float4 diffuseAlbedo = texturesMaps[matData.DiffuseMapIndex].Sample(gsamAnisotropicWrap, uvw) *
+		matData.DiffuseAlbedo;
 
 #ifdef ALPHA_TEST
 	// Discard pixel if texture alpha < 0.1.  We do this test as soon 
@@ -120,8 +123,8 @@ float4 PS(GeoOut pin) : SV_Target
 	// Light terms.
 	float4 ambient = worldBuffer.AmbientLight * diffuseAlbedo;
 
-	const float shininess = 1.0f - materialBuffer.Roughness;
-	Material mat = {diffuseAlbedo, materialBuffer.FresnelR0, shininess};
+    const float shininess = 1.0f - matData.Roughness;
+    Material mat = { diffuseAlbedo, matData.FresnelR0, shininess };
 	float3 shadowFactor = 1.0f;
 	float4 directLight = ComputeLighting(worldBuffer.Lights, mat, pin.PosW,
 	                                     pin.NormalW, toEyeW, shadowFactor);

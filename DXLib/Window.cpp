@@ -200,8 +200,7 @@ namespace DXLib
 			backBuffers.push_back(GTexture(windowName + L" Backbuffer[" + std::to_wstring(i) + L"]", TextureUsage::RenderTarget));
 		}
 
-		auto queue = D3DApp::GetApp().GetCommandQueue();
-		queue->Flush();
+		D3DApp::GetApp().Flush();		
 	}
 
 	Window::Window(WNDCLASS hwnd, const std::wstring& windowName, int clientWidth, int clientHeight, bool vSync)
@@ -276,9 +275,7 @@ namespace DXLib
 			auto fpsStr = std::to_wstring(fps);
 			std::wstring mspfStr = std::to_wstring(mspf);
 
-			auto device = D3DApp::GetApp().GetGDevice();
-			
-			std::wstring windowText = device->name + L"  " + windowName +
+			std::wstring windowText = windowName +
 				L"    fps: " + fpsStr +
 				L"   mspf: " + mspfStr;
 
@@ -307,9 +304,7 @@ namespace DXLib
 	{
 		assert(swapChain);
 
-		auto queue = D3DApp::GetApp().GetCommandQueue();
-
-		queue->Flush();
+		D3DApp::GetApp().Flush();
 
 		for (int i = 0; i < BufferCount; ++i)
 		{
@@ -383,7 +378,7 @@ namespace DXLib
 		swapChainDesc.Flags = isTearingSupported
 			                      ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING
 			                      : DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-		ID3D12CommandQueue* pCommandQueue = app.GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT)->GetD3D12CommandQueue().
+		ID3D12CommandQueue* pCommandQueue = app.GetMainDevice()->GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT)->GetD3D12CommandQueue().
 		                                        Get();
 
 		ComPtr<IDXGISwapChain1> swapChain1;

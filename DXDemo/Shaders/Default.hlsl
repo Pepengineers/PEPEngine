@@ -24,7 +24,8 @@ VertexOut VS(VertexIn vin)
 {
 	VertexOut vout = (VertexOut)0.0f;
 
-	MaterialData matData = materialData[objectBuffer.materialIndex];
+	//MaterialData matData = materialData[objectBuffer.materialIndex];
+	MaterialData matData = materialData;
 
 	float4 posW = mul(float4(vin.PosL, 1.0f), objectBuffer.World);
 	vout.PosW = posW.xyz;
@@ -50,7 +51,8 @@ VertexOut VS(VertexIn vin)
 
 float4 PS(VertexOut pin) : SV_Target
 {
-	MaterialData matData = materialData[objectBuffer.materialIndex];
+	//MaterialData matData = materialData[objectBuffer.materialIndex];
+	MaterialData matData = materialData;
 	float4 diffuseAlbedo = matData.DiffuseAlbedo;
 	float3 fresnelR0 = matData.FresnelR0;
 	float roughness = matData.Roughness;

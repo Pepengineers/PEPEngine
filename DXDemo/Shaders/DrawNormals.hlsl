@@ -22,7 +22,8 @@ VertexOut VS(VertexIn vin)
 	VertexOut vout = (VertexOut)0.0f;
 
 	// Fetch the material data.
-	MaterialData matData = materialData[objectBuffer.materialIndex];
+	//MaterialData matData = materialData[objectBuffer.materialIndex];
+	MaterialData matData = materialData;
 
 	// Assumes nonuniform scaling; otherwise, need to use inverse-transpose of world matrix.
 	vout.NormalW = mul(vin.NormalL, (float3x3)objectBuffer.World);
@@ -42,7 +43,8 @@ VertexOut VS(VertexIn vin)
 float4 PS(VertexOut pin) : SV_Target
 {
 	// Fetch the material data.
-	MaterialData matData = materialData[objectBuffer.materialIndex];
+	//MaterialData matData = materialData[objectBuffer.materialIndex];
+    MaterialData matData = materialData;
 	float4 diffuseAlbedo = matData.DiffuseAlbedo;
 	uint diffuseMapIndex = matData.DiffuseMapIndex;
 	uint normalMapIndex = matData.NormalMapIndex;

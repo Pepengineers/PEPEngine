@@ -71,7 +71,7 @@ struct MaterialData
 
 // Put in space1, so the texture array does not overlap with these resources.  
 // The texture array will occupy registers t0, t1, ..., t3 in space0. 
-StructuredBuffer<MaterialData> materialData : register(t0, space1);
+ConstantBuffer<MaterialData> materialData : register(b0, space1);
 
 
 TextureCube SkyMap : register(t0);

@@ -16,7 +16,8 @@ VertexOut VS(VertexIn vin)
 {
 	VertexOut vout = (VertexOut)0.0f;
 
-	MaterialData matData = materialData[objectBuffer.materialIndex];
+	//MaterialData matData = materialData[objectBuffer.materialIndex];
+    MaterialData matData = materialData;
 
 	// Transform to world space.
 	float4 posW = mul(float4(vin.PosL, 1.0f), objectBuffer.World);
@@ -35,7 +36,8 @@ VertexOut VS(VertexIn vin)
 void PS(VertexOut pin)
 {
 	
-	MaterialData matData = materialData[objectBuffer.materialIndex];
+	//MaterialData matData = materialData[objectBuffer.materialIndex];
+    MaterialData matData = materialData;
 	float4 diffuseAlbedo = matData.DiffuseAlbedo;
 	uint diffuseMapIndex = matData.DiffuseMapIndex;
 
