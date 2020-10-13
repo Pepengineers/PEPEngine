@@ -4,20 +4,22 @@
 #include "AssetsLoader.h"
 #include "Camera.h"
 #include "CameraController.h"
+#include "d3dx12.h"
 #include "GameObject.h"
 #include "GCommandList.h"
 #include "GCommandQueue.h"
 #include "GDevice.h"
+#include "GDeviceFactory.h"
 #include "GMemory.h"
 #include "GResourceStateTracker.h"
 #include "ModelRenderer.h"
 #include "ObjectMover.h"
 #include "Renderer.h"
 #include "Rotater.h"
+#include "SkyBox.h"
 #include "Transform.h"
 #include "Window.h"
-#include "GDeviceFactory.h"
-
+#include <array>
 namespace DXLib
 {
 	SampleApp::SampleApp(HINSTANCE hInstance)
@@ -461,7 +463,8 @@ namespace DXLib
 		commandQueue->StartPixEvent(L"Prepare Render 3D");
 		cmdList->SetGMemory(&srvHeap);
 		cmdList->SetRootSignature(rootSignature.get());
-		
+		/*Bind all materials*/		
+		cmdList->SetRootShaderResourceView(StandardShaderSlot::MaterialData, *currentFrameResource->MaterialBuffer);
 		/*Bind all Diffuse Textures*/
 		cmdList->SetRootDescriptorTable(StandardShaderSlot::TexturesMap, &srvHeap);
 		commandQueue->EndPixEvent();
@@ -746,18 +749,16 @@ namespace DXLib
 		
 	void SampleApp::SetDefaultMaterialForModel(ModelRenderer* renderer) 
 	{
-		for (int i = 0; i < renderer->model->GetMeshesCount(); ++i)
-		{
-			renderer->SetMeshMaterial(i, loader.GetDefaultMaterial(renderer->model->GetMesh(i)));
-		}
+		
 	}
 
 	
 	void SampleApp::LoadModels()
 	{
 		auto queue = GDeviceFactory::GetDevice()->GetCommandQueue();
+		auto cmd = queue->GetCommandList();
 
-		auto nano = loader.GetOrCreateModelFromFile(queue, "Data\\Objects\\Nanosuit\\Nanosuit.obj");
+		auto nano = loader.CreateModelFromFile(cmd, "Data\\Objects\\Nanosuit\\Nanosuit.obj");
 
 
 		
@@ -765,47 +766,47 @@ namespace DXLib
 
 
 		
-		auto doom = loader.GetOrCreateModelFromFile(queue, "Data\\Objects\\DoomSlayer\\doommarine.obj");
+		auto doom = loader.CreateModelFromFile(cmd, "Data\\Objects\\DoomSlayer\\doommarine.obj");
 		models[L"doom"] = std::move(doom);
 		
-		auto atlas = loader.GetOrCreateModelFromFile(queue, "Data\\Objects\\Atlas\\Atlas.obj");
+		auto atlas = loader.CreateModelFromFile(cmd, "Data\\Objects\\Atlas\\Atlas.obj");
 		models[L"atlas"] = std::move(atlas);
 		
-		auto pbody = loader.GetOrCreateModelFromFile(queue, "Data\\Objects\\P-Body\\P-Body.obj");
+		auto pbody = loader.CreateModelFromFile(cmd, "Data\\Objects\\P-Body\\P-Body.obj");
 		models[L"pbody"] = std::move(pbody);
 		
-		auto golem = loader.GetOrCreateModelFromFile(queue, "Data\\Objects\\StoneGolem\\Stone.obj");
+		auto golem = loader.CreateModelFromFile(cmd, "Data\\Objects\\StoneGolem\\Stone.obj");
 		models[L"golem"] = std::move(golem);
 		
-		auto griffon = loader.GetOrCreateModelFromFile(queue, "Data\\Objects\\Griffon\\Griffon.FBX");
+		auto griffon = loader.CreateModelFromFile(cmd, "Data\\Objects\\Griffon\\Griffon.FBX");
 		griffon->scaleMatrix = Matrix::CreateScale(0.1);
 		models[L"griffon"] = std::move(griffon);
 
-		auto griffonOld = loader.GetOrCreateModelFromFile(queue, "Data\\Objects\\GriffonOld\\Griffon.FBX");
+		auto griffonOld = loader.CreateModelFromFile(cmd, "Data\\Objects\\GriffonOld\\Griffon.FBX");
 		griffonOld->scaleMatrix = Matrix::CreateScale(0.1);
 		models[L"griffonOld"] = std::move(griffonOld);
 		
-		auto mountDragon = loader.GetOrCreateModelFromFile(queue, "Data\\Objects\\MOUNTAIN_DRAGON\\MOUNTAIN_DRAGON.FBX");
+		auto mountDragon = loader.CreateModelFromFile(cmd, "Data\\Objects\\MOUNTAIN_DRAGON\\MOUNTAIN_DRAGON.FBX");
 		mountDragon->scaleMatrix = Matrix::CreateScale(0.1);
 		models[L"mountDragon"] = std::move(mountDragon);
 		
-		auto desertDragon = loader.GetOrCreateModelFromFile(queue, "Data\\Objects\\DesertDragon\\DesertDragon.FBX");
+		auto desertDragon = loader.CreateModelFromFile(cmd, "Data\\Objects\\DesertDragon\\DesertDragon.FBX");
 		desertDragon->scaleMatrix = Matrix::CreateScale(0.1);
 		models[L"desertDragon"] = std::move(desertDragon);
 		
-		auto stair = loader.GetOrCreateModelFromFile(queue, "Data\\Objects\\Temple\\SM_AsianCastle_A.FBX");
+		auto stair = loader.CreateModelFromFile(cmd, "Data\\Objects\\Temple\\SM_AsianCastle_A.FBX");
 		models[L"stair"] = std::move(stair);
 		
-		auto columns = loader.GetOrCreateModelFromFile(queue, "Data\\Objects\\Temple\\SM_AsianCastle_E.FBX");
+		auto columns = loader.CreateModelFromFile(cmd, "Data\\Objects\\Temple\\SM_AsianCastle_E.FBX");
 		models[L"columns"] = std::move(columns);
 		
-		auto fountain = loader.GetOrCreateModelFromFile(queue, "Data\\Objects\\Temple\\SM_Fountain.FBX");
+		auto fountain = loader.CreateModelFromFile(cmd, "Data\\Objects\\Temple\\SM_Fountain.FBX");
 		models[L"fountain"] = std::move(fountain);
 		
-		auto platform = loader.GetOrCreateModelFromFile(queue, "Data\\Objects\\Temple\\SM_PlatformSquare.FBX");
+		auto platform = loader.CreateModelFromFile(cmd, "Data\\Objects\\Temple\\SM_PlatformSquare.FBX");
 		models[L"platform"] = std::move(platform);
 		
-		
+		queue->WaitForFenceValue(queue->ExecuteCommandList(cmd));
 		queue->Flush();	
 	}
 	
@@ -832,7 +833,7 @@ namespace DXLib
 
 		rootSignature->AddConstantBufferParameter(0);
 		rootSignature->AddConstantBufferParameter(1);
-		rootSignature->AddConstantBufferParameter(0, 1);
+		rootSignature->AddShaderResourceView(0, 1);
 		rootSignature->AddDescriptorParameter(&texParam[0], 1, D3D12_SHADER_VISIBILITY_PIXEL);
 		rootSignature->AddDescriptorParameter(&texParam[1], 1, D3D12_SHADER_VISIBILITY_PIXEL);
 		rootSignature->AddDescriptorParameter(&texParam[2], 1, D3D12_SHADER_VISIBILITY_PIXEL);
@@ -1252,45 +1253,40 @@ namespace DXLib
 
 	void SampleApp::BuildGameObjects()
 	{
-		
-
-		
-		auto skySphere = std::make_unique<GameObject>( "Sky");
-		skySphere->GetTransform()->SetScale({500, 500, 500});
-		auto renderer = new ModelRenderer();
-		renderer->material = loader.GetMaterials(loader.GetMaterialIndex(L"sky")).get();
-		renderer->SetModel(models[L"sphere"]);
-		renderer->SetMeshMaterial(0, loader.GetMaterials(loader.GetMaterialIndex(L"sky")));
-		skySphere->AddComponent(renderer);
-		typedGameObjects[PsoType::SkyBox].push_back(skySphere.get());
-		gameObjects.push_back(std::move(skySphere));
-
-		auto quadRitem = std::make_unique<GameObject>( "Quad");
-		renderer = new ModelRenderer();
-		renderer->material = loader.GetMaterials(loader.GetMaterialIndex(L"seamless")).get();
-		renderer->SetModel(models[L"quad"]);
-		renderer->SetMeshMaterial(0, loader.GetMaterials(loader.GetMaterialIndex(L"seamless")));
+		auto quadRitem = std::make_unique<GameObject>("Quad");
+		auto renderer = std::make_shared<ModelRenderer>(GDeviceFactory::GetDevice(), models[L"quad"]);
+		models[L"quad"]->SetMeshMaterial(0, loader.GetMaterial(loader.GetMaterialIndex(L"seamless")));
 		quadRitem->AddComponent(renderer);
 		typedGameObjects[PsoType::Debug].push_back(quadRitem.get());
 		typedGameObjects[PsoType::Quad].push_back(quadRitem.get());
 		gameObjects.push_back(std::move(quadRitem));
 		
+		auto skySphere = std::make_unique<GameObject>( "Sky");
+		skySphere->GetTransform()->SetScale({500, 500, 500});
+		renderer = std::make_shared<SkyBox>(GDeviceFactory::GetDevice(), models[L"sphere"], *loader.GetTexture(loader.GetTextureIndex(L"skyTex")).get(), &srvHeap, loader.GetTextureIndex(L"skyTex"));		
+		models[L"sphere"]->SetMeshMaterial(0, loader.GetMaterial(loader.GetMaterialIndex(L"sky")));
+		skySphere->AddComponent(renderer);
+		typedGameObjects[PsoType::SkyBox].push_back(skySphere.get());
+		gameObjects.push_back(std::move(skySphere));
+
+		
+		
 		auto sun1 = std::make_unique<GameObject>("Directional Light");
-		auto light = new Light(Directional);
+		auto light = std::make_shared<Light>(Directional);
 		light->Direction({0.57735f, -0.57735f, 0.57735f});
 		light->Strength({0.8f, 0.8f, 0.8f});
 		sun1->AddComponent(light);
 		gameObjects.push_back(std::move(sun1));
 
 		auto sun2 = std::make_unique<GameObject>();
-		light = new Light();
+		light = std::make_shared<Light>();
 		light->Direction({-0.57735f, -0.57735f, 0.57735f});
 		light->Strength({0.4f, 0.4f, 0.4f});
 		sun2->AddComponent(light);
 		gameObjects.push_back(std::move(sun2));
 
 		auto sun3 = std::make_unique<GameObject>();
-		light = new Light();
+		light = std::make_shared<Light>();
 		light->Direction({0.0f, -0.707f, -0.707f});
 		light->Strength({0.2f, 0.2f, 0.2f});
 		sun3->AddComponent(light);
@@ -1300,7 +1296,7 @@ namespace DXLib
 		for (int i = 0; i < 11; ++i)
 		{
 
-			auto nano = CreateGOWithRenderer(loader.GetModelByName(L"Data\\Objects\\Nanosuit\\Nanosuit.obj"));
+			auto nano = CreateGOWithRenderer(models[L"nano"]);
 			nano->GetTransform()->SetPosition(Vector3::Right * -15 + Vector3::Forward * 12 * i);
 			nano->GetTransform()->SetEulerRotate(Vector3(0, -90, 0));
 			
@@ -1308,7 +1304,7 @@ namespace DXLib
 			gameObjects.push_back(std::move(nano));
 
 			
-			auto doom = CreateGOWithRenderer(loader.GetModelByName(L"Data\\Objects\\DoomSlayer\\doommarine.obj"));
+			auto doom = CreateGOWithRenderer(models[L"doom"]);
 			doom->SetScale(0.08);
 			doom->GetTransform()->SetPosition(Vector3::Right * 15 + Vector3::Forward * 12 * i);
 			doom->GetTransform()->SetEulerRotate(Vector3(0,90,0));
@@ -1321,13 +1317,13 @@ namespace DXLib
 		{
 			for (int j = 0; j < 3; ++j)
 			{
-				auto atlas = CreateGOWithRenderer(loader.GetModelByName(L"Data\\Objects\\Atlas\\Atlas.obj"));
+				auto atlas = CreateGOWithRenderer(models[L"atlas"]);
 				atlas->GetTransform()->SetPosition(Vector3::Right * -60 + Vector3::Right * -30 * j +  Vector3::Up * 11 + Vector3::Forward * 10 * i);
 				typedGameObjects[PsoType::Opaque].push_back(atlas.get());
 				gameObjects.push_back(std::move(atlas));
 
 
-				auto pbody = CreateGOWithRenderer(loader.GetModelByName(L"Data\\Objects\\P-Body\\P-Body.obj"));
+				auto pbody = CreateGOWithRenderer(models[L"pbody"]);
 				pbody->GetTransform()->SetPosition(Vector3::Right * 130 + Vector3::Right * -30 * j + Vector3::Up * 11 + Vector3::Forward * 10 * i);
 				typedGameObjects[PsoType::Opaque].push_back(pbody.get());
 				gameObjects.push_back(std::move(pbody));
@@ -1342,25 +1338,25 @@ namespace DXLib
 		typedGameObjects[PsoType::Opaque].push_back(platform.get());
 				
 		auto rotater = std::make_unique<GameObject>();
-		rotater->GetTransform()->SetParent(platform->GetTransform());
+		rotater->GetTransform()->SetParent(platform->GetTransform().get());
 		rotater->GetTransform()->SetPosition(Vector3::Forward * 325 + Vector3::Left * 625);
 		rotater->GetTransform()->SetEulerRotate(Vector3(0, -90, 90));
 		//rotater->AddComponent(new Rotater(10));	
 		
 
 		auto camera = std::make_unique<GameObject>( "MainCamera");
-		camera->GetTransform()->SetParent(rotater->GetTransform());
+		camera->GetTransform()->SetParent(rotater->GetTransform().get());
 		camera->GetTransform()->SetEulerRotate(Vector3(-30, 270, 0));
 		camera->GetTransform()->SetPosition(Vector3(-1000, 190, -32));
-		camera->AddComponent(new Camera(AspectRatio()));
-		camera->AddComponent(new CameraController());
+		camera->AddComponent(std::make_shared <Camera>(AspectRatio()));
+		camera->AddComponent(std::make_shared<CameraController>());
 		
 		gameObjects.push_back(std::move(camera));
 		gameObjects.push_back(std::move(rotater));
 
 		
 		auto stair = CreateGOWithRenderer(models[L"stair"]);
-		stair->GetTransform()->SetParent(platform->GetTransform());
+		stair->GetTransform()->SetParent(platform->GetTransform().get());
 		stair->SetScale(0.2);
 		stair->GetTransform()->SetEulerRotate(Vector3(0, 0, 90));
 		stair->GetTransform()->SetPosition(Vector3::Left * 700 );
@@ -1368,7 +1364,7 @@ namespace DXLib
 
 
 		auto columns = CreateGOWithRenderer(models[L"columns"]);
-		columns->GetTransform()->SetParent(stair->GetTransform());
+		columns->GetTransform()->SetParent(stair->GetTransform().get());
 		columns->SetScale(0.8);
 		columns->GetTransform()->SetEulerRotate(Vector3(0,0,90));
 		columns->GetTransform()->SetPosition(Vector3::Up * 2000 + Vector3::Forward * 900 );
@@ -1423,13 +1419,8 @@ namespace DXLib
 	std::unique_ptr<GameObject> SampleApp::CreateGOWithRenderer(std::shared_ptr<GModel> model) 
 	{
 		auto man = std::make_unique<GameObject>();
-		auto renderer = new ModelRenderer();
-		man->AddComponent(renderer);
-		renderer->SetModel(model);
-		for (int i = 0; i < renderer->model->GetMeshesCount(); ++i)
-		{
-			renderer->SetMeshMaterial(i, loader.GetDefaultMaterial(renderer->model->GetMesh(i)));
-		}		
+		auto renderer = std::make_shared<ModelRenderer>(GDeviceFactory::GetDevice(), model);
+		man->AddComponent(renderer);			
 		return man;
 	}
 	
@@ -1513,82 +1504,18 @@ namespace DXLib
 			auto light = item->GetComponent<Light>();
 			if (light != nullptr)
 			{
-				lights.push_back(light);
+				lights.push_back(light.get());
 			}
 
 			auto cam = item->GetComponent<Camera>();
 			if (cam != nullptr)
 			{
-				camera = std::unique_ptr<Camera>(cam);
+				camera = (cam);
 			}
 		}
 
 		std::sort(lights.begin(), lights.end(), [](Light const* a, Light const* b) { return a->Type() < b->Type(); });
-	}
-
-	std::array<const CD3DX12_STATIC_SAMPLER_DESC, 7> SampleApp::GetStaticSamplers()
-	{
-		const CD3DX12_STATIC_SAMPLER_DESC pointWrap(
-			0, // shaderRegister
-			D3D12_FILTER_MIN_MAG_MIP_POINT, // filter
-			D3D12_TEXTURE_ADDRESS_MODE_WRAP, // addressU
-			D3D12_TEXTURE_ADDRESS_MODE_WRAP, // addressV
-			D3D12_TEXTURE_ADDRESS_MODE_WRAP); // addressW
-
-		const CD3DX12_STATIC_SAMPLER_DESC pointClamp(
-			1, // shaderRegister
-			D3D12_FILTER_MIN_MAG_MIP_POINT, // filter
-			D3D12_TEXTURE_ADDRESS_MODE_CLAMP, // addressU
-			D3D12_TEXTURE_ADDRESS_MODE_CLAMP, // addressV
-			D3D12_TEXTURE_ADDRESS_MODE_CLAMP); // addressW
-
-		const CD3DX12_STATIC_SAMPLER_DESC linearWrap(
-			2, // shaderRegister
-			D3D12_FILTER_MIN_MAG_MIP_LINEAR, // filter
-			D3D12_TEXTURE_ADDRESS_MODE_WRAP, // addressU
-			D3D12_TEXTURE_ADDRESS_MODE_WRAP, // addressV
-			D3D12_TEXTURE_ADDRESS_MODE_WRAP); // addressW
-
-		const CD3DX12_STATIC_SAMPLER_DESC linearClamp(
-			3, // shaderRegister
-			D3D12_FILTER_MIN_MAG_MIP_LINEAR, // filter
-			D3D12_TEXTURE_ADDRESS_MODE_CLAMP, // addressU
-			D3D12_TEXTURE_ADDRESS_MODE_CLAMP, // addressV
-			D3D12_TEXTURE_ADDRESS_MODE_CLAMP); // addressW
-
-		const CD3DX12_STATIC_SAMPLER_DESC anisotropicWrap(
-			4, // shaderRegister
-			D3D12_FILTER_ANISOTROPIC, // filter
-			D3D12_TEXTURE_ADDRESS_MODE_WRAP, // addressU
-			D3D12_TEXTURE_ADDRESS_MODE_WRAP, // addressV
-			D3D12_TEXTURE_ADDRESS_MODE_WRAP, // addressW
-			0.0f, // mipLODBias
-			8); // maxAnisotropy
-
-		const CD3DX12_STATIC_SAMPLER_DESC anisotropicClamp(
-			5, // shaderRegister
-			D3D12_FILTER_ANISOTROPIC, // filter
-			D3D12_TEXTURE_ADDRESS_MODE_CLAMP, // addressU
-			D3D12_TEXTURE_ADDRESS_MODE_CLAMP, // addressV
-			D3D12_TEXTURE_ADDRESS_MODE_CLAMP, // addressW
-			0.0f, // mipLODBias
-			8); // maxAnisotropy
-
-		const CD3DX12_STATIC_SAMPLER_DESC cubesTexSampler(
-			6, // shaderRegister
-			D3D12_FILTER_MIN_MAG_MIP_LINEAR, // filter
-			D3D12_TEXTURE_ADDRESS_MODE_WRAP, // addressU
-			D3D12_TEXTURE_ADDRESS_MODE_WRAP, // addressV
-			D3D12_TEXTURE_ADDRESS_MODE_WRAP, // addressW
-			0.0f, // mipLODBias
-			8, // maxAnisotropy
-			D3D12_COMPARISON_FUNC_NEVER);
-
-
-		return {
-			pointWrap, pointClamp,
-			linearWrap, linearClamp,
-			anisotropicWrap, anisotropicClamp, cubesTexSampler
-		};
-	}
+	}\
+	
+	
 }

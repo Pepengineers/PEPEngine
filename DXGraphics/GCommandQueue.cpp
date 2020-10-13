@@ -1,7 +1,10 @@
 #include "GCommandQueue.h"
+
+
 #include "d3dUtil.h"
 #include "GCommandList.h"
 #include "GDevice.h"
+#include "GResource.h"
 #include "GResourceStateTracker.h"
 #include "pix3.h"
 
@@ -19,7 +22,6 @@ namespace DXLib
 		desc.NodeMask = device->GetNodeMask();
 
 		ThrowIfFailed(device->GetDXDevice()->CreateCommandQueue(&desc, IID_PPV_ARGS(&commandQueue)));
-		ThrowIfFailed(commandQueue->GetTimestampFrequency(&queueTimestampFrequencies));
 
 		ThrowIfFailed(device->GetDXDevice()->CreateFence(FenceValue, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence)));
 
@@ -48,14 +50,62 @@ namespace DXLib
 			break;
 		}
 
+		GetTimestampFreq();
+
+		// Two timestamps for each frame.
+		const UINT resultCount = 2 * globalCountFrameResources;
+		const UINT resultBufferSize = resultCount * sizeof(UINT64);
+
+
+		timestampResultBuffer = DXLib::Lazy<GResource>([resultBufferSize, this]
+		{
+			return GResource(this->device, CD3DX12_RESOURCE_DESC::Buffer(resultBufferSize),
+			                 this->device->GetName() + L" TimestampBuffer", nullptr, D3D12_RESOURCE_STATE_COPY_DEST,
+			                 CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_READBACK));
+		});
+
+		timestampQueryHeap = DXLib::Lazy<ComPtr<ID3D12QueryHeap>>([this, resultCount]
+		{
+			D3D12_QUERY_HEAP_DESC timestampHeapDesc = {};
+			timestampHeapDesc.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
+			timestampHeapDesc.Count = resultCount;
+			timestampHeapDesc.NodeMask = this->device->GetNodeMask();
+
+			ComPtr<ID3D12QueryHeap> heap;
+			ThrowIfFailed(this->device->GetDXDevice()->CreateQueryHeap(&timestampHeapDesc, IID_PPV_ARGS(&heap)));
+			return heap;
+		});
+
 
 		CommandListExecutorThread = std::thread(&GCommandQueue::ProccessInFlightCommandLists, this);
 	}
 
+	UINT64 GCommandQueue::GetTimestamp(UINT index)
+	{
+		if (type != D3D12_COMMAND_LIST_TYPE_DIRECT && type != D3D12_COMMAND_LIST_TYPE_COMPUTE)
+		{
+			return 0;
+		}
+
+		readRange.Begin = 2 * index * sizeof(UINT64);
+		readRange.End = readRange.Begin + 2 * sizeof(UINT64);
+
+		(timestampResultBuffer.value().GetD3D12Resource()->Map(0, &readRange, &mappedData));
+
+		const UINT64* pTimestamps = reinterpret_cast<UINT64*>(static_cast<UINT8*>(mappedData) + readRange.Begin);
+		const UINT64 timeStampDelta = pTimestamps[1] - pTimestamps[0];
+
+		// Unmap with an empty range (written range).
+		timestampResultBuffer.value().GetD3D12Resource()->Unmap(0, &emptyRange);
+
+		// Calculate the GPU execution time in microseconds.
+		return (timeStampDelta * 1000000) / GetTimestampFreq();
+	}
+
+
 	GCommandQueue::~GCommandQueue()
 	{
-		IsExecutorAlive = false;
-		CommandListExecutorThread.join();
+		HardStop();
 	}
 
 	uint64_t GCommandQueue::Signal()
@@ -69,7 +119,7 @@ namespace DXLib
 	{
 		commandQueue->Signal(otherFence.Get(), fenceValue);
 	}
-	
+
 	bool GCommandQueue::IsFinish(uint64_t fenceValue) const
 	{
 		return fence->GetCompletedValue() >= fenceValue;
@@ -80,7 +130,7 @@ namespace DXLib
 		if (IsFinish(fenceValue))
 			return;
 
-		auto event = ::CreateEvent(nullptr, FALSE, FALSE, NULL);
+		auto event = ::CreateEvent(nullptr, FALSE, FALSE, nullptr);
 		assert(event && "Failed to create fence event handle.");
 
 		fence->SetEventOnCompletion(fenceValue, event);
@@ -100,13 +150,13 @@ namespace DXLib
 	{
 		std::shared_ptr<GCommandList> commandList;
 
-		if (m_AvailableCommandLists.Empty())
+		if (availableCommandLists.Empty())
 		{
-			commandList = std::make_shared<GCommandList>(this->device, this->type);
+			commandList = std::make_shared<GCommandList>(shared_from_this(), this->type);
 			return commandList;
 		}
 
-		if (m_AvailableCommandLists.TryPop(commandList))
+		if (availableCommandLists.TryPop(commandList))
 		{
 			return commandList;
 		}
@@ -136,8 +186,10 @@ namespace DXLib
 			auto commandList = commandLists[i];
 
 			auto pendingCommandList = GetCommandList();
-			bool hasPendingBarriers = commandList->Close(*pendingCommandList);
-			pendingCommandList->Close();
+
+			bool hasPendingBarriers = commandList->Close(pendingCommandList);
+			if (pendingCommandList != nullptr)
+				pendingCommandList->Close();
 			// If there are no pending barriers on the pending command list, there is no reason to 
 			// execute an empty command list on the command queue.
 			if (hasPendingBarriers)
@@ -146,7 +198,9 @@ namespace DXLib
 			}
 			d3d12CommandLists.push_back(commandList->GetGraphicsCommandList().Get());
 
-			toBeQueued.push_back(pendingCommandList);
+			if (pendingCommandList != nullptr)
+				toBeQueued.push_back(pendingCommandList);
+
 			toBeQueued.push_back(commandList);
 		}
 
@@ -196,6 +250,36 @@ namespace DXLib
 		return FenceValue;
 	}
 
+	UINT64 GCommandQueue::GetTimestampFreq()
+	{
+		if (type != D3D12_COMMAND_LIST_TYPE_DIRECT && type != D3D12_COMMAND_LIST_TYPE_COMPUTE)
+		{
+			return 0;
+		}
+
+		if (queueTimestampFrequencies == 0)
+		{
+			(commandQueue->GetTimestampFrequency(&queueTimestampFrequencies));
+
+			if (queueTimestampFrequencies == 0)
+			{
+				queueTimestampFrequencies = 1;
+			}
+		}
+
+
+		return queueTimestampFrequencies;
+	}
+
+	void GCommandQueue::HardStop()
+	{
+		if (IsExecutorAlive)
+		{
+			IsExecutorAlive = false;
+			CommandListExecutorThread.join();
+		}
+	}
+
 
 	void GCommandQueue::ProccessInFlightCommandLists()
 	{
@@ -206,17 +290,28 @@ namespace DXLib
 			CommandListEntry commandListEntry;
 
 			lock.lock();
+
 			while (m_InFlightCommandLists.TryPop(commandListEntry))
 			{
-				auto fenceValue = commandListEntry.fenceValue;
-				auto commandList = commandListEntry.commandList;
+				try
+				{
+					auto fenceValue = commandListEntry.fenceValue;
+					auto commandList = commandListEntry.commandList;
 
-				WaitForFenceValue(fenceValue);
+					WaitForFenceValue(fenceValue);
 
-				commandList->Reset();
+					commandList->Reset();
 
-				m_AvailableCommandLists.Push(commandList);
+					availableCommandLists.Push(commandList);
+				}
+				catch (...)
+				{
+					commandListEntry.commandList.reset();
+					commandListEntry.commandList = nullptr;
+				}
 			}
+
+
 			lock.unlock();
 			CommandListExecutorCondition.notify_one();
 

@@ -4,7 +4,6 @@
 #define _CRTDBG_MAP_ALLOC
 #endif
 
-#include "d3dUtil.h"
 #include "GameTimer.h"
 
 // Link necessary d3d12 libraries.
@@ -23,10 +22,12 @@
 #include <dxgi1_6.h>
 #include "Camera.h"
 #include "Lazy.h"
-#include "MemoryAllocator.h"
 #include "GDevice.h"
 #include "KeyboardDevice.h"
 #include "Mousepad.h"
+
+
+
 using Microsoft::WRL::ComPtr;
 
 class GDevice;
@@ -43,7 +44,7 @@ namespace DXLib
 
 		KeyboardDevice keyboard;
 		Mousepad mouse;
-		std::unique_ptr<Camera> camera = nullptr;
+		std::shared_ptr<Camera> camera = nullptr;
 		
 		D3DApp(HINSTANCE hInstance);
 		D3DApp(const D3DApp& rhs) = delete;
@@ -73,7 +74,7 @@ namespace DXLib
 
 		static void Quit(int exitCode = 0);
 
-		void Flush();
+		void virtual  Flush();
 
 		GameTimer* GetTimer();
 
@@ -86,7 +87,7 @@ namespace DXLib
 		bool Get4xMsaaState() const;
 		void Set4xMsaaState(bool value);
 
-		int Run();
+		int virtual Run();
 
 		virtual bool Initialize();
 		virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -127,6 +128,7 @@ namespace DXLib
 
 
 		uint64_t frameCount = 0;
+		float timeElapsed = 0.0f;
 		GameTimer timer;
 
 		bool virtual InitMainWindow();
@@ -135,7 +137,7 @@ namespace DXLib
 		bool InitDirect3D();
 
 
-		void CalculateFrameStats() const;
+		void virtual CalculateFrameStats();
 
 		void LogAdapters();
 	};

@@ -98,8 +98,16 @@ void GResourceStateTracker::ResourceBarrier(const D3D12_RESOURCE_BARRIER& barrie
 		}
 
 		// Push the final known state (possibly replacing the previously known state for the subresource).
-		finalResourceState[transitionBarrier.pResource].SetSubresourceState(
-			transitionBarrier.Subresource, transitionBarrier.StateAfter);
+		if (transitionBarrier.pResource)
+		{
+			if (finalResourceState.find(transitionBarrier.pResource) == finalResourceState.end())
+			{
+				finalResourceState[transitionBarrier.pResource] = ResourceState();
+			}
+
+			finalResourceState[transitionBarrier.pResource].SetSubresourceState(
+				transitionBarrier.Subresource, transitionBarrier.StateAfter);
+		}
 	}
 	else
 	{
@@ -139,7 +147,7 @@ void GResourceStateTracker::AliasBarrier(const GResource* resourceBefore, const 
 	ResourceBarrier(CD3DX12_RESOURCE_BARRIER::Aliasing(pResourceBefore, pResourceAfter));
 }
 
-void GResourceStateTracker::FlushResourceBarriers(ID3D12GraphicsCommandList2& commandList)
+void GResourceStateTracker::FlushResourceBarriers(ComPtr<ID3D12GraphicsCommandList2> commandList)
 {
 	FlushPendingResourceBarriers(commandList);
 
@@ -147,12 +155,12 @@ void GResourceStateTracker::FlushResourceBarriers(ID3D12GraphicsCommandList2& co
 	UINT numBarriers = static_cast<UINT>(resourceBarriers.size());
 	if (numBarriers > 0)
 	{
-		commandList.ResourceBarrier(numBarriers, resourceBarriers.data());
+		commandList->ResourceBarrier(numBarriers, resourceBarriers.data());
 		resourceBarriers.clear();
 	}
 }
 
-uint32_t GResourceStateTracker::FlushPendingResourceBarriers(ID3D12GraphicsCommandList2& commandList)
+uint32_t GResourceStateTracker::FlushPendingResourceBarriers(ComPtr<ID3D12GraphicsCommandList2> commandList)
 {
 	// Resolve the pending resource barriers by checking the global state of the 
 	// (sub)resources. Add barriers if the pending state and the global state do
@@ -207,7 +215,7 @@ uint32_t GResourceStateTracker::FlushPendingResourceBarriers(ID3D12GraphicsComma
 	UINT numBarriers = static_cast<UINT>(resourceBarriers.size());
 	if (numBarriers > 0)
 	{
-		commandList.ResourceBarrier(numBarriers, resourceBarriers.data());
+		commandList->ResourceBarrier(numBarriers, resourceBarriers.data());
 	}
 
 	pendingResourceBarriers.clear();
@@ -221,7 +229,7 @@ void GResourceStateTracker::CommitFinalResourceStates()
 	assert(isLocked);
 
 	// Commit final resource states to the global resource state array (map).
-	for (const auto& resourceState : finalResourceState)
+	for (auto&& resourceState : finalResourceState)
 	{
 		globalResourceState[resourceState.first] = resourceState.second;
 	}
@@ -232,9 +240,16 @@ void GResourceStateTracker::CommitFinalResourceStates()
 void GResourceStateTracker::Reset()
 {
 	// Reset the pending, current, and final resource states.
-	pendingResourceBarriers.clear();
-	resourceBarriers.clear();
-	finalResourceState.clear();
+	try
+	{
+		pendingResourceBarriers.clear();
+		resourceBarriers.clear();
+		finalResourceState.erase(nullptr);
+		finalResourceState.clear();
+	}
+	catch (...)
+	{
+	}
 }
 
 void GResourceStateTracker::Lock()

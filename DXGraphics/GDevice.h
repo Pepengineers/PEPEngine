@@ -29,6 +29,12 @@ private:
 	DXLib::Lazy<custom_vector<DXLib::Lazy<std::shared_ptr<DXLib::GCommandQueue>>>> queues;
 
 	DXLib::Lazy<bool> crossAdapterTextureSupport;
+
+	// Get the timestamp values from the result buffers.
+	D3D12_RANGE readRange = {};
+	const D3D12_RANGE emptyRange = {};
+
+	void* mappedData = nullptr;
 	DXLib::Lazy<GResource> timestampResultBuffer;
 	DXLib::Lazy<ComPtr<ID3D12QueryHeap>> timestampQueryHeap;
 
@@ -49,14 +55,12 @@ private:
 	void InitialQueryTimeStamp();
 	void InitialDevice();
 
-
-	
-
 public:
 
 	GDevice(ComPtr<IDXGIAdapter3> adapter);
-	
+
 	~GDevice();
+
 
 	void ResetAllocator(uint64_t frameCount);
 
@@ -79,6 +83,8 @@ public:
 	UINT GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE type) const;
 
 	void Flush() const;
+
+	void TerminatedQueuesWorker();
 
 	ComPtr<ID3D12Device> GetDXDevice() const;
 

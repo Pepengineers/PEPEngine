@@ -1,22 +1,19 @@
 #pragma once
 #include "Renderer.h"
-#include "GModel.h"
 
 class Transform;
 class GCommandList;
+class GModel;
 
 class ModelRenderer : public Renderer
 {	
-
-	ObjectConstants constantData{};
-	
-	std::unique_ptr<ConstantBuffer<ObjectConstants>> modelDataBuffer = nullptr;
-	std::unique_ptr<ConstantBuffer<MaterialConstants>> materialsDataBuffer = nullptr;
-	
-	custom_vector<std::shared_ptr<Material>> meshesMaterials = MemoryAllocator::CreateVector< std::shared_ptr<Material>>();
-	
-	
 protected:
+
+	ObjectConstants objectWorldData{};
+	std::shared_ptr<ConstantBuffer<ObjectConstants>> modelDataBuffer = nullptr;
+	std::shared_ptr<GDevice> device;
+	std::shared_ptr<GModel> model;
+	
 		
 	void Draw(std::shared_ptr<GCommandList> cmdList) override;
 
@@ -24,11 +21,7 @@ protected:
 
 public:
 
-	std::shared_ptr<GModel> model = nullptr;
+	ModelRenderer(const std::shared_ptr<GDevice> device, std::shared_ptr<GModel> model);	
 
 	void SetModel(std::shared_ptr<GModel> asset);
-
-	UINT GetMeshesCount() const;
-
-	void SetMeshMaterial(UINT index, const std::shared_ptr<Material> material);
 };

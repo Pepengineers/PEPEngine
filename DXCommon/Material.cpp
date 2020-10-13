@@ -54,8 +54,7 @@ void Material::InitMaterial(GMemory* textureHeap)
 {
 	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-
-	
+		
 	//TODO: Подумать как можно от этого избавиться, и работать всегда только с индексами
 	if (diffuseMap)
 	{
@@ -74,11 +73,6 @@ void Material::InitMaterial(GMemory* textureHeap)
 		
 		switch (type)
 		{
-		case PsoType::SkyBox:
-			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
-			srvDesc.TextureCube.MipLevels = desc.MipLevels;
-			srvDesc.TextureCube.MostDetailedMip = 0;
-			break;
 		case PsoType::AlphaSprites:
 			srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
 			srvDesc.Texture2DArray.MostDetailedMip = 0;
@@ -105,13 +99,7 @@ void Material::InitMaterial(GMemory* textureHeap)
 		srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
 		srvDesc.Texture2D.MipLevels = normalMap->GetD3D12Resource()->GetDesc().MipLevels;
 		normalMap->CreateShaderResourceView(&srvDesc, textureHeap, NormalMapIndex);
-
 	}
-}
-
-void Material::Draw(std::shared_ptr<GCommandList> cmdList) const
-{
-	
 }
 
 void Material::Update()
@@ -121,7 +109,7 @@ void Material::Update()
 		matConstants.DiffuseAlbedo = DiffuseAlbedo;
 		matConstants.FresnelR0 = FresnelR0;
 		matConstants.Roughness = Roughness;
-		XMStoreFloat4x4(&matConstants.MaterialTransform, XMMatrixTranspose(XMLoadFloat4x4(&MatTransform)));
+		matConstants.MaterialTransform = MatTransform.Transpose();
 		matConstants.DiffuseMapIndex = DiffuseMapIndex;
 		matConstants.NormalMapIndex = NormalMapIndex;
 

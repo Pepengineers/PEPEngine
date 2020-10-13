@@ -1,9 +1,8 @@
 #pragma once
 
 #include <DirectXColors.h>
-
 #include "d3dUtil.h"
-#include "DirectXBuffers.h"
+#include "d3dx12.h"
 #include "GraphicPSO.h"
 #include "ShaderBuffersData.h"
 #include "GTexture.h"
@@ -20,7 +19,7 @@ class Material
 	UINT materialIndex = -1;
 
 	std::wstring Name;
-	
+
 	PsoType::Type type = PsoType::Opaque;
 
 	MaterialConstants matConstants{};
@@ -29,10 +28,13 @@ class Material
 
 	std::shared_ptr<GTexture> diffuseMap = nullptr;
 	std::shared_ptr<GTexture> normalMap = nullptr;
-	
+
 
 	UINT DiffuseMapIndex = -1;
 	UINT NormalMapIndex = -1;
+
+	CD3DX12_GPU_DESCRIPTOR_HANDLE gpuTextureHandle;
+	CD3DX12_CPU_DESCRIPTOR_HANDLE cpuTextureHandle;
 
 public:
 
@@ -40,12 +42,12 @@ public:
 	{
 		return materialIndex;
 	}
-	
+
 	void SetMaterialIndex(UINT index)
 	{
 		materialIndex = index;
 	}
-	
+
 	std::shared_ptr<GTexture> GetDiffuseTexture() const
 	{
 		return diffuseMap;
@@ -53,7 +55,7 @@ public:
 
 	std::shared_ptr<GTexture> GetNormalTexture() const
 	{
-		return  normalMap;
+		return normalMap;
 	}
 
 	UINT GetDiffuseMapIndex() const
@@ -65,7 +67,7 @@ public:
 	{
 		return NormalMapIndex;
 	}
-	
+
 	MaterialConstants& GetMaterialConstantData();
 
 	UINT GetIndex() const;
@@ -84,14 +86,12 @@ public:
 
 	void InitMaterial(GMemory* textureHeap);
 
-	void Draw(std::shared_ptr<GCommandList> cmdList) const;
-
 	void Update();
 
 	std::wstring& GetName();
 
-	DirectX::XMFLOAT4 DiffuseAlbedo = DirectX::XMFLOAT4(DirectX::Colors::White);
-	DirectX::XMFLOAT3 FresnelR0 = {0.01f, 0.01f, 0.01f};
+	Vector4 DiffuseAlbedo = DirectX::XMFLOAT4(DirectX::Colors::White);
+	Vector3 FresnelR0 = {0.01f, 0.01f, 0.01f};
 	float Roughness = .25f;
-	DirectX::XMFLOAT4X4 MatTransform = MathHelper::Identity4x4();
+	Matrix MatTransform = Matrix::Identity;
 };
