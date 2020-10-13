@@ -75,9 +75,6 @@
     <ClInclude Include="GameObject.h">
       <Filter>Components</Filter>
     </ClInclude>
-    <ClInclude Include="GCrossAdapterResource.h">
-      <Filter>Render</Filter>
-    </ClInclude>
     <ClInclude Include="GMesh.h">
       <Filter>Render</Filter>
     </ClInclude>
@@ -135,9 +132,6 @@
       <Filter>Render</Filter>
     </ClCompile>
     <ClCompile Include="GModel.cpp">
-      <Filter>Render</Filter>
-    </ClCompile>
-    <ClCompile Include="GCrossAdapterResource.cpp">
       <Filter>Render</Filter>
     </ClCompile>
     <ClCompile Include="Material.cpp">

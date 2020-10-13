@@ -1,7 +1,12 @@
 #include "pch.h"
 #include "Component.h"
 
-
-Component::Component()
+namespace DX
 {
+	namespace Common
+	{
+		Component::Component()
+		{
+		}
+	}
 }

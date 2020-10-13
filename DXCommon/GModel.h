@@ -2,43 +2,53 @@
 #include "d3d12.h"
 #include <SimpleMath.h>
 #include "MemoryAllocator.h"
+#include "GCommandList.h"
+namespace DX
+{
+	namespace Common
+	{
+		using namespace DX::Allocator;
+		using namespace DX::Graphics;
+		
+		class NativeModel;
+		class Material;
+		class GMesh;
 
-class GCommandList;
-class NativeModel;
-class Material;
-class GMesh;
+		class GModel
+		{
+			
+			std::shared_ptr<NativeModel> model;
 
-class GModel
-{	
-	std::shared_ptr<NativeModel> model;
-	
-	std::vector<std::shared_ptr<GMesh>> gmeshes{};
-	
-	custom_vector<std::shared_ptr<Material>> meshesMaterials = MemoryAllocator::CreateVector< std::shared_ptr<Material>>();
+			std::vector<std::shared_ptr<GMesh>> gmeshes{};
 
-public:
+			custom_vector<std::shared_ptr<Material>> meshesMaterials = MemoryAllocator::CreateVector< std::shared_ptr<Material>>();
 
-	DirectX::SimpleMath::Matrix scaleMatrix = DirectX::SimpleMath::Matrix::CreateScale(1);
+		public:
 
-	UINT GetMeshesCount() const;
+			DirectX::SimpleMath::Matrix scaleMatrix = DirectX::SimpleMath::Matrix::CreateScale(1);
 
-	std::shared_ptr<Material> GetMeshMaterial(UINT index);
+			UINT GetMeshesCount() const;
 
-	std::shared_ptr<GMesh> GetMesh(UINT index);
+			std::shared_ptr<Material> GetMeshMaterial(UINT index);
 
-	std::wstring GetName() const;;
+			std::shared_ptr<GMesh> GetMesh(UINT index);
 
-	GModel(std::shared_ptr<NativeModel> model, std::shared_ptr<GCommandList> uploadCmdList);
-	void SetMeshMaterial(UINT index, std::shared_ptr<Material> material);
+			std::wstring GetName() const;;
 
-	GModel(const GModel& copy);;
+			GModel(std::shared_ptr<NativeModel> model, std::shared_ptr<Graphics::GCommandList> uploadCmdList);
+			
+			void SetMeshMaterial(UINT index, std::shared_ptr<Material> material);
 
-	~GModel();
+			GModel(const GModel& copy);;
 
-	void Draw(std::shared_ptr<GCommandList> cmdList);
+			~GModel();
 
-	std::shared_ptr<GModel> Dublicate(std::shared_ptr<GCommandList> otherDeviceCmdList) const;
-};
+			void Draw(std::shared_ptr<GCommandList> cmdList);
+
+			std::shared_ptr<GModel> Dublicate(std::shared_ptr<Graphics::GCommandList> otherDeviceCmdList) const;
+		};
 
 
 
+	}
+}

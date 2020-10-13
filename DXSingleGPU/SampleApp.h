@@ -1,44 +1,44 @@
 #pragma once
-
 #include "AssetsLoader.h"
-#include "Camera.h"
 #include "d3dApp.h"
-#include "FrameResource.h"
-#include "GameTimer.h"
-#include "GMemory.h"
 #include "GModel.h"
-#include "GraphicPSO.h"
-#include "GRootSignature.h"
-#include "GShader.h"
-#include "KeyboardDevice.h"
-#include "Light.h"
-#include "Mousepad.h"
+#include "FrameResource.h"
 #include "ShadowMap.h"
 #include "SSAA.h"
 #include "Ssao.h"
+#include "GMemory.h"
+#include "Light.h"
 
-using Microsoft::WRL::ComPtr;
-using namespace DirectX;
-using namespace PackedVector;
 
-class ModelRenderer;
-
-namespace DXLib
+namespace DX
 {
+	namespace Common
+	{
+		class ModelRenderer;
+	}
+
+	using Microsoft::WRL::ComPtr;
+	using namespace DirectX;
+	using namespace PackedVector;
+
+	using namespace Common;
+	using namespace Graphics;
+	using namespace Allocator;
+
 	class SampleApp : public D3DApp
 	{
 	public:
 		SampleApp(HINSTANCE hInstance);
 		SampleApp(const SampleApp& rhs) = delete;
 		SampleApp& operator=(const SampleApp& rhs) = delete;
-		~SampleApp();	
+		~SampleApp();
 
 		void GeneratedMipMap();
 		void BuildSsaoRootSignature();
-		
+
 		bool Initialize() override;
 
-		
+
 		UINT pathMapShow = 0;
 		//off, shadowMap, ssaoMap
 		const UINT maxPathMap = 3;
@@ -46,7 +46,7 @@ namespace DXLib
 	private:
 
 		LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
-		
+
 		void OnResize() override;
 		void UpdateShadowTransform(const GameTimer& gt);
 		void UpdateShadowPassCB(const GameTimer& gt);
@@ -67,7 +67,7 @@ namespace DXLib
 		void UpdateMainPassCB(const GameTimer& gt);
 
 
-		void LoadTextures( std::shared_ptr<GCommandList> cmdList);
+		void LoadTextures(std::shared_ptr<GCommandList> cmdList);
 		void BuildRootSignature();
 		void BuildShadersAndInputLayout();
 		void BuildShapeGeometry();
@@ -78,7 +78,7 @@ namespace DXLib
 		std::unique_ptr<GameObject> CreateGOWithRenderer(std::shared_ptr<GModel> model);
 		static void DrawGameObjects(std::shared_ptr<GCommandList> cmdList, const custom_vector<GameObject*>& ritems);
 		void SortGO();
-		
+
 	private:
 
 		UINT backBufferIndex = 0;
@@ -89,37 +89,45 @@ namespace DXLib
 		D3D12_RECT rect;
 
 		GMemory renderTargetMemory;
-		
-		custom_unordered_map<std::wstring, std::shared_ptr<GModel>> models = MemoryAllocator::CreateUnorderedMap<std::wstring, std::shared_ptr<GModel>>();
-			
-		custom_vector<std::unique_ptr<FrameResource>> frameResources = MemoryAllocator::CreateVector<std::unique_ptr<FrameResource>>();
-		
+
+		custom_unordered_map<std::wstring, std::shared_ptr<GModel>> models = MemoryAllocator::CreateUnorderedMap<
+			std::wstring, std::shared_ptr<GModel>>();
+
+		custom_vector<std::unique_ptr<FrameResource>> frameResources = MemoryAllocator::CreateVector<std::unique_ptr<
+			FrameResource>>();
+
 		FrameResource* currentFrameResource = nullptr;
 		int currentFrameResourceIndex = 0;
 
-		
+
 		std::unique_ptr<GRootSignature> rootSignature = nullptr;
 		std::unique_ptr<GRootSignature> ssaoRootSignature = nullptr;
 		std::unique_ptr<ShadowMap> shadowMap;
 		std::unique_ptr<Ssao> ssao;
 		std::unique_ptr<SSAA> ssaa;
-		
+
 		GMemory srvHeap;
 		AssetsLoader loader;
-				
-		
-		custom_unordered_map<std::string, std::unique_ptr<GShader>> shaders = MemoryAllocator::CreateUnorderedMap<std::string, std::unique_ptr<GShader>>();
-				
-		custom_unordered_map<PsoType::Type, std::unique_ptr<GraphicPSO>> psos = MemoryAllocator::CreateUnorderedMap<PsoType::Type, std::unique_ptr<GraphicPSO>>();
-		
-		custom_vector<Light*> lights = MemoryAllocator::CreateVector<Light*>();		
 
-		custom_vector<D3D12_INPUT_ELEMENT_DESC> defaultInputLayout = MemoryAllocator::CreateVector<D3D12_INPUT_ELEMENT_DESC>();
-		custom_vector<D3D12_INPUT_ELEMENT_DESC> treeSpriteInputLayout = MemoryAllocator::CreateVector<D3D12_INPUT_ELEMENT_DESC>();
 
-		custom_vector<std::unique_ptr<GameObject>> gameObjects = MemoryAllocator::CreateVector<std::unique_ptr<GameObject>>();
-		
-		custom_vector<custom_vector<GameObject*>> typedGameObjects = MemoryAllocator::CreateVector<custom_vector<GameObject*>>();
+		custom_unordered_map<std::string, std::unique_ptr<GShader>> shaders = MemoryAllocator::CreateUnorderedMap<
+			std::string, std::unique_ptr<GShader>>();
+
+		custom_unordered_map<PsoType::Type, std::unique_ptr<GraphicPSO>> psos = MemoryAllocator::CreateUnorderedMap<
+			PsoType::Type, std::unique_ptr<GraphicPSO>>();
+
+		custom_vector<Light*> lights = MemoryAllocator::CreateVector<Light*>();
+
+		custom_vector<D3D12_INPUT_ELEMENT_DESC> defaultInputLayout = MemoryAllocator::CreateVector<
+			D3D12_INPUT_ELEMENT_DESC>();
+		custom_vector<D3D12_INPUT_ELEMENT_DESC> treeSpriteInputLayout = MemoryAllocator::CreateVector<
+			D3D12_INPUT_ELEMENT_DESC>();
+
+		custom_vector<std::unique_ptr<GameObject>> gameObjects = MemoryAllocator::CreateVector<std::unique_ptr<
+			GameObject>>();
+
+		custom_vector<custom_vector<GameObject*>> typedGameObjects = MemoryAllocator::CreateVector<custom_vector<
+			GameObject*>>();
 
 		PassConstants mainPassCB;
 		PassConstants mShadowPassCB;
@@ -139,10 +147,7 @@ namespace DXLib
 		};
 		Vector3 mRotatedLightDirections[3];
 
-		
 
 		BoundingSphere mSceneBounds;
 	};
-
-	
 }

@@ -6,35 +6,43 @@
 #include <mutex>
 #include <memory>
 
-class GHeap;
-class GDevice;
-
-class GAllocator
+namespace DX
 {
-public:
+	namespace Graphics
+	{
+		using namespace DX::Allocator;
+		
+		class GHeap;
+		class GDevice;
 
-	GAllocator(std::shared_ptr<GDevice> device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t descriptorsPerPage = 1024);
+		class GAllocator
+		{
+		public:
 
-	virtual ~GAllocator();
+			GAllocator(std::shared_ptr<GDevice> device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t descriptorsPerPage = 1024);
 
-	GMemory Allocate(uint32_t descriptorCount = 1);
+			virtual ~GAllocator();
 
-	void ReleaseStaleDescriptors(uint64_t frameNumber);
+			GMemory Allocate(uint32_t descriptorCount = 1);
 
-private:
-	using GraphicMemoryPage = custom_vector<std::shared_ptr<GHeap>>;
+			void ReleaseStaleDescriptors(uint64_t frameNumber);
 
-	std::shared_ptr<GHeap> CreateAllocatorPage();
+		private:
+			using GraphicMemoryPage = custom_vector<std::shared_ptr<GHeap>>;
 
-	D3D12_DESCRIPTOR_HEAP_TYPE allocatorType;
+			std::shared_ptr<GHeap> CreateAllocatorPage();
 
-	uint32_t numDescriptorsPerPage;
+			D3D12_DESCRIPTOR_HEAP_TYPE allocatorType;
 
-	GraphicMemoryPage pages = MemoryAllocator::CreateVector<std::shared_ptr<GHeap>>();
+			uint32_t numDescriptorsPerPage;
 
-	custom_set<size_t> availablePages = MemoryAllocator::CreateSet<size_t>();
+			GraphicMemoryPage pages = MemoryAllocator::CreateVector<std::shared_ptr<GHeap>>();
 
-	std::mutex allocationMutex;
+			custom_set<size_t> availablePages = MemoryAllocator::CreateSet<size_t>();
 
-	std::shared_ptr<GDevice> device;
-};
+			std::mutex allocationMutex;
+
+			std::shared_ptr<GDevice> device;
+		};
+	}
+}

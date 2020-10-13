@@ -2,7 +2,7 @@
 #include "d3dApp.h"
 #include "MultiGPUSimple.h"
 
-using namespace DXLib;
+using namespace DX;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 	PSTR cmdLine, int showCmd)

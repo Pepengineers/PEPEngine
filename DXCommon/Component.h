@@ -1,20 +1,26 @@
 #pragma once
-#include "d3d12.h"
-#include "SimpleMath.h"
 #include "MemoryAllocator.h"
+#include "GCommandList.h"
 #include <memory>
-
-class GameObject;
-class GCommandList;
-
-class Component
+namespace DX
 {
-public:
+	namespace Common
+	{
+		using namespace DX::Allocator;
+		using namespace DX::Graphics;
+		
+		class GameObject;
 
-	GameObject* gameObject = nullptr;
+		class Component
+		{
+		public:
 
-	Component();
+			GameObject* gameObject = nullptr;
 
-	virtual void Update() = 0;
-	virtual void Draw(std::shared_ptr<GCommandList> cmdList) = 0;
-};
+			Component();
+
+			virtual void Update() = 0;
+			virtual void Draw(std::shared_ptr<GCommandList> cmdList) = 0;
+		};
+	}
+}

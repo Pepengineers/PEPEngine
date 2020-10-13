@@ -1,15 +1,18 @@
 #pragma once
 #include "Component.h"
 #include "Material.h"
-
-class GCommandList;
-
-class Renderer : public Component
+namespace DX
 {
-public:
+	namespace Common
+	{
+		class Renderer : public Component
+		{
+		public:
 
-	Renderer(): Component() {} ;
+			Renderer() : Component() {};
 
-	void Update() override = 0;
-	virtual void Draw(std::shared_ptr<GCommandList> cmdList) = 0;
-};
+			void Update() override = 0;
+			virtual void Draw(std::shared_ptr<GCommandList> cmdList) = 0;
+		};
+	}
+}

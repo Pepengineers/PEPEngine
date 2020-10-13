@@ -34,7 +34,6 @@ VertexOut VS(VertexIn vin)
 
 void PS(VertexOut pin)
 {
-	
 	MaterialData matData = materialData[objectBuffer.materialIndex];
 	float4 diffuseAlbedo = matData.DiffuseAlbedo;
 	uint diffuseMapIndex = matData.DiffuseMapIndex;

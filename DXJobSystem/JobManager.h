@@ -8,7 +8,9 @@ namespace DX
 {
 	namespace JobSystem
 	{
+		using namespace DX::Utils;
 
+		
 		class Thread;
 		struct TLS;
 		class Fiber;

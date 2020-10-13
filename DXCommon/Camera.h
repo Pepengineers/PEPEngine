@@ -3,43 +3,49 @@
 #include "d3dUtil.h"
 #include "SimpleMath.h"
 
-class GCommandList;
-using namespace DirectX::SimpleMath;
-
-class Camera : public Component
+namespace DX
 {
-	void Draw(std::shared_ptr<GCommandList> cmdList) override
-	{
-	};
-	void Update() override;
+	namespace Common
+	{	
 
-	void CreateProjection();
+		using namespace DirectX::SimpleMath;
 
-	Matrix view = Matrix::Identity;
-	Matrix projection = Matrix::Identity;
+		class Camera : public Component
+		{
+			void Draw(std::shared_ptr<GCommandList> cmdList) override
+			{
+			};
+			void Update() override;
 
-	float fov = 60;
-	float aspectRatio = 0;
-	float nearZ = 0.1;
-	float farZ = 10000;
+			void CreateProjection();
 
-	Vector3 focusPosition = Vector3::Zero;
+			Matrix view = Matrix::Identity;
+			Matrix projection = Matrix::Identity;
+
+			float fov = 60;
+			float aspectRatio = 0;
+			float nearZ = 0.1;
+			float farZ = 10000;
+
+			Vector3 focusPosition = Vector3::Zero;
 
 
-	int NumFramesDirty = globalCountFrameResources;
-public:
+			int NumFramesDirty = Utils::globalCountFrameResources;
+		public:
 
-	const Vector3& GetFocusPosition() const;
+			const Vector3& GetFocusPosition() const;
 
-	Camera(float aspect);;
+			Camera(float aspect);;
 
-	void SetAspectRatio(float aspect);
+			void SetAspectRatio(float aspect);
 
-	void SetFov(float fov);
+			void SetFov(float fov);
 
-	float GetFov() const;
+			float GetFov() const;
 
-	const Matrix& GetViewMatrix() const;
+			const Matrix& GetViewMatrix() const;
 
-	const Matrix& GetProjectionMatrix() const;
-};
+			const Matrix& GetProjectionMatrix() const;
+		};
+	}
+}

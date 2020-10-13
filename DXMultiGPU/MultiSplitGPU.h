@@ -1,20 +1,25 @@
 #pragma once
 #include "AssetsLoader.h"
-#include "Camera.h"
 #include "d3dApp.h"
-#include "GameObject.h"
-#include "SplitFrameResource.h"
-#include "GCrossAdapterResource.h"
-#include "GMemory.h"
-#include "GTexture.h"
+#include "GDeviceFactory.h"
+#include "GModel.h"
+#include "GraphicPSO.h"
 #include "Light.h"
+#include "Renderer.h"
 #include "ShaderFactory.h"
 #include "ShadowMap.h"
+#include "SplitFrameResource.h"
 #include "SSAA.h"
 #include "Ssao.h"
 
+using namespace DX;
+using namespace Common;
+using namespace Utils;
+using namespace Graphics;
+using namespace Allocator;
+
 class MultiSplitGPU :
-    public DXLib::D3DApp
+    public D3DApp
 {
 public:
 	MultiSplitGPU(HINSTANCE hInstance);

@@ -1,16 +1,21 @@
 #pragma once
 #include "Component.h"
-
-class KeyboardDevice;
-
-class ObjectMover :
-	public Component
+namespace DX
 {
-	KeyboardDevice* keyboard;
+	namespace Common
+	{
+		class KeyboardDevice;
 
-	void Draw(std::shared_ptr<GCommandList> cmdList) override;;
+		class ObjectMover :
+			public Component
+		{
+			KeyboardDevice* keyboard;
 
-	void Update() override;;
-public:
-	ObjectMover();;
-};
+			void Draw(std::shared_ptr<GCommandList> cmdList) override;;
+
+			void Update() override;;
+		public:
+			ObjectMover();;
+		};
+	}
+}

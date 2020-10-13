@@ -183,7 +183,6 @@
     <ClInclude Include="d3dApp.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="GameObject.h" />
-    <ClInclude Include="GCrossAdapterResource.h" />
     <ClInclude Include="GeometryGenerator.h" />
     <ClInclude Include="KeyboardDevice.h" />
     <ClInclude Include="Light.h" />
@@ -213,7 +212,6 @@
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="d3dApp.cpp" />
     <ClCompile Include="GameObject.cpp" />
-    <ClCompile Include="GCrossAdapterResource.cpp" />
     <ClCompile Include="GeometryGenerator.cpp" />
     <ClCompile Include="KeyboardDevice.cpp" />
     <ClCompile Include="Light.cpp" />

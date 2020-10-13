@@ -1,9 +1,8 @@
 #include "MultiGPUSimple.h"
-#include "GCommandList.h"
-#include "GCommandQueue.h"
+
+#include "GTexture.h"
 #include "Window.h"
-#include "GCrossAdapterResource.h"
-#include "GDeviceFactory.h"
+
 
 MultiGPUSimple::MultiGPUSimple(HINSTANCE hInstance): D3DApp(hInstance)
 {

@@ -1,35 +1,34 @@
 #pragma once
 
 #include "DirectXBuffers.h"
+#include "GCrossAdapterResource.h"
 #include "ShaderBuffersData.h"
 #include "GDeviceFactory.h"
 #include "GMemory.h"
 #include "GTexture.h"
 
-class GCrossAdapterResource;
-
 struct SplitFrameResource
 {
 public:
 
-	SplitFrameResource(std::shared_ptr<GDevice>* devices, UINT deviceCount,  UINT passCount, UINT materialCount);
+	SplitFrameResource(std::shared_ptr<DX::Graphics::GDevice>* devices, UINT deviceCount,  UINT passCount, UINT materialCount);
 	SplitFrameResource(const SplitFrameResource& rhs) = delete;
 	SplitFrameResource& operator=(const SplitFrameResource& rhs) = delete;
 	~SplitFrameResource();
 
 	
 	
-	std::shared_ptr<GCrossAdapterResource> CrossAdapterBackBuffer = nullptr;
-	
-	GTexture PrimeDeviceBackBuffer;
+	std::shared_ptr<DX::Graphics::GCrossAdapterResource> CrossAdapterBackBuffer = nullptr;
 
-	custom_vector<GMemory> RenderTargetViewMemory = MemoryAllocator::CreateVector<GMemory>();
-	
-	custom_vector<std::shared_ptr<ConstantBuffer<PassConstants>>> PassConstantBuffers = MemoryAllocator::CreateVector < std::shared_ptr<ConstantBuffer<PassConstants>>>();
+	DX::Graphics::GTexture PrimeDeviceBackBuffer;
 
-	custom_vector<std::shared_ptr<ConstantBuffer<SsaoConstants>>> SsaoConstantBuffers = MemoryAllocator::CreateVector < std::shared_ptr<ConstantBuffer<SsaoConstants>>>();
+	DX::Allocator::custom_vector<DX::Graphics::GMemory> RenderTargetViewMemory = DX::Allocator::MemoryAllocator::CreateVector<DX::Graphics::GMemory>();
 
-	custom_vector<std::shared_ptr<UploadBuffer<MaterialConstants>>> MaterialBuffers = MemoryAllocator::CreateVector < std::shared_ptr<UploadBuffer<MaterialConstants>>>();
+	DX::Allocator::custom_vector<std::shared_ptr<DX::Graphics::ConstantBuffer<DX::Common::PassConstants>>> PassConstantBuffers = DX::Allocator::MemoryAllocator::CreateVector < std::shared_ptr<DX::Graphics::ConstantBuffer<DX::Common::PassConstants>>>();
+
+	DX::Allocator::custom_vector<std::shared_ptr<DX::Graphics::ConstantBuffer<DX::Common::SsaoConstants>>> SsaoConstantBuffers = DX::Allocator::MemoryAllocator::CreateVector < std::shared_ptr<DX::Graphics::ConstantBuffer<DX::Common::SsaoConstants>>>();
+
+	DX::Allocator::custom_vector<std::shared_ptr<DX::Graphics::UploadBuffer<DX::Common::MaterialConstants>>> MaterialBuffers = DX::Allocator::MemoryAllocator::CreateVector < std::shared_ptr<DX::Graphics::UploadBuffer<DX::Common::MaterialConstants>>>();
 	
 	
 

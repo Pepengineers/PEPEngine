@@ -81,12 +81,6 @@
     <ClInclude Include="GTexture.h">
       <Filter>Header Files\Objects</Filter>
     </ClInclude>
-    <ClInclude Include="GameTimer.h">
-      <Filter>Header Files\Helpers</Filter>
-    </ClInclude>
-    <ClInclude Include="Window.h">
-      <Filter>Header Files\Render</Filter>
-    </ClInclude>
     <ClInclude Include="DirectXBuffers.h">
       <Filter>Header Files\Objects</Filter>
     </ClInclude>
@@ -102,11 +96,11 @@
     <ClInclude Include="D3DShaderLoad.h">
       <Filter>Header Files\Helpers</Filter>
     </ClInclude>
+    <ClInclude Include="GCrossAdapterResource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="GameTimer.cpp">
-      <Filter>Source Files\Helpers</Filter>
-    </ClCompile>
     <ClCompile Include="ComputePSO.cpp">
       <Filter>Source Files\Objects</Filter>
     </ClCompile>
@@ -160,6 +154,9 @@
     </ClCompile>
     <ClCompile Include="GFence.cpp">
       <Filter>Source Files\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="GCrossAdapterResource.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

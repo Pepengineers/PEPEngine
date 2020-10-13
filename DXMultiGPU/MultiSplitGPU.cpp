@@ -1,22 +1,19 @@
 #include "MultiSplitGPU.h"
-#include <algorithm>
-#include <filesystem>
-#include <ctime>    
-#include <fstream>
 
 #include <array>
+#include <filesystem>
+#include <fstream>
+
+
+
 #include "CameraController.h"
-#include "GCommandList.h"
-#include "GCommandQueue.h"
-#include "GCrossAdapterResource.h"
-#include "GDeviceFactory.h"
-#include "GModel.h"
-#include "Material.h"
+#include "GameObject.h"
 #include "ModelRenderer.h"
 #include "Rotater.h"
 #include "SkyBox.h"
 #include "Transform.h"
 #include "Window.h"
+#include "GCrossAdapterResource.h"
 
 MultiSplitGPU::MultiSplitGPU(HINSTANCE hInstance): D3DApp(hInstance)
 {

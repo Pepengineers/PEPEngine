@@ -164,12 +164,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="D3DShaderLoad.h" />
-    <ClInclude Include="GameTimer.h" />
     <ClInclude Include="GBuffer.h" />
     <ClInclude Include="GCommandList.h" />
     <ClInclude Include="GCommandQueue.h" />
     <ClInclude Include="DirectXBuffers.h" />
     <ClInclude Include="ComputePSO.h" />
+    <ClInclude Include="GCrossAdapterResource.h" />
     <ClInclude Include="GDevice.h" />
     <ClInclude Include="GDeviceFactory.h" />
     <ClInclude Include="GFence.h" />
@@ -183,15 +183,14 @@
     <ClInclude Include="GRootSignature.h" />
     <ClInclude Include="GShader.h" />
     <ClInclude Include="GTexture.h" />
-    <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DirectXBuffers.cpp" />
-    <ClCompile Include="GameTimer.cpp" />
     <ClCompile Include="GBuffer.cpp" />
     <ClCompile Include="GCommandList.cpp" />
     <ClCompile Include="GCommandQueue.cpp" />
     <ClCompile Include="ComputePSO.cpp" />
+    <ClCompile Include="GCrossAdapterResource.cpp" />
     <ClCompile Include="GDevice.cpp" />
     <ClCompile Include="GDeviceFactory.cpp" />
     <ClCompile Include="GFence.cpp" />

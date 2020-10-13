@@ -1,27 +1,36 @@
 #pragma once
 #include "Component.h"
+#include "d3dApp.h"
 
-class GCommandList;
-class GameTimer;
-class Mousepad;
-class KeyboardDevice;
 
-using namespace DirectX::SimpleMath;
-class CameraController :
-	public Component
+namespace DX
 {
-	KeyboardDevice* keyboard;
-	Mousepad* mouse;
-	GameTimer* timer{};
+	namespace Common
+	{
+
+		using namespace DX::Allocator;
+		using namespace DX::Utils;
+		
+		class Mousepad;
+		class KeyboardDevice;
+
+		class CameraController :
+			public Component
+		{
+			KeyboardDevice* keyboard;
+			Mousepad* mouse;
+			GameTimer* timer{};
 
 
-	double xMouseSpeed = 100;
-	double yMouseSpeed = 70;
+			double xMouseSpeed = 100;
+			double yMouseSpeed = 70;
 
-public:
+		public:
 
-	CameraController();
+			CameraController();
 
-	void Update() override;;
-	void Draw(std::shared_ptr<GCommandList> cmdList) override;;
-};
+			void Update() override;;
+			void Draw(std::shared_ptr<GCommandList> cmdList) override;;
+		};
+	}
+}

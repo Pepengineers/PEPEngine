@@ -3,11 +3,16 @@
 #include "FrameResource.h"
 #include "GCrossAdapterResource.h"
 #include "GMemory.h"
-#include "GTexture.h"
+#include "GDevice.h"
 
+using namespace DX;
+using namespace Common;
+using namespace Utils;
+using namespace Graphics;
+using namespace Allocator;
 
 class MultiGPUSimple :
-    public DXLib::D3DApp
+    public DX::Common::D3DApp
 {
 public:
 	MultiGPUSimple(HINSTANCE hInstance);

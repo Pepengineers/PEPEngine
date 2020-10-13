@@ -3,200 +3,11 @@
 #include <wrl.h>
 #include <d3d12.h>
 #include <dxgi.h>
-
 #include "d3dx12.h"
+#include <string>
+#include <exception>
 
 using namespace Microsoft::WRL;
-
-const int globalCountFrameResources = 3;
-
-
-static inline UINT Align(UINT size, UINT alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT)
-{
-	return (size + alignment - 1) & ~(alignment - 1);
-}
-
-
-template <typename T>
-T DivideByMultiple(T value, size_t alignment)
-{
-	return static_cast<T>((value + alignment - 1) / alignment);
-}
-
-
-inline HRESULT ReadDataFromFile(LPCWSTR filename, byte** data, UINT* size)
-{
-	using namespace Microsoft::WRL;
-
-	CREATEFILE2_EXTENDED_PARAMETERS extendedParams = {};
-	extendedParams.dwSize = sizeof(CREATEFILE2_EXTENDED_PARAMETERS);
-	extendedParams.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
-	extendedParams.dwFileFlags = FILE_FLAG_SEQUENTIAL_SCAN;
-	extendedParams.dwSecurityQosFlags = SECURITY_ANONYMOUS;
-	extendedParams.lpSecurityAttributes = nullptr;
-	extendedParams.hTemplateFile = nullptr;
-
-	Wrappers::FileHandle file(CreateFile2(filename, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, &extendedParams));
-	if (file.Get() == INVALID_HANDLE_VALUE)
-	{
-		throw std::exception();
-	}
-
-	FILE_STANDARD_INFO fileInfo = {};
-	if (!GetFileInformationByHandleEx(file.Get(), FileStandardInfo, &fileInfo, sizeof(fileInfo)))
-	{
-		throw std::exception();
-	}
-
-	if (fileInfo.EndOfFile.HighPart != 0)
-	{
-		throw std::exception();
-	}
-
-	*data = reinterpret_cast<byte*>(malloc(fileInfo.EndOfFile.LowPart));
-	*size = fileInfo.EndOfFile.LowPart;
-
-	if (!ReadFile(file.Get(), *data, fileInfo.EndOfFile.LowPart, nullptr, nullptr))
-	{
-		throw std::exception();
-	}
-
-	return S_OK;
-}
-
-
-inline void d3dSetDebugName(IDXGIObject* obj, const char* name)
-{
-	if (obj)
-	{
-		obj->SetPrivateData(WKPDID_D3DDebugObjectName, lstrlenA(name), name);
-	}
-}
-
-inline void d3dSetDebugName(ID3D12Device* obj, const char* name)
-{
-	if (obj)
-	{
-		obj->SetPrivateData(WKPDID_D3DDebugObjectName, lstrlenA(name), name);
-	}
-}
-
-inline void d3dSetDebugName(ID3D12DeviceChild* obj, const char* name)
-{
-	if (obj)
-	{
-		obj->SetPrivateData(WKPDID_D3DDebugObjectName, lstrlenA(name), name);
-	}
-}
-
-inline DXGI_FORMAT GetSRGBFormat(DXGI_FORMAT format)
-{
-	DXGI_FORMAT srgbFormat = format;
-
-	return srgbFormat;
-	switch (format)
-	{
-	case DXGI_FORMAT_R8G8B8A8_UNORM:
-		srgbFormat = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-		break;
-	case DXGI_FORMAT_BC1_UNORM:
-		srgbFormat = DXGI_FORMAT_BC1_UNORM_SRGB;
-		break;
-	case DXGI_FORMAT_BC2_UNORM:
-		srgbFormat = DXGI_FORMAT_BC2_UNORM_SRGB;
-		break;
-	case DXGI_FORMAT_BC3_UNORM:
-		srgbFormat = DXGI_FORMAT_BC3_UNORM_SRGB;
-		break;
-	case DXGI_FORMAT_B8G8R8A8_UNORM:
-		srgbFormat = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
-		break;
-	case DXGI_FORMAT_B8G8R8X8_UNORM:
-		srgbFormat = DXGI_FORMAT_B8G8R8X8_UNORM_SRGB;
-		break;
-	case DXGI_FORMAT_BC7_UNORM:
-		srgbFormat = DXGI_FORMAT_BC7_UNORM_SRGB;
-		break;
-	}
-
-	return srgbFormat;
-}
-
-inline std::wstring AnsiToWString(const std::string& str)
-{
-	WCHAR buffer[512];
-	MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, buffer, 512);
-	return std::wstring(buffer);
-}
-
-
-#if defined(_DEBUG)
-#ifndef Assert
-#define Assert(x, description)                                  \
-    {                                                               \
-        static bool ignoreAssert = false;                           \
-        if(!ignoreAssert && !(x))                                   \
-        {                                                           \
-            Debug::AssertResult result = Debug::ShowAssertDialog(   \
-            (L#x), description, AnsiToWString(__FILE__), __LINE__); \
-        if(result == Debug::AssertIgnore)                           \
-        {                                                           \
-            ignoreAssert = true;                                    \
-        }                                                           \
-                    else if(result == Debug::AssertBreak)           \
-        {                                                           \
-            __debugbreak();                                         \
-        }                                                           \
-        }                                                           \
-    }
-#endif
-#else
-#ifndef Assert
-    #define Assert(x, description) 
-#endif
-#endif
-
-
-class d3dUtil
-{
-public:
-
-	static bool IsKeyDown(int vkeyCode);
-
-	static std::string ToString(HRESULT hr);
-
-	static UINT CalcConstantBufferByteSize(UINT byteSize)
-	{
-		// Constant buffers must be a multiple of the minimum hardware
-		// allocation size (usually 256 bytes).  So round up to nearest
-		// multiple of 256.  We do this by adding 255 and then masking off
-		// the lower 2 bytes which store all bits < 256.
-		// Example: Suppose byteSize = 300.
-		// (300 + 255) & ~255
-		// 555 & ~255
-		// 0x022B & ~0x00ff
-		// 0x022B & 0xff00
-		// 0x0200
-		// 512
-		return (byteSize + 255) & ~255;
-	}	
-};
-
-class DxException
-{
-public:
-	DxException() = default;
-	DxException(HRESULT hr, const std::wstring& functionName, const std::wstring& filename, int lineNumber, std::wstring message = L"");
-	DxException(const std::wstring& message);
-
-	std::wstring ToString() const;
-
-	HRESULT ErrorCode = S_OK;
-	std::wstring FunctionName;
-	std::wstring Filename;
-	int LineNumber = -1;
-	std::wstring message;
-};
 
 // Hashers for view descriptions.
 namespace std
@@ -460,6 +271,205 @@ namespace Math
 	}
 }
 
+namespace DX
+{
+	namespace Utils
+	{
+		
+
+		
+		const int globalCountFrameResources = 3;
+
+
+		static inline UINT Align(UINT size, UINT alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT)
+		{
+			return (size + alignment - 1) & ~(alignment - 1);
+		}
+
+
+		template <typename T>
+		T DivideByMultiple(T value, size_t alignment)
+		{
+			return static_cast<T>((value + alignment - 1) / alignment);
+		}
+
+
+		inline HRESULT ReadDataFromFile(LPCWSTR filename, byte** data, UINT* size)
+		{
+			using namespace Microsoft::WRL;
+
+			CREATEFILE2_EXTENDED_PARAMETERS extendedParams = {};
+			extendedParams.dwSize = sizeof(CREATEFILE2_EXTENDED_PARAMETERS);
+			extendedParams.dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
+			extendedParams.dwFileFlags = FILE_FLAG_SEQUENTIAL_SCAN;
+			extendedParams.dwSecurityQosFlags = SECURITY_ANONYMOUS;
+			extendedParams.lpSecurityAttributes = nullptr;
+			extendedParams.hTemplateFile = nullptr;
+
+			Wrappers::FileHandle file(CreateFile2(filename, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, &extendedParams));
+			if (file.Get() == INVALID_HANDLE_VALUE)
+			{
+				throw std::exception();
+			}
+
+			FILE_STANDARD_INFO fileInfo = {};
+			if (!GetFileInformationByHandleEx(file.Get(), FileStandardInfo, &fileInfo, sizeof(fileInfo)))
+			{
+				throw std::exception();
+			}
+
+			if (fileInfo.EndOfFile.HighPart != 0)
+			{
+				throw std::exception();
+			}
+
+			*data = reinterpret_cast<byte*>(malloc(fileInfo.EndOfFile.LowPart));
+			*size = fileInfo.EndOfFile.LowPart;
+
+			if (!ReadFile(file.Get(), *data, fileInfo.EndOfFile.LowPart, nullptr, nullptr))
+			{
+				throw std::exception();
+			}
+
+			return S_OK;
+		}
+
+
+		inline void d3dSetDebugName(IDXGIObject* obj, const char* name)
+		{
+			if (obj)
+			{
+				obj->SetPrivateData(WKPDID_D3DDebugObjectName, lstrlenA(name), name);
+			}
+		}
+
+		inline void d3dSetDebugName(ID3D12Device* obj, const char* name)
+		{
+			if (obj)
+			{
+				obj->SetPrivateData(WKPDID_D3DDebugObjectName, lstrlenA(name), name);
+			}
+		}
+
+		inline void d3dSetDebugName(ID3D12DeviceChild* obj, const char* name)
+		{
+			if (obj)
+			{
+				obj->SetPrivateData(WKPDID_D3DDebugObjectName, lstrlenA(name), name);
+			}
+		}
+
+		inline DXGI_FORMAT GetSRGBFormat(DXGI_FORMAT format)
+		{
+			DXGI_FORMAT srgbFormat = format;
+
+			return srgbFormat;
+			switch (format)
+			{
+			case DXGI_FORMAT_R8G8B8A8_UNORM:
+				srgbFormat = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
+				break;
+			case DXGI_FORMAT_BC1_UNORM:
+				srgbFormat = DXGI_FORMAT_BC1_UNORM_SRGB;
+				break;
+			case DXGI_FORMAT_BC2_UNORM:
+				srgbFormat = DXGI_FORMAT_BC2_UNORM_SRGB;
+				break;
+			case DXGI_FORMAT_BC3_UNORM:
+				srgbFormat = DXGI_FORMAT_BC3_UNORM_SRGB;
+				break;
+			case DXGI_FORMAT_B8G8R8A8_UNORM:
+				srgbFormat = DXGI_FORMAT_B8G8R8A8_UNORM_SRGB;
+				break;
+			case DXGI_FORMAT_B8G8R8X8_UNORM:
+				srgbFormat = DXGI_FORMAT_B8G8R8X8_UNORM_SRGB;
+				break;
+			case DXGI_FORMAT_BC7_UNORM:
+				srgbFormat = DXGI_FORMAT_BC7_UNORM_SRGB;
+				break;
+			}
+
+			return srgbFormat;
+		}
+
+		inline std::wstring AnsiToWString(const std::string& str)
+		{
+			WCHAR buffer[512];
+			MultiByteToWideChar(CP_ACP, 0, str.c_str(), -1, buffer, 512);
+			return std::wstring(buffer);
+		}
+
+
+#if defined(_DEBUG)
+#ifndef Assert
+#define Assert(x, description)                                  \
+    {                                                               \
+        static bool ignoreAssert = false;                           \
+        if(!ignoreAssert && !(x))                                   \
+        {                                                           \
+            Debug::AssertResult result = Debug::ShowAssertDialog(   \
+            (L#x), description, AnsiToWString(__FILE__), __LINE__); \
+        if(result == Debug::AssertIgnore)                           \
+        {                                                           \
+            ignoreAssert = true;                                    \
+        }                                                           \
+                    else if(result == Debug::AssertBreak)           \
+        {                                                           \
+            __debugbreak();                                         \
+        }                                                           \
+        }                                                           \
+    }
+#endif
+#else
+#ifndef Assert
+#define Assert(x, description) 
+#endif
+#endif
+
+
+		class d3dUtil
+		{
+		public:
+
+			static bool IsKeyDown(int vkeyCode);
+
+			static std::string ToString(HRESULT hr);
+
+			static UINT CalcConstantBufferByteSize(UINT byteSize)
+			{
+				// Constant buffers must be a multiple of the minimum hardware
+				// allocation size (usually 256 bytes).  So round up to nearest
+				// multiple of 256.  We do this by adding 255 and then masking off
+				// the lower 2 bytes which store all bits < 256.
+				// Example: Suppose byteSize = 300.
+				// (300 + 255) & ~255
+				// 555 & ~255
+				// 0x022B & ~0x00ff
+				// 0x022B & 0xff00
+				// 0x0200
+				// 512
+				return (byteSize + 255) & ~255;
+			}
+		};
+
+		class DxException
+		{
+		public:
+			DxException() = default;
+			DxException(HRESULT hr, const std::wstring& functionName, const std::wstring& filename, int lineNumber, std::wstring message = L"");
+			DxException(const std::wstring& message);
+
+			std::wstring ToString() const;
+
+			HRESULT ErrorCode = S_OK;
+			std::wstring FunctionName;
+			std::wstring Filename;
+			int LineNumber = -1;
+			std::wstring message;
+		};
+
+	
+
 
 #ifndef ThrowIfFailed
 #define ThrowIfFailed(x)                                              \
@@ -473,3 +483,5 @@ namespace Math
 #ifndef ReleaseCom
 #define ReleaseCom(x) { if(x){ x->Release(); x = 0; } }
 #endif
+	}
+}

@@ -1,26 +1,18 @@
 #include "SampleApp.h"
-#include <DirectXTex.h>
-#include <ppl.h>
-#include "AssetsLoader.h"
-#include "Camera.h"
+
+#include <array>
+
+
 #include "CameraController.h"
-#include "d3dx12.h"
 #include "GameObject.h"
-#include "GCommandList.h"
-#include "GCommandQueue.h"
-#include "GDevice.h"
 #include "GDeviceFactory.h"
-#include "GMemory.h"
-#include "GResourceStateTracker.h"
+#include "Material.h"
 #include "ModelRenderer.h"
-#include "ObjectMover.h"
-#include "Renderer.h"
-#include "Rotater.h"
 #include "SkyBox.h"
 #include "Transform.h"
 #include "Window.h"
-#include <array>
-namespace DXLib
+
+namespace DX
 {
 	SampleApp::SampleApp(HINSTANCE hInstance)
 		: D3DApp(hInstance), loader(AssetsLoader(GDeviceFactory::GetDevice()))
@@ -44,7 +36,7 @@ namespace DXLib
 		std::vector<GTexture*> generatedMipTextures;
 
 		auto textures = loader.GetTextures();
-		
+
 		for (auto&& texture : textures)
 		{
 			texture->ClearTrack();
@@ -67,11 +59,11 @@ namespace DXLib
 		{
 			graphicList->TransitionBarrier(texture->GetD3D12Resource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 		}
-		graphicQueue->WaitForFenceValue( graphicQueue->ExecuteCommandList(graphicList));
+		graphicQueue->WaitForFenceValue(graphicQueue->ExecuteCommandList(graphicList));
 
-		
+
 		const auto computeQueue = GDeviceFactory::GetDevice()->GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COMPUTE);
-		auto computeList = computeQueue->GetCommandList();		
+		auto computeList = computeQueue->GetCommandList();
 		GTexture::GenerateMipMaps(computeList, generatedMipTextures.data(), generatedMipTextures.size());
 		computeQueue->WaitForFenceValue(computeQueue->ExecuteCommandList(computeList));
 
@@ -88,7 +80,6 @@ namespace DXLib
 		{
 			pair->ClearTrack();
 		}
-
 	}
 
 	bool SampleApp::Initialize()
@@ -99,18 +90,19 @@ namespace DXLib
 		auto commandQueue = GDeviceFactory::GetDevice()->GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
 		auto cmdList = commandQueue->GetCommandList();
 
-		shadowMap = std::make_unique<ShadowMap>(GDeviceFactory::GetDevice(),4096, 4096);
+		shadowMap = std::make_unique<ShadowMap>(GDeviceFactory::GetDevice(), 4096, 4096);
 
 		ssao = std::make_unique<Ssao>(
 			GDeviceFactory::GetDevice(),
 			cmdList,
 			MainWindow->GetClientWidth(), MainWindow->GetClientHeight());
 
-		ssaa = std::make_unique<SSAA>(GDeviceFactory::GetDevice(), 1, MainWindow->GetClientWidth(), MainWindow->GetClientHeight());
+		ssaa = std::make_unique<SSAA>(GDeviceFactory::GetDevice(), 1, MainWindow->GetClientWidth(),
+		                              MainWindow->GetClientHeight());
 		ssaa->OnResize(MainWindow->GetClientWidth(), MainWindow->GetClientHeight());
-		
+
 		commandQueue->WaitForFenceValue(commandQueue->ExecuteCommandList(cmdList));
-		
+
 		LoadTextures(cmdList);
 		LoadModels();
 		GeneratedMipMap();
@@ -132,158 +124,153 @@ namespace DXLib
 		commandQueue->Flush();
 
 		loader.ClearTrackedObjects();
-		
+
 		return true;
 	}
 
 	LRESULT SampleApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-	{	
-
+	{
 		switch (msg)
 		{
 		case WM_INPUT:
-		{
-			UINT dataSize;
-			GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, nullptr, &dataSize,
-				sizeof(RAWINPUTHEADER));
-			//Need to populate data size first
-
-			if (dataSize > 0)
 			{
-				std::unique_ptr<BYTE[]> rawdata = std::make_unique<BYTE[]>(dataSize);
-				if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, rawdata.get(), &dataSize,
-					sizeof(RAWINPUTHEADER)) == dataSize)
+				UINT dataSize;
+				GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, nullptr, &dataSize,
+				                sizeof(RAWINPUTHEADER));
+				//Need to populate data size first
+
+				if (dataSize > 0)
 				{
-					RAWINPUT* raw = reinterpret_cast<RAWINPUT*>(rawdata.get());
-					if (raw->header.dwType == RIM_TYPEMOUSE)
+					std::unique_ptr<BYTE[]> rawdata = std::make_unique<BYTE[]>(dataSize);
+					if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, rawdata.get(), &dataSize,
+					                    sizeof(RAWINPUTHEADER)) == dataSize)
 					{
-						mouse.OnMouseMoveRaw(raw->data.mouse.lLastX, raw->data.mouse.lLastY);
+						RAWINPUT* raw = reinterpret_cast<RAWINPUT*>(rawdata.get());
+						if (raw->header.dwType == RIM_TYPEMOUSE)
+						{
+							mouse.OnMouseMoveRaw(raw->data.mouse.lLastX, raw->data.mouse.lLastY);
+						}
+					}
+				}
+
+				return DefWindowProc(hwnd, msg, wParam, lParam);
+			}
+			//Mouse Messages
+		case WM_MOUSEMOVE:
+			{
+				int x = LOWORD(lParam);
+				int y = HIWORD(lParam);
+				mouse.OnMouseMove(x, y);
+				return 0;
+			}
+		case WM_LBUTTONDOWN:
+			{
+				int x = LOWORD(lParam);
+				int y = HIWORD(lParam);
+				mouse.OnLeftPressed(x, y);
+				return 0;
+			}
+		case WM_RBUTTONDOWN:
+			{
+				int x = LOWORD(lParam);
+				int y = HIWORD(lParam);
+				mouse.OnRightPressed(x, y);
+				return 0;
+			}
+		case WM_MBUTTONDOWN:
+			{
+				int x = LOWORD(lParam);
+				int y = HIWORD(lParam);
+				mouse.OnMiddlePressed(x, y);
+				return 0;
+			}
+		case WM_LBUTTONUP:
+			{
+				int x = LOWORD(lParam);
+				int y = HIWORD(lParam);
+				mouse.OnLeftReleased(x, y);
+				return 0;
+			}
+		case WM_RBUTTONUP:
+			{
+				int x = LOWORD(lParam);
+				int y = HIWORD(lParam);
+				mouse.OnRightReleased(x, y);
+				return 0;
+			}
+		case WM_MBUTTONUP:
+			{
+				int x = LOWORD(lParam);
+				int y = HIWORD(lParam);
+				mouse.OnMiddleReleased(x, y);
+				return 0;
+			}
+		case WM_MOUSEWHEEL:
+			{
+				int x = LOWORD(lParam);
+				int y = HIWORD(lParam);
+				if (GET_WHEEL_DELTA_WPARAM(wParam) > 0)
+				{
+					mouse.OnWheelUp(x, y);
+				}
+				else if (GET_WHEEL_DELTA_WPARAM(wParam) < 0)
+				{
+					mouse.OnWheelDown(x, y);
+				}
+				return 0;
+			}
+		case WM_KEYUP:
+
+			{
+				/*if ((int)wParam == VK_F2)
+					Set4xMsaaState(!isM4xMsaa);*/
+				unsigned char keycode = static_cast<unsigned char>(wParam);
+				keyboard.OnKeyReleased(keycode);
+
+
+				return 0;
+			}
+		case WM_KEYDOWN:
+			{
+				{
+					unsigned char keycode = static_cast<unsigned char>(wParam);
+					if (keyboard.IsKeysAutoRepeat())
+					{
+						keyboard.OnKeyPressed(keycode);
+					}
+					else
+					{
+						const bool wasPressed = lParam & 0x40000000;
+						if (!wasPressed)
+						{
+							keyboard.OnKeyPressed(keycode);
+						}
+					}
+
+					if (keycode == (VK_F2) && keyboard.KeyIsPressed(VK_F2))
+					{
+						pathMapShow = (pathMapShow + 1) % maxPathMap;
 					}
 				}
 			}
 
-			return DefWindowProc(hwnd, msg, wParam, lParam);
-		}			
-			//Mouse Messages
-		case WM_MOUSEMOVE:
-		{
-			int x = LOWORD(lParam);
-			int y = HIWORD(lParam);
-			mouse.OnMouseMove(x, y);
-			return 0;
-		}
-		case WM_LBUTTONDOWN:
-		{
-			int x = LOWORD(lParam);
-			int y = HIWORD(lParam);
-			mouse.OnLeftPressed(x, y);
-			return 0;
-		}
-		case WM_RBUTTONDOWN:
-		{
-			int x = LOWORD(lParam);
-			int y = HIWORD(lParam);
-			mouse.OnRightPressed(x, y);
-			return 0;
-		}
-		case WM_MBUTTONDOWN:
-		{
-			int x = LOWORD(lParam);
-			int y = HIWORD(lParam);
-			mouse.OnMiddlePressed(x, y);
-			return 0;
-		}
-		case WM_LBUTTONUP:
-		{
-			int x = LOWORD(lParam);
-			int y = HIWORD(lParam);
-			mouse.OnLeftReleased(x, y);
-			return 0;
-		}
-		case WM_RBUTTONUP:
-		{
-			int x = LOWORD(lParam);
-			int y = HIWORD(lParam);
-			mouse.OnRightReleased(x, y);
-			return 0;
-		}
-		case WM_MBUTTONUP:
-		{
-			int x = LOWORD(lParam);
-			int y = HIWORD(lParam);
-			mouse.OnMiddleReleased(x, y);
-			return 0;
-		}
-		case WM_MOUSEWHEEL:
-		{
-			int x = LOWORD(lParam);
-			int y = HIWORD(lParam);
-			if (GET_WHEEL_DELTA_WPARAM(wParam) > 0)
+		case WM_CHAR:
 			{
-				mouse.OnWheelUp(x, y);
-			}
-			else if (GET_WHEEL_DELTA_WPARAM(wParam) < 0)
-			{
-				mouse.OnWheelDown(x, y);
-			}
-			return 0;
-		}
-		case WM_KEYUP:
-
-		{
-
-			
-				
-			/*if ((int)wParam == VK_F2)
-				Set4xMsaaState(!isM4xMsaa);*/
-			unsigned char keycode = static_cast<unsigned char>(wParam);
-			keyboard.OnKeyReleased(keycode);
-
-			
-				
-			return 0;
-		}
-		case WM_KEYDOWN:
-		{
-			{
-				unsigned char keycode = static_cast<unsigned char>(wParam);
-				if (keyboard.IsKeysAutoRepeat())
+				unsigned char ch = static_cast<unsigned char>(wParam);
+				if (keyboard.IsCharsAutoRepeat())
 				{
-					keyboard.OnKeyPressed(keycode);
+					keyboard.OnChar(ch);
 				}
 				else
 				{
 					const bool wasPressed = lParam & 0x40000000;
 					if (!wasPressed)
 					{
-						keyboard.OnKeyPressed(keycode);
+						keyboard.OnChar(ch);
 					}
 				}
-
-				if (keycode == (VK_F2) && keyboard.KeyIsPressed(VK_F2))
-				{
-					pathMapShow = (pathMapShow + 1) % maxPathMap;
-				}
+				return 0;
 			}
-		}
-
-		case WM_CHAR:
-		{
-			unsigned char ch = static_cast<unsigned char>(wParam);
-			if (keyboard.IsCharsAutoRepeat())
-			{
-				keyboard.OnChar(ch);
-			}
-			else
-			{
-				const bool wasPressed = lParam & 0x40000000;
-				if (!wasPressed)
-				{
-					keyboard.OnChar(ch);
-				}
-			}
-			return 0;
-		}
 		}
 
 		return D3DApp::MsgProc(hwnd, msg, wParam, lParam);
@@ -299,23 +286,24 @@ namespace DXLib
 		viewport.MaxDepth = 1.0f;
 		viewport.TopLeftX = 0;
 		viewport.TopLeftY = 0;
-		rect = { 0,0, MainWindow->GetClientWidth() , MainWindow->GetClientHeight() };
+		rect = {0, 0, MainWindow->GetClientWidth(), MainWindow->GetClientHeight()};
 
-		if(renderTargetMemory.IsNull())
+		if (renderTargetMemory.IsNull())
 		{
-			renderTargetMemory = GDeviceFactory::GetDevice()->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, globalCountFrameResources);
+			renderTargetMemory = GDeviceFactory::GetDevice()->AllocateDescriptors(
+				D3D12_DESCRIPTOR_HEAP_TYPE_RTV, globalCountFrameResources);
 		}
 
 		D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
 		rtvDesc.Format = GetSRGBFormat(backBufferFormat);
 		rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-		
+
 		for (int i = 0; i < globalCountFrameResources; ++i)
 		{
-			MainWindow->GetBackBuffer(i).CreateRenderTargetView(&rtvDesc, &renderTargetMemory, i);			
+			MainWindow->GetBackBuffer(i).CreateRenderTargetView(&rtvDesc, &renderTargetMemory, i);
 		}
-		
-		
+
+
 		if (camera != nullptr)
 		{
 			camera->SetAspectRatio(AspectRatio());
@@ -327,7 +315,7 @@ namespace DXLib
 			ssao->RebuildDescriptors();
 		}
 
-		if(ssaa != nullptr)
+		if (ssaa != nullptr)
 		{
 			ssaa->OnResize(MainWindow->GetClientWidth(), MainWindow->GetClientHeight());
 		}
@@ -369,7 +357,7 @@ namespace DXLib
 
 	void SampleApp::DrawSSAAMap(std::shared_ptr<GCommandList> cmdList)
 	{
-		cmdList->SetViewports(&ssaa->GetViewPort(), 1);		
+		cmdList->SetViewports(&ssaa->GetViewPort(), 1);
 		cmdList->SetScissorRects(&ssaa->GetRect(), 1);
 
 		cmdList->TransitionBarrier((ssaa->GetRenderTarget()), D3D12_RESOURCE_STATE_RENDER_TARGET);
@@ -378,10 +366,10 @@ namespace DXLib
 
 		cmdList->ClearRenderTarget(ssaa->GetRTV());
 		cmdList->ClearDepthStencil(ssaa->GetDSV(), 0,
-		                           D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0);		
+		                           D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0);
 
-		cmdList->SetRenderTargets(1, ssaa->GetRTV(), 0, 
-		                          ssaa->GetDSV());	
+		cmdList->SetRenderTargets(1, ssaa->GetRTV(), 0,
+		                          ssaa->GetDSV());
 
 		//Main Path Data
 		cmdList->
@@ -437,13 +425,13 @@ namespace DXLib
 
 		cmdList->TransitionBarrier((MainWindow->GetCurrentBackBuffer()), D3D12_RESOURCE_STATE_RENDER_TARGET);
 		cmdList->FlushResourceBarriers();
-		
+
 		cmdList->ClearRenderTarget(&renderTargetMemory, MainWindow->GetCurrentBackBufferIndex());
-		
+
 		cmdList->SetRenderTargets(1, &renderTargetMemory, MainWindow->GetCurrentBackBufferIndex());
 
 		cmdList->SetRootDescriptorTable(StandardShaderSlot::AmbientMap, ssaa->GetSRV());
-		
+
 		cmdList->SetPipelineState(*psos[PsoType::Quad]);
 		DrawGameObjects(cmdList, typedGameObjects[static_cast<int>(PsoType::Quad)]);
 
@@ -463,7 +451,7 @@ namespace DXLib
 		commandQueue->StartPixEvent(L"Prepare Render 3D");
 		cmdList->SetGMemory(&srvHeap);
 		cmdList->SetRootSignature(rootSignature.get());
-		/*Bind all materials*/		
+		/*Bind all materials*/
 		cmdList->SetRootShaderResourceView(StandardShaderSlot::MaterialData, *currentFrameResource->MaterialBuffer);
 		/*Bind all Diffuse Textures*/
 		cmdList->SetRootDescriptorTable(StandardShaderSlot::TexturesMap, &srvHeap);
@@ -482,20 +470,20 @@ namespace DXLib
 
 		commandQueue->StartPixEvent(L"Compute SSAO");
 		cmdList->SetRootSignature(ssaoRootSignature.get());
-		ssao->ComputeSsao(cmdList, currentFrameResource->SsaoConstantBuffer, 3);		
+		ssao->ComputeSsao(cmdList, currentFrameResource->SsaoConstantBuffer, 3);
 		commandQueue->EndPixEvent();
 
-		commandQueue->StartPixEvent(L"Main Pass");		
-		cmdList->SetRootSignature(rootSignature.get());		
-		DrawSSAAMap(cmdList);		
-		DrawToWindowBackBuffer(cmdList);		
+		commandQueue->StartPixEvent(L"Main Pass");
+		cmdList->SetRootSignature(rootSignature.get());
+		DrawSSAAMap(cmdList);
+		DrawToWindowBackBuffer(cmdList);
 		currentFrameResource->FenceValue = commandQueue->ExecuteCommandList(cmdList);
 		commandQueue->EndPixEvent();
 		commandQueue->EndPixEvent();
 
 		backBufferIndex = MainWindow->Present();
 	}
-	
+
 	void SampleApp::UpdateGameObjects(const GameTimer& gt)
 	{
 		const float dt = gt.DeltaTime();
@@ -617,9 +605,9 @@ namespace DXLib
 		mainPassCB.ShadowTransform = shadowTransform.Transpose();
 		mainPassCB.EyePosW = camera->gameObject->GetTransform()->GetWorldPosition();
 		mainPassCB.RenderTargetSize = Vector2(static_cast<float>(MainWindow->GetClientWidth()),
-		                                       static_cast<float>(MainWindow->GetClientHeight()));
+		                                      static_cast<float>(MainWindow->GetClientHeight()));
 		mainPassCB.InvRenderTargetSize = Vector2(1.0f / mainPassCB.RenderTargetSize.x,
-		                                          1.0f / mainPassCB.RenderTargetSize.y);
+		                                         1.0f / mainPassCB.RenderTargetSize.y);
 		mainPassCB.NearZ = 1.0f;
 		mainPassCB.FarZ = 1000.0f;
 		mainPassCB.TotalTime = gt.TotalTime();
@@ -746,13 +734,12 @@ namespace DXLib
 			loader.AddTexture(texture);
 		}
 	}
-		
-	void SampleApp::SetDefaultMaterialForModel(ModelRenderer* renderer) 
+
+	void SampleApp::SetDefaultMaterialForModel(ModelRenderer* renderer)
 	{
-		
 	}
 
-	
+
 	void SampleApp::LoadModels()
 	{
 		auto queue = GDeviceFactory::GetDevice()->GetCommandQueue();
@@ -761,23 +748,21 @@ namespace DXLib
 		auto nano = loader.CreateModelFromFile(cmd, "Data\\Objects\\Nanosuit\\Nanosuit.obj");
 
 
-		
 		models[L"nano"] = std::move(nano);
 
 
-		
 		auto doom = loader.CreateModelFromFile(cmd, "Data\\Objects\\DoomSlayer\\doommarine.obj");
 		models[L"doom"] = std::move(doom);
-		
+
 		auto atlas = loader.CreateModelFromFile(cmd, "Data\\Objects\\Atlas\\Atlas.obj");
 		models[L"atlas"] = std::move(atlas);
-		
+
 		auto pbody = loader.CreateModelFromFile(cmd, "Data\\Objects\\P-Body\\P-Body.obj");
 		models[L"pbody"] = std::move(pbody);
-		
+
 		auto golem = loader.CreateModelFromFile(cmd, "Data\\Objects\\StoneGolem\\Stone.obj");
 		models[L"golem"] = std::move(golem);
-		
+
 		auto griffon = loader.CreateModelFromFile(cmd, "Data\\Objects\\Griffon\\Griffon.FBX");
 		griffon->scaleMatrix = Matrix::CreateScale(0.1);
 		models[L"griffon"] = std::move(griffon);
@@ -785,39 +770,38 @@ namespace DXLib
 		auto griffonOld = loader.CreateModelFromFile(cmd, "Data\\Objects\\GriffonOld\\Griffon.FBX");
 		griffonOld->scaleMatrix = Matrix::CreateScale(0.1);
 		models[L"griffonOld"] = std::move(griffonOld);
-		
+
 		auto mountDragon = loader.CreateModelFromFile(cmd, "Data\\Objects\\MOUNTAIN_DRAGON\\MOUNTAIN_DRAGON.FBX");
 		mountDragon->scaleMatrix = Matrix::CreateScale(0.1);
 		models[L"mountDragon"] = std::move(mountDragon);
-		
+
 		auto desertDragon = loader.CreateModelFromFile(cmd, "Data\\Objects\\DesertDragon\\DesertDragon.FBX");
 		desertDragon->scaleMatrix = Matrix::CreateScale(0.1);
 		models[L"desertDragon"] = std::move(desertDragon);
-		
+
 		auto stair = loader.CreateModelFromFile(cmd, "Data\\Objects\\Temple\\SM_AsianCastle_A.FBX");
 		models[L"stair"] = std::move(stair);
-		
+
 		auto columns = loader.CreateModelFromFile(cmd, "Data\\Objects\\Temple\\SM_AsianCastle_E.FBX");
 		models[L"columns"] = std::move(columns);
-		
+
 		auto fountain = loader.CreateModelFromFile(cmd, "Data\\Objects\\Temple\\SM_Fountain.FBX");
 		models[L"fountain"] = std::move(fountain);
-		
+
 		auto platform = loader.CreateModelFromFile(cmd, "Data\\Objects\\Temple\\SM_PlatformSquare.FBX");
 		models[L"platform"] = std::move(platform);
-		
+
 		queue->WaitForFenceValue(queue->ExecuteCommandList(cmd));
-		queue->Flush();	
+		queue->Flush();
 	}
-	
+
 	void SampleApp::LoadTextures(std::shared_ptr<GCommandList> cmdList)
 	{
 		auto queue = GDeviceFactory::GetDevice()->GetCommandQueue();
-		
-		auto graphicCmdList = queue->GetCommandList();
-		LoadStudyTexture(graphicCmdList);		;		
-		queue->WaitForFenceValue(queue->ExecuteCommandList(graphicCmdList));
 
+		auto graphicCmdList = queue->GetCommandList();
+		LoadStudyTexture(graphicCmdList);
+		queue->WaitForFenceValue(queue->ExecuteCommandList(graphicCmdList));
 	}
 
 	void SampleApp::BuildRootSignature()
@@ -828,7 +812,8 @@ namespace DXLib
 		texParam[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, StandardShaderSlot::SkyMap - 3, 0); //SkyMap
 		texParam[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, StandardShaderSlot::ShadowMap - 3, 0); //ShadowMap
 		texParam[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, StandardShaderSlot::AmbientMap - 3, 0); //SsaoMap
-		texParam[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, loader.GetLoadTexturesCount(), StandardShaderSlot::TexturesMap - 3, 0);
+		texParam[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, loader.GetLoadTexturesCount(),
+		                 StandardShaderSlot::TexturesMap - 3, 0);
 
 
 		rootSignature->AddConstantBufferParameter(0);
@@ -841,9 +826,8 @@ namespace DXLib
 
 		rootSignature->Initialize(GDeviceFactory::GetDevice());
 	}
-		
-	
-	
+
+
 	void SampleApp::BuildSsaoRootSignature()
 	{
 		ssaoRootSignature = std::make_unique<GRootSignature>();
@@ -906,7 +890,9 @@ namespace DXLib
 
 	void SampleApp::BuildTexturesHeap()
 	{
-		srvHeap = std::move(GDeviceFactory::GetDevice()->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,  loader.GetLoadTexturesCount()));
+		srvHeap = std::move(
+			GDeviceFactory::GetDevice()->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
+			                                                 loader.GetLoadTexturesCount()));
 
 
 		shadowMap->BuildDescriptors();
@@ -1021,13 +1007,13 @@ namespace DXLib
 		auto queue = GDeviceFactory::GetDevice()->GetCommandQueue();
 		auto cmdList = queue->GetCommandList();
 
-		auto sphere = loader.GenerateSphere(cmdList);	
+		auto sphere = loader.GenerateSphere(cmdList);
 		models[L"sphere"] = std::move(sphere);
-		
+
 		auto quad = loader.GenerateQuad(cmdList);
 		models[L"quad"] = std::move(quad);
-		
-		queue->WaitForFenceValue(queue->ExecuteCommandList(cmdList));	
+
+		queue->WaitForFenceValue(queue->ExecuteCommandList(cmdList));
 	}
 
 	void SampleApp::BuildPSOs()
@@ -1118,7 +1104,6 @@ namespace DXLib
 		ssaoPSO->SetDepthStencilState(depthStencilDesc);
 
 
-		
 		auto ssaoBlurPSO = std::make_unique<GraphicPSO>(PsoType::SsaoBlur);
 		ssaoBlurPSO->SetPsoDesc(ssaoPSO->GetPsoDescription());
 		ssaoBlurPSO->SetShader(shaders["ssaoBlurVS"].get());
@@ -1181,7 +1166,6 @@ namespace DXLib
 		depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
 		quadPso->SetDepthStencilState(depthStencilDesc);
 
-		
 
 		psos[opaquePSO->GetType()] = std::move(opaquePSO);
 		psos[transperentPSO->GetType()] = std::move(transperentPSO);
@@ -1205,31 +1189,28 @@ namespace DXLib
 
 	void SampleApp::BuildFrameResources()
 	{
-				
 		for (int i = 0; i < globalCountFrameResources; ++i)
 		{
 			frameResources.push_back(
-				std::make_unique<FrameResource>(GDeviceFactory::GetDevice(),2, gameObjects.size(), loader.GetMaterials().size() ));			
+				std::make_unique<FrameResource>(GDeviceFactory::GetDevice(), 2, gameObjects.size(),
+				                                loader.GetMaterials().size()));
 		}
-
-		
 	}
 
 	void SampleApp::BuildMaterials()
-	{		
+	{
 		auto seamless = std::make_shared<Material>(L"seamless", PsoType::Opaque);
 		seamless->FresnelR0 = Vector3(0.02f, 0.02f, 0.02f);
 		seamless->Roughness = 0.1f;
 
-		auto tex = loader.GetTextureIndex(L"seamless");		
+		auto tex = loader.GetTextureIndex(L"seamless");
 		seamless->SetDiffuseTexture(loader.GetTexture(tex), tex);
 
 		tex = loader.GetTextureIndex(L"defaultNormalMap");
-		
+
 		seamless->SetNormalMap(loader.GetTexture(tex), tex);
 		loader.AddMaterial(seamless);
 
-	
 
 		auto skyBox = std::make_shared<Material>(L"sky", PsoType::SkyBox);
 		skyBox->DiffuseAlbedo = Vector4(1.0f, 1.0f, 1.0f, 1.0f);
@@ -1238,13 +1219,13 @@ namespace DXLib
 		skyBox->SetNormalMap(loader.GetTexture(tex), tex);
 
 		tex = loader.GetTextureIndex(L"skyTex");
-		
+
 		skyBox->SetDiffuseTexture(loader.GetTexture(tex), tex);
 		loader.AddMaterial(skyBox);
-		
+
 
 		auto materials = loader.GetMaterials();
-		
+
 		for (auto pair : materials)
 		{
 			pair->InitMaterial(&srvHeap);
@@ -1260,17 +1241,18 @@ namespace DXLib
 		typedGameObjects[PsoType::Debug].push_back(quadRitem.get());
 		typedGameObjects[PsoType::Quad].push_back(quadRitem.get());
 		gameObjects.push_back(std::move(quadRitem));
-		
-		auto skySphere = std::make_unique<GameObject>( "Sky");
+
+		auto skySphere = std::make_unique<GameObject>("Sky");
 		skySphere->GetTransform()->SetScale({500, 500, 500});
-		renderer = std::make_shared<SkyBox>(GDeviceFactory::GetDevice(), models[L"sphere"], *loader.GetTexture(loader.GetTextureIndex(L"skyTex")).get(), &srvHeap, loader.GetTextureIndex(L"skyTex"));		
+		renderer = std::make_shared<SkyBox>(GDeviceFactory::GetDevice(), models[L"sphere"],
+		                                    *loader.GetTexture(loader.GetTextureIndex(L"skyTex")).get(), &srvHeap,
+		                                    loader.GetTextureIndex(L"skyTex"));
 		models[L"sphere"]->SetMeshMaterial(0, loader.GetMaterial(loader.GetMaterialIndex(L"sky")));
 		skySphere->AddComponent(renderer);
 		typedGameObjects[PsoType::SkyBox].push_back(skySphere.get());
 		gameObjects.push_back(std::move(skySphere));
 
-		
-		
+
 		auto sun1 = std::make_unique<GameObject>("Directional Light");
 		auto light = std::make_shared<Light>(Directional);
 		light->Direction({0.57735f, -0.57735f, 0.57735f});
@@ -1295,81 +1277,82 @@ namespace DXLib
 
 		for (int i = 0; i < 11; ++i)
 		{
-
 			auto nano = CreateGOWithRenderer(models[L"nano"]);
 			nano->GetTransform()->SetPosition(Vector3::Right * -15 + Vector3::Forward * 12 * i);
 			nano->GetTransform()->SetEulerRotate(Vector3(0, -90, 0));
-			
+
 			typedGameObjects[PsoType::Opaque].push_back(nano.get());
 			gameObjects.push_back(std::move(nano));
 
-			
+
 			auto doom = CreateGOWithRenderer(models[L"doom"]);
 			doom->SetScale(0.08);
 			doom->GetTransform()->SetPosition(Vector3::Right * 15 + Vector3::Forward * 12 * i);
-			doom->GetTransform()->SetEulerRotate(Vector3(0,90,0));
-			
+			doom->GetTransform()->SetEulerRotate(Vector3(0, 90, 0));
+
 			typedGameObjects[PsoType::Opaque].push_back(doom.get());
 			gameObjects.push_back(std::move(doom));
 		}
 
-		for(int i = 0; i< 12; ++i)
+		for (int i = 0; i < 12; ++i)
 		{
 			for (int j = 0; j < 3; ++j)
 			{
 				auto atlas = CreateGOWithRenderer(models[L"atlas"]);
-				atlas->GetTransform()->SetPosition(Vector3::Right * -60 + Vector3::Right * -30 * j +  Vector3::Up * 11 + Vector3::Forward * 10 * i);
+				atlas->GetTransform()->SetPosition(
+					Vector3::Right * -60 + Vector3::Right * -30 * j + Vector3::Up * 11 + Vector3::Forward * 10 * i);
 				typedGameObjects[PsoType::Opaque].push_back(atlas.get());
 				gameObjects.push_back(std::move(atlas));
 
 
 				auto pbody = CreateGOWithRenderer(models[L"pbody"]);
-				pbody->GetTransform()->SetPosition(Vector3::Right * 130 + Vector3::Right * -30 * j + Vector3::Up * 11 + Vector3::Forward * 10 * i);
+				pbody->GetTransform()->SetPosition(
+					Vector3::Right * 130 + Vector3::Right * -30 * j + Vector3::Up * 11 + Vector3::Forward * 10 * i);
 				typedGameObjects[PsoType::Opaque].push_back(pbody.get());
 				gameObjects.push_back(std::move(pbody));
-			}			
+			}
 		}
-				
+
 
 		auto platform = CreateGOWithRenderer(models[L"platform"]);
 		platform->SetScale(0.2);
 		platform->GetTransform()->SetEulerRotate(Vector3(90, 90, 0));
 		platform->GetTransform()->SetPosition(Vector3::Backward * -130);
 		typedGameObjects[PsoType::Opaque].push_back(platform.get());
-				
+
 		auto rotater = std::make_unique<GameObject>();
 		rotater->GetTransform()->SetParent(platform->GetTransform().get());
 		rotater->GetTransform()->SetPosition(Vector3::Forward * 325 + Vector3::Left * 625);
 		rotater->GetTransform()->SetEulerRotate(Vector3(0, -90, 90));
 		//rotater->AddComponent(new Rotater(10));	
-		
 
-		auto camera = std::make_unique<GameObject>( "MainCamera");
+
+		auto camera = std::make_unique<GameObject>("MainCamera");
 		camera->GetTransform()->SetParent(rotater->GetTransform().get());
 		camera->GetTransform()->SetEulerRotate(Vector3(-30, 270, 0));
 		camera->GetTransform()->SetPosition(Vector3(-1000, 190, -32));
-		camera->AddComponent(std::make_shared <Camera>(AspectRatio()));
+		camera->AddComponent(std::make_shared<Camera>(AspectRatio()));
 		camera->AddComponent(std::make_shared<CameraController>());
-		
+
 		gameObjects.push_back(std::move(camera));
 		gameObjects.push_back(std::move(rotater));
 
-		
+
 		auto stair = CreateGOWithRenderer(models[L"stair"]);
 		stair->GetTransform()->SetParent(platform->GetTransform().get());
 		stair->SetScale(0.2);
 		stair->GetTransform()->SetEulerRotate(Vector3(0, 0, 90));
-		stair->GetTransform()->SetPosition(Vector3::Left * 700 );
+		stair->GetTransform()->SetPosition(Vector3::Left * 700);
 		typedGameObjects[PsoType::Opaque].push_back(stair.get());
 
 
 		auto columns = CreateGOWithRenderer(models[L"columns"]);
 		columns->GetTransform()->SetParent(stair->GetTransform().get());
 		columns->SetScale(0.8);
-		columns->GetTransform()->SetEulerRotate(Vector3(0,0,90));
-		columns->GetTransform()->SetPosition(Vector3::Up * 2000 + Vector3::Forward * 900 );
+		columns->GetTransform()->SetEulerRotate(Vector3(0, 0, 90));
+		columns->GetTransform()->SetPosition(Vector3::Up * 2000 + Vector3::Forward * 900);
 		typedGameObjects[PsoType::Opaque].push_back(columns.get());
-		
+
 		gameObjects.push_back(std::move(columns));
 		gameObjects.push_back(std::move(stair));
 		gameObjects.push_back(std::move(platform));
@@ -1378,14 +1361,14 @@ namespace DXLib
 		fountain->SetScale(0.005);
 		fountain->GetTransform()->SetEulerRotate(Vector3(90, 0, 0));
 		fountain->GetTransform()->SetPosition(Vector3::Up * 35 + Vector3::Backward * 77);
-		typedGameObjects[PsoType::Opaque].push_back(fountain.get());		
+		typedGameObjects[PsoType::Opaque].push_back(fountain.get());
 		gameObjects.push_back(std::move(fountain));
 
 		auto mountDragon = CreateGOWithRenderer(models[L"mountDragon"]);
 		mountDragon->GetTransform()->SetEulerRotate(Vector3(90, 0, 0));
-		mountDragon->GetTransform()->SetPosition(Vector3::Right*-960 + Vector3::Up * 45 + Vector3::Backward * 775);
-		
-		
+		mountDragon->GetTransform()->SetPosition(Vector3::Right * -960 + Vector3::Up * 45 + Vector3::Backward * 775);
+
+
 		typedGameObjects[PsoType::Opaque].push_back(mountDragon.get());
 		gameObjects.push_back(std::move(mountDragon));
 
@@ -1416,14 +1399,14 @@ namespace DXLib
 		gameObjects.push_back(std::move(griffon1));
 	}
 
-	std::unique_ptr<GameObject> SampleApp::CreateGOWithRenderer(std::shared_ptr<GModel> model) 
+	std::unique_ptr<GameObject> SampleApp::CreateGOWithRenderer(std::shared_ptr<GModel> model)
 	{
 		auto man = std::make_unique<GameObject>();
 		auto renderer = std::make_shared<ModelRenderer>(GDeviceFactory::GetDevice(), model);
-		man->AddComponent(renderer);			
+		man->AddComponent(renderer);
 		return man;
 	}
-	
+
 	void SampleApp::DrawGameObjects(std::shared_ptr<GCommandList> cmdList, const custom_vector<GameObject*>& ritems)
 	{
 		// For each render item...
@@ -1443,12 +1426,13 @@ namespace DXLib
 
 
 		cmdList->ClearDepthStencil(shadowMap->GetDsvMemory(), 0,
-		                        D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0);
+		                           D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0);
 
 		cmdList->SetRenderTargets(0, nullptr, false, shadowMap->GetDsvMemory());
 
 		//Shadow Path Data
-		cmdList->SetRootConstantBufferView(StandardShaderSlot::CameraData, *currentFrameResource->PassConstantBuffer,1);
+		cmdList->SetRootConstantBufferView(StandardShaderSlot::CameraData, *currentFrameResource->PassConstantBuffer,
+		                                   1);
 
 		cmdList->SetPipelineState(*psos[PsoType::ShadowMapOpaque]);
 
@@ -1470,16 +1454,16 @@ namespace DXLib
 		auto normalDepthMap = ssao->NormalDepthMap();
 		auto normalMapRtv = ssao->NormalMapRtv();
 		auto normalMapDsv = ssao->NormalMapDSV();
-		
+
 		cmdList->TransitionBarrier(normalMap, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		cmdList->TransitionBarrier(normalDepthMap, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-		
+
 		cmdList->FlushResourceBarriers();
 
 		float clearValue[] = {0.0f, 0.0f, 1.0f, 0.0f};
 		cmdList->ClearRenderTarget(normalMapRtv, 0, clearValue);
 		cmdList->ClearDepthStencil(normalMapDsv, 0,
-		                        D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0);
+		                           D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0);
 
 		cmdList->SetRenderTargets(1, normalMapRtv, 0, normalMapDsv);
 
@@ -1515,7 +1499,5 @@ namespace DXLib
 		}
 
 		std::sort(lights.begin(), lights.end(), [](Light const* a, Light const* b) { return a->Type() < b->Type(); });
-	}\
-	
-	
+	}
 }

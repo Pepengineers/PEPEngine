@@ -1,6 +1,11 @@
 #pragma once
 #include "STLCustomAllocator.h"
 
+namespace DX
+{
+	namespace Allocator
+	{
+		
 
 class MemoryAllocator
 {
@@ -85,3 +90,5 @@ public:
 		return make_custom_unique<T>(GetAllocator<T>(), args);
 	}
 };
+	}
+}
