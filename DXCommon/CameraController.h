@@ -7,10 +7,9 @@ namespace DX
 {
 	namespace Common
 	{
+		using namespace Allocator;
+		using namespace Utils;
 
-		using namespace DX::Allocator;
-		using namespace DX::Utils;
-		
 		class Mousepad;
 		class KeyboardDevice;
 

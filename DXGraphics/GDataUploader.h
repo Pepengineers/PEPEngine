@@ -7,12 +7,13 @@
 #include <d3d12.h>
 
 using namespace Microsoft::WRL;
+
 namespace DX
 {
 	namespace Graphics
 	{
-		using namespace DX::Allocator;
-		
+		using namespace Allocator;
+
 		struct UploadAllocation
 		{
 			BYTE* CPU;
@@ -65,7 +66,8 @@ namespace DX
 			};
 
 
-			custom_list<std::shared_ptr<UploadMemoryPage>> pages = MemoryAllocator::CreateList<std::shared_ptr<UploadMemoryPage>
+			custom_list<std::shared_ptr<UploadMemoryPage>> pages = MemoryAllocator::CreateList<std::shared_ptr<
+					UploadMemoryPage>
 			>();
 
 

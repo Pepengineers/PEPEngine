@@ -6,6 +6,7 @@
 #include "Transform.h"
 
 using namespace DirectX::SimpleMath;
+
 namespace DX
 {
 	namespace Common
@@ -58,12 +59,14 @@ namespace DX
 
 			auto position = gameObject->GetTransform()->GetWorldPosition();
 
-			OutputDebugStringW((std::to_wstring(position.x) + L" " + std::to_wstring(position.y) + L" " + std::to_wstring(position.z) + L" " + L"\n").c_str());
+			OutputDebugStringW(
+				(std::to_wstring(position.x) + L" " + std::to_wstring(position.y) + L" " + std::to_wstring(position.z) +
+					L" " + L"\n").c_str());
 		}
 
 		ObjectMover::ObjectMover()
 		{
-			keyboard = ((D3DApp&)D3DApp::GetApp()).GetKeyboard();
+			keyboard = static_cast<D3DApp&>(D3DApp::GetApp()).GetKeyboard();
 		}
 	}
 }

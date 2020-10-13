@@ -3,6 +3,7 @@
 #include "d3dApp.h"
 #include "GMemory.h"
 #include "GraphicPSO.h"
+
 namespace DX
 {
 	namespace Common
@@ -102,7 +103,6 @@ namespace DX
 				}
 
 
-
 				switch (type)
 				{
 				case PsoType::AlphaSprites:
@@ -113,12 +113,12 @@ namespace DX
 					srvDesc.Texture2DArray.ArraySize = desc.DepthOrArraySize;
 					break;
 				default:
-				{
-					srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-					srvDesc.Texture2D.MostDetailedMip = 0;
-					srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
-					srvDesc.Texture2D.MipLevels = desc.MipLevels;
-				}
+					{
+						srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+						srvDesc.Texture2D.MostDetailedMip = 0;
+						srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+						srvDesc.Texture2D.MipLevels = desc.MipLevels;
+					}
 				}
 				diffuseMap->CreateShaderResourceView(&srvDesc, textureHeap, DiffuseMapIndex);
 			}

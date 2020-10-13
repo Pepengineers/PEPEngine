@@ -1,5 +1,6 @@
 #pragma once
 #include "Component.h"
+
 namespace DX
 {
 	namespace Common

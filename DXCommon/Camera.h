@@ -6,8 +6,7 @@
 namespace DX
 {
 	namespace Common
-	{	
-
+	{
 		using namespace DirectX::SimpleMath;
 
 		class Camera : public Component

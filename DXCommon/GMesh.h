@@ -10,9 +10,9 @@ namespace DX
 {
 	namespace Common
 	{
-		using namespace DX::Utils;
-		using namespace DX::Allocator;
-		using namespace DX::Graphics;
+		using namespace Utils;
+		using namespace Allocator;
+		using namespace Graphics;
 		class NativeMesh;
 		class GModel;
 
@@ -23,10 +23,10 @@ namespace DX
 			std::shared_ptr<NativeMesh> mesh;
 
 
-			std::shared_ptr<Graphics::GBuffer> vertexBuffer = nullptr;
-			std::shared_ptr<Graphics::GBuffer> indexBuffer = nullptr;
-			Lazy< D3D12_VERTEX_BUFFER_VIEW> vertexView;
-			Lazy< D3D12_INDEX_BUFFER_VIEW> indexView;
+			std::shared_ptr<GBuffer> vertexBuffer = nullptr;
+			std::shared_ptr<GBuffer> indexBuffer = nullptr;
+			Lazy<D3D12_VERTEX_BUFFER_VIEW> vertexView;
+			Lazy<D3D12_INDEX_BUFFER_VIEW> indexView;
 		public:
 
 			std::shared_ptr<NativeMesh> GetMeshData() const;
@@ -38,17 +38,13 @@ namespace DX
 			D3D12_INDEX_BUFFER_VIEW* GetIndexView();
 
 
-			GMesh(std::shared_ptr<NativeMesh> meshData, std::shared_ptr<Graphics::GCommandList>& cmdList);
+			GMesh(std::shared_ptr<NativeMesh> meshData, std::shared_ptr<GCommandList>& cmdList);
 
 			GMesh(const GMesh& copy);
 
-			void Draw(std::shared_ptr<Graphics::GCommandList> cmdList);
+			void Draw(std::shared_ptr<GCommandList> cmdList);
 
 			std::wstring GetName() const;
 		};
-
-
-
-
 	}
 }

@@ -4,12 +4,13 @@
 #include <string>
 #include "MemoryAllocator.h"
 #include "ShaderBuffersData.h"
+
 namespace DX
 {
 	namespace Common
 	{
-		using namespace DX::Allocator;
-		
+		using namespace Allocator;
+
 		class NativeMesh
 		{
 			std::wstring meshName;
@@ -17,8 +18,10 @@ namespace DX
 			custom_vector<DWORD> indexes = MemoryAllocator::CreateVector<DWORD>();
 
 		public:
-			NativeMesh(const Vertex* vertices, size_t vertexesCount, const DWORD* indices, size_t indexesCount, D3D12_PRIMITIVE_TOPOLOGY topology = D3D10_PRIMITIVE_TOPOLOGY_UNDEFINED, std::wstring name = L"") : meshName(
-				std::move(name)), topology(topology)
+			NativeMesh(const Vertex* vertices, size_t vertexesCount, const DWORD* indices, size_t indexesCount,
+			           D3D12_PRIMITIVE_TOPOLOGY topology = D3D10_PRIMITIVE_TOPOLOGY_UNDEFINED,
+			           std::wstring name = L"") : meshName(
+				                                      std::move(name)), topology(topology)
 			{
 				std::copy(vertices, vertices + vertexesCount, std::back_inserter(this->vertices));
 				std::copy(indices, indices + indexesCount, std::back_inserter(this->indexes));
@@ -61,22 +64,25 @@ namespace DX
 
 		class NativeModel
 		{
-			custom_vector<std::shared_ptr<NativeMesh>> meshes = MemoryAllocator::CreateVector<std::shared_ptr<NativeMesh>>();
+			custom_vector<std::shared_ptr<NativeMesh>> meshes = MemoryAllocator::CreateVector<std::shared_ptr<NativeMesh
+			>>();
 
 			std::wstring name;
 
 		public:
 
-			NativeModel(std::wstring name) : name(name) {  }
+			NativeModel(std::wstring name) : name(name)
+			{
+			}
 
 			void AddMesh(std::shared_ptr<NativeMesh> mesh)
 			{
 				meshes.push_back(mesh);
 			}
 
-			UINT GetMeshesCount() const { return  meshes.size(); };
+			UINT GetMeshesCount() const { return meshes.size(); };
 
-			std::wstring GetName() const { return  name; };
+			std::wstring GetName() const { return name; };
 
 			std::shared_ptr<NativeMesh> GetMesh(UINT index)
 			{
@@ -84,9 +90,6 @@ namespace DX
 
 				return meshes[index];
 			}
-
-
 		};
-
 	}
 }

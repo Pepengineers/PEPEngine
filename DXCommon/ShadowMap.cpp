@@ -2,6 +2,7 @@
 #include "ShadowMap.h"
 #include "d3dApp.h"
 #include "GResourceStateTracker.h"
+
 namespace DX
 {
 	namespace Common
@@ -12,8 +13,8 @@ namespace DX
 			mWidth = width;
 			mHeight = height;
 
-			mViewport = { 0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, 1.0f };
-			mScissorRect = { 0, 0, static_cast<int>(width), static_cast<int>(height) };
+			mViewport = {0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, 1.0f};
+			mScissorRect = {0, 0, static_cast<int>(width), static_cast<int>(height)};
 
 			srvMemory = this->device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1);
 			dsvMemory = this->device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1);

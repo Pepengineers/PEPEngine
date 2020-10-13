@@ -66,7 +66,7 @@ namespace DX
 
 			// Function
 			template <typename Ret, typename... Args>
-			JobInfo(Counter* ctr, Ret(*function)(Args ...), Args ... args)
+			JobInfo(Counter* ctr, Ret (*function)(Args ...), Args ... args)
 				: _counter(ctr)
 			{
 				function_checker<decltype(function), Args...>::check();
@@ -86,7 +86,7 @@ namespace DX
 
 			// Member Function
 			template <class TClass, typename Ret, typename... Args>
-			JobInfo(Counter* ctr, Ret(TClass::* callable)(Args ...), TClass* inst, Args ... args)
+			JobInfo(Counter* ctr, Ret (TClass::* callable)(Args ...), TClass* inst, Args ... args)
 				: _counter(ctr)
 			{
 				function_checker<decltype(callable), TClass*, Args...>::check();
@@ -102,7 +102,7 @@ namespace DX
 			};
 
 			template <typename Ret, typename... Args>
-			JobInfo(Ret(*function)(Args ...), Args ... args)
+			JobInfo(Ret (*function)(Args ...), Args ... args)
 				: JobInfo(static_cast<Counter*>(nullptr), function, args...)
 			{
 			};
@@ -114,7 +114,7 @@ namespace DX
 			};
 
 			template <class TClass, typename Ret, typename... Args>
-			JobInfo(Ret(TClass::* callable)(Args ...), TClass* inst, Args ... args)
+			JobInfo(Ret (TClass::* callable)(Args ...), TClass* inst, Args ... args)
 				: JobInfo(static_cast<Counter*>(nullptr), callable, inst, args...)
 			{
 			};

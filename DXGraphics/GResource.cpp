@@ -7,6 +7,7 @@
 #include "GDevice.h"
 #include "GMemory.h"
 #include "GResourceStateTracker.h"
+
 namespace DX
 {
 	namespace Graphics
@@ -20,8 +21,9 @@ namespace DX
 		}
 
 		GResource::GResource(const std::shared_ptr<GDevice> device, const D3D12_RESOURCE_DESC& resourceDesc,
-			const std::wstring& name, const D3D12_CLEAR_VALUE* clearValue, D3D12_RESOURCE_STATES initState,
-			D3D12_HEAP_PROPERTIES heapProp, D3D12_HEAP_FLAGS heapFlags) : device(device)
+		                     const std::wstring& name, const D3D12_CLEAR_VALUE* clearValue,
+		                     D3D12_RESOURCE_STATES initState,
+		                     D3D12_HEAP_PROPERTIES heapProp, D3D12_HEAP_FLAGS heapFlags) : device(device)
 		{
 			id = ++resourceId;
 
@@ -45,7 +47,8 @@ namespace DX
 			SetName(name);
 		}
 
-		GResource::GResource(const std::shared_ptr<GDevice> device, ComPtr<ID3D12Resource>& resource, const std::wstring& name)
+		GResource::GResource(const std::shared_ptr<GDevice> device, ComPtr<ID3D12Resource>& resource,
+		                     const std::wstring& name)
 			: device(device), dxResource(std::move(resource))
 		{
 			id = ++resourceId;
@@ -54,8 +57,8 @@ namespace DX
 
 		GResource::GResource(const GResource& copy)
 			: device(copy.device)
-			, id(copy.id)
-			, dxResource(copy.dxResource), resourceName(copy.resourceName)
+			  , id(copy.id)
+			  , dxResource(copy.dxResource), resourceName(copy.resourceName)
 		{
 			if (copy.clearValue)
 				clearValue = (std::make_unique<D3D12_CLEAR_VALUE>(*copy.clearValue.get()));
@@ -65,9 +68,9 @@ namespace DX
 
 		GResource::GResource(GResource&& move)
 			: device(std::move(move.device))
-			, id(std::move(move.id))
-			, dxResource(std::move(move.dxResource))
-			, clearValue(std::move(move.clearValue)), resourceName(std::move(move.resourceName))
+			  , id(std::move(move.id))
+			  , dxResource(std::move(move.dxResource))
+			  , clearValue(std::move(move.clearValue)), resourceName(std::move(move.resourceName))
 		{
 		}
 
@@ -130,7 +133,7 @@ namespace DX
 		}
 
 		void GResource::SetD3D12Resource(const std::shared_ptr<GDevice> device, ComPtr<ID3D12Resource> d3d12Resource,
-			const D3D12_CLEAR_VALUE* clearValue)
+		                                 const D3D12_CLEAR_VALUE* clearValue)
 		{
 			dxResource = std::move(d3d12Resource);
 			this->device = device;
@@ -145,25 +148,26 @@ namespace DX
 
 
 		void GResource::CreateShaderResourceView(const D3D12_SHADER_RESOURCE_VIEW_DESC* srvDesc, GMemory* memory,
-			size_t offset) const
+		                                         size_t offset) const
 		{
 			device->GetDXDevice()->CreateShaderResourceView(dxResource.Get(), srvDesc, memory->GetCPUHandle(offset));
 		}
 
 		void GResource::CreateUnorderedAccessView(const D3D12_UNORDERED_ACCESS_VIEW_DESC* uavDesc, GMemory* memory,
-			size_t offset) const
+		                                          size_t offset) const
 		{
-			device->GetDXDevice()->CreateUnorderedAccessView(dxResource.Get(), nullptr, uavDesc, memory->GetCPUHandle(offset));
+			device->GetDXDevice()->CreateUnorderedAccessView(dxResource.Get(), nullptr, uavDesc,
+			                                                 memory->GetCPUHandle(offset));
 		}
 
 		void GResource::CreateRenderTargetView(const D3D12_RENDER_TARGET_VIEW_DESC* rtvDesc, GMemory* memory,
-			size_t offset) const
+		                                       size_t offset) const
 		{
 			device->GetDXDevice()->CreateRenderTargetView(dxResource.Get(), rtvDesc, memory->GetCPUHandle(offset));
 		}
 
 		void GResource::CreateDepthStencilView(const D3D12_DEPTH_STENCIL_VIEW_DESC* dsvDesc, GMemory* memory,
-			size_t offset) const
+		                                       size_t offset) const
 		{
 			device->GetDXDevice()->CreateDepthStencilView(dxResource.Get(), dsvDesc, memory->GetCPUHandle(offset));
 		}

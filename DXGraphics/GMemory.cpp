@@ -10,20 +10,20 @@ namespace DX
 	{
 		GMemory::GMemory()
 			: cpuDescriptor{}
-			, gpuDescriptor{}
-			, handlersCount(0)
-			, descriptorSize(0)
-			, heap(nullptr)
+			  , gpuDescriptor{}
+			  , handlersCount(0)
+			  , descriptorSize(0)
+			  , heap(nullptr)
 		{
 		}
 
 		GMemory::GMemory(D3D12_CPU_DESCRIPTOR_HANDLE descriptor, D3D12_GPU_DESCRIPTOR_HANDLE gpuDescriptor,
-			uint32_t handlerCount, uint32_t descriptorSize, std::shared_ptr<GHeap> heap)
+		                 uint32_t handlerCount, uint32_t descriptorSize, std::shared_ptr<GHeap> heap)
 			: cpuDescriptor(descriptor)
-			, gpuDescriptor(gpuDescriptor)
-			, handlersCount(handlerCount)
-			, descriptorSize(descriptorSize)
-			, heap(std::move(heap))
+			  , gpuDescriptor(gpuDescriptor)
+			  , handlersCount(handlerCount)
+			  , descriptorSize(descriptorSize)
+			  , heap(std::move(heap))
 		{
 		}
 
@@ -35,10 +35,10 @@ namespace DX
 
 		GMemory::GMemory(GMemory&& allocation)
 			: cpuDescriptor(allocation.cpuDescriptor)
-			, gpuDescriptor(allocation.gpuDescriptor)
-			, handlersCount(allocation.handlersCount)
-			, descriptorSize(allocation.descriptorSize)
-			, heap(std::move(allocation.heap))
+			  , gpuDescriptor(allocation.gpuDescriptor)
+			  , handlersCount(allocation.handlersCount)
+			  , descriptorSize(allocation.descriptorSize)
+			  , heap(std::move(allocation.heap))
 		{
 			allocation.cpuDescriptor.ptr = 0;
 			allocation.gpuDescriptor.ptr = 0;

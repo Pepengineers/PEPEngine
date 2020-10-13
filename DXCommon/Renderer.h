@@ -1,6 +1,7 @@
 #pragma once
 #include "Component.h"
 #include "Material.h"
+
 namespace DX
 {
 	namespace Common
@@ -9,10 +10,12 @@ namespace DX
 		{
 		public:
 
-			Renderer() : Component() {};
+			Renderer() : Component()
+			{
+			};
 
 			void Update() override = 0;
-			virtual void Draw(std::shared_ptr<GCommandList> cmdList) = 0;
+			void Draw(std::shared_ptr<GCommandList> cmdList) override = 0;
 		};
 	}
 }

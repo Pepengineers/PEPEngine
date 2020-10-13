@@ -7,10 +7,10 @@ namespace DX
 {
 	namespace Common
 	{
-		using namespace DX::Utils;
-		using namespace DX::Allocator;
-		using namespace DX::Graphics;
-		
+		using namespace Utils;
+		using namespace Allocator;
+		using namespace Graphics;
+
 		CameraController::CameraController()
 		{
 			auto& app = static_cast<D3DApp&>(D3DApp::GetApp());

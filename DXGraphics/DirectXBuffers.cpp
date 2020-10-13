@@ -3,49 +3,49 @@
 
 namespace DX::Graphics
 {
-		using namespace DX::Utils;
-		
-		ShaderBuffer::ShaderBuffer(const std::shared_ptr<GDevice> device, UINT elementCount, UINT elementByteSize,
-			std::wstring name) :
-			GResource(device, CD3DX12_RESOURCE_DESC::Buffer(elementCount* elementByteSize), name, nullptr,
-				D3D12_RESOURCE_STATE_GENERIC_READ, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD)),
-			elementCount(elementCount), elementByteSize(elementByteSize)
-		{
-			ThrowIfFailed(dxResource->Map(0, nullptr, reinterpret_cast<void**>(&mappedData)));
+	using namespace Utils;
 
-			address = dxResource->GetGPUVirtualAddress();
-		}
+	ShaderBuffer::ShaderBuffer(const std::shared_ptr<GDevice> device, UINT elementCount, UINT elementByteSize,
+	                           std::wstring name) :
+		GResource(device, CD3DX12_RESOURCE_DESC::Buffer(elementCount * elementByteSize), name, nullptr,
+		          D3D12_RESOURCE_STATE_GENERIC_READ, CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD)),
+		elementCount(elementCount), elementByteSize(elementByteSize)
+	{
+		ThrowIfFailed(dxResource->Map(0, nullptr, reinterpret_cast<void**>(&mappedData)));
 
-		ShaderBuffer::~ShaderBuffer()
-		{
-			if (dxResource != nullptr)
-				dxResource->Unmap(0, nullptr);
-			mappedData = nullptr;
-		}
+		address = dxResource->GetGPUVirtualAddress();
+	}
 
-		void ShaderBuffer::CopyData(int elementIndex, const void* data, size_t size) const
-		{
-			memcpy(&mappedData[elementIndex * elementByteSize], data, size);
-		}
+	ShaderBuffer::~ShaderBuffer()
+	{
+		if (dxResource != nullptr)
+			dxResource->Unmap(0, nullptr);
+		mappedData = nullptr;
+	}
 
-		D3D12_GPU_VIRTUAL_ADDRESS ShaderBuffer::GetElementResourceAddress(UINT index) const
-		{
-			return address + (elementByteSize * index);
-		}
+	void ShaderBuffer::CopyData(int elementIndex, const void* data, size_t size) const
+	{
+		memcpy(&mappedData[elementIndex * elementByteSize], data, size);
+	}
 
-		UINT ShaderBuffer::GetElementByteSize() const
-		{
-			return elementByteSize;
-		}
+	D3D12_GPU_VIRTUAL_ADDRESS ShaderBuffer::GetElementResourceAddress(UINT index) const
+	{
+		return address + (elementByteSize * index);
+	}
 
-		UINT ShaderBuffer::GetElementCount() const
-		{
-			return elementCount;
-		}
+	UINT ShaderBuffer::GetElementByteSize() const
+	{
+		return elementByteSize;
+	}
 
-		void ShaderBuffer::Reset()
-		{
-			GResource::Reset();
-			address = 0;
-		}
+	UINT ShaderBuffer::GetElementCount() const
+	{
+		return elementCount;
+	}
+
+	void ShaderBuffer::Reset()
+	{
+		GResource::Reset();
+		address = 0;
+	}
 }

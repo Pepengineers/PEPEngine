@@ -3,19 +3,21 @@
 
 namespace DX
 {
-    namespace Allocator
-    {
-        template <class T>
-        void StackLinkedList<T>::push(Node* newNode) {
-            newNode->next = head;
-            head = newNode;
-        }
+	namespace Allocator
+	{
+		template <class T>
+		void StackLinkedList<T>::push(Node* newNode)
+		{
+			newNode->next = head;
+			head = newNode;
+		}
 
-        template <class T>
-        typename StackLinkedList<T>::Node* StackLinkedList<T>::pop() {
-            Node* top = head;
-            head = head->next;
-            return top;
-        }
-    }
+		template <class T>
+		typename StackLinkedList<T>::Node* StackLinkedList<T>::pop()
+		{
+			Node* top = head;
+			head = head->next;
+			return top;
+		}
+	}
 }

@@ -2,6 +2,7 @@
 #include <SimpleMath.h>
 
 #define MaxLights 16
+
 namespace DX
 {
 	namespace Common
@@ -59,11 +60,11 @@ namespace DX
 
 		struct LightData
 		{
-			Vector3 Strength = Vector3{ 0.5f, 0.5f, 0.5f };
+			Vector3 Strength = Vector3{0.5f, 0.5f, 0.5f};
 			float FalloffStart = 1.0f; // point/spot light only
-			Vector3 Direction = Vector3{ 0.0f, -1.0f, 0.0f }; // directional/spot light only
+			Vector3 Direction = Vector3{0.0f, -1.0f, 0.0f}; // directional/spot light only
 			float FalloffEnd = 10.0f; // point/spot light only
-			Vector3 Position = Vector3{ 0.0f, 0.0f, 0.0f }; // point/spot light only
+			Vector3 Position = Vector3{0.0f, 0.0f, 0.0f}; // point/spot light only
 			float SpotPower = 64.0f; // spot light only
 		};
 
@@ -77,18 +78,18 @@ namespace DX
 			Matrix InvViewProj = Matrix::Identity;
 			Matrix ViewProjTex = Matrix::Identity;
 			Matrix ShadowTransform = Matrix::Identity;
-			Vector3 EyePosW = Vector3{ 0.0f, 0.0f, 0.0f };
+			Vector3 EyePosW = Vector3{0.0f, 0.0f, 0.0f};
 			float debugMap = 0.0f;
-			Vector2 RenderTargetSize = Vector2{ 0.0f, 0.0f };
-			Vector2 InvRenderTargetSize = Vector2{ 0.0f, 0.0f };
+			Vector2 RenderTargetSize = Vector2{0.0f, 0.0f};
+			Vector2 InvRenderTargetSize = Vector2{0.0f, 0.0f};
 			float NearZ = 0.0f;
 			float FarZ = 0.0f;
 			float TotalTime = 0.0f;
 			float DeltaTime = 0.0f;
-			Vector4 AmbientLight = Vector4{ 0.0f, 0.0f, 0.0f, 1.0f };
+			Vector4 AmbientLight = Vector4{0.0f, 0.0f, 0.0f, 1.0f};
 
 
-			Vector4 FogColor = Vector4{ 0.7f, 0.7f, 0.7f, 1.0f };
+			Vector4 FogColor = Vector4{0.7f, 0.7f, 0.7f, 1.0f};
 			float gFogStart = 5.0f;
 			float gFogRange = 150.0f;
 			Vector2 cbPerObjectPad2;
@@ -117,7 +118,7 @@ namespace DX
 			// For SsaoBlur.hlsl
 			Vector4 BlurWeights[3];
 
-			Vector2 InvRenderTargetSize = { 0.0f, 0.0f };
+			Vector2 InvRenderTargetSize = {0.0f, 0.0f};
 
 			// Coordinates given in view space.
 			float OcclusionRadius = 0.5f;
@@ -128,8 +129,8 @@ namespace DX
 
 		struct alignas(sizeof(Vector4)) MaterialConstants
 		{
-			Vector4 DiffuseAlbedo = Vector4{ 1.0f, 1.0f, 1.0f, 1.0f };
-			Vector3 FresnelR0 = Vector3{ 0.01f, 0.01f, 0.01f };
+			Vector4 DiffuseAlbedo = Vector4{1.0f, 1.0f, 1.0f, 1.0f};
+			Vector3 FresnelR0 = Vector3{0.01f, 0.01f, 0.01f};
 			float Roughness = 0.25f;
 
 			// Used in texture mapping.

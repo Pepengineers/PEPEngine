@@ -275,9 +275,6 @@ namespace DX
 {
 	namespace Utils
 	{
-		
-
-		
 		const int globalCountFrameResources = 3;
 
 
@@ -306,7 +303,8 @@ namespace DX
 			extendedParams.lpSecurityAttributes = nullptr;
 			extendedParams.hTemplateFile = nullptr;
 
-			Wrappers::FileHandle file(CreateFile2(filename, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING, &extendedParams));
+			Wrappers::FileHandle file(CreateFile2(filename, GENERIC_READ, FILE_SHARE_READ, OPEN_EXISTING,
+			                                      &extendedParams));
 			if (file.Get() == INVALID_HANDLE_VALUE)
 			{
 				throw std::exception();
@@ -456,7 +454,8 @@ namespace DX
 		{
 		public:
 			DxException() = default;
-			DxException(HRESULT hr, const std::wstring& functionName, const std::wstring& filename, int lineNumber, std::wstring message = L"");
+			DxException(HRESULT hr, const std::wstring& functionName, const std::wstring& filename, int lineNumber,
+			            std::wstring message = L"");
 			DxException(const std::wstring& message);
 
 			std::wstring ToString() const;
@@ -467,8 +466,6 @@ namespace DX
 			int LineNumber = -1;
 			std::wstring message;
 		};
-
-	
 
 
 #ifndef ThrowIfFailed

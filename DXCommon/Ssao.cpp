@@ -7,6 +7,7 @@
 #include "GResourceStateTracker.h"
 #include "MathHelper.h"
 #include "ShaderBuffersData.h"
+
 namespace DX
 {
 	namespace Common
@@ -29,7 +30,6 @@ namespace DX
 
 			ambientMapMapSrvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 2);
 			ambientMapRtvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2);
-
 
 
 			OnResize(width, height);
@@ -189,7 +189,7 @@ namespace DX
 				mViewport.MinDepth = 0.0f;
 				mViewport.MaxDepth = 1.0f;
 
-				mScissorRect = { 0, 0, static_cast<int>(mRenderTargetWidth), static_cast<int>(mRenderTargetHeight) };
+				mScissorRect = {0, 0, static_cast<int>(mRenderTargetWidth), static_cast<int>(mRenderTargetHeight)};
 
 				BuildResources();
 			}
@@ -207,7 +207,7 @@ namespace DX
 			cmdList->FlushResourceBarriers();
 
 
-			float clearValue[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+			float clearValue[] = {1.0f, 1.0f, 1.0f, 1.0f};
 			cmdList->ClearRenderTarget(&ambientMapRtvMemory, 0, clearValue);
 
 			cmdList->SetRenderTargets(1, &ambientMapRtvMemory, 0);
@@ -240,7 +240,7 @@ namespace DX
 			cmdList->TransitionBarrier(ambientMap0, D3D12_RESOURCE_STATE_RENDER_TARGET);
 			cmdList->FlushResourceBarriers();
 
-			float clearValue[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+			float clearValue[] = {0.0f, 0.0f, 0.0f, 1.0f};
 			cmdList->ClearRenderTarget(&ambientMapRtvMemory, 0, clearValue);
 
 
@@ -248,7 +248,8 @@ namespace DX
 			cmdList->FlushResourceBarriers();
 		}
 
-		void Ssao::BlurAmbientMap(std::shared_ptr<GCommandList> cmdList, std::shared_ptr<ConstantBuffer<SsaoConstants>> currFrame, int blurCount)
+		void Ssao::BlurAmbientMap(std::shared_ptr<GCommandList> cmdList,
+		                          std::shared_ptr<ConstantBuffer<SsaoConstants>> currFrame, int blurCount)
 		{
 			cmdList->SetPipelineState(mBlurPso);
 
@@ -285,7 +286,7 @@ namespace DX
 			cmdList->TransitionBarrier(output, D3D12_RESOURCE_STATE_RENDER_TARGET);
 			cmdList->FlushResourceBarriers();
 
-			float clearValue[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+			float clearValue[] = {1.0f, 1.0f, 1.0f, 1.0f};
 			cmdList->ClearRenderTarget(&ambientMapRtvMemory, outputRtv, clearValue);
 
 			cmdList->SetRenderTargets(1, &ambientMapRtvMemory, outputRtv);
@@ -321,10 +322,10 @@ namespace DX
 			texDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
 
 
-			float normalClearColor[] = { 0.0f, 0.0f, 1.0f, 0.0f };
+			float normalClearColor[] = {0.0f, 0.0f, 1.0f, 0.0f};
 			CD3DX12_CLEAR_VALUE optClear(NormalMapFormat, normalClearColor);
 
-			return  GTexture(device, texDesc, L"SSAO NormalMap", TextureUsage::Normalmap, &optClear);
+			return GTexture(device, texDesc, L"SSAO NormalMap", TextureUsage::Normalmap, &optClear);
 		}
 
 		GTexture Ssao::CreateAmbientMap() const
@@ -343,7 +344,7 @@ namespace DX
 			texDesc.Height = mRenderTargetHeight;
 			texDesc.Format = AmbientMapFormat;
 
-			float ambientClearColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+			float ambientClearColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
 			auto optClear = CD3DX12_CLEAR_VALUE(AmbientMapFormat, ambientClearColor);
 
 			return GTexture(device, texDesc, L"SSAO AmbientMap", TextureUsage::Normalmap, &optClear);

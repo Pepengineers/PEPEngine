@@ -4,32 +4,34 @@
 
 namespace DX
 {
-    namespace Allocator
-    {
-        class PoolAllocator : public Allocator {
-        private:
-            struct  FreeHeader {
-            };
-            using Node = StackLinkedList<FreeHeader>::Node;
-            StackLinkedList<FreeHeader> m_freeList;
+	namespace Allocator
+	{
+		class PoolAllocator : public Allocator
+		{
+		private:
+			struct FreeHeader
+			{
+			};
 
-            void* m_start_ptr = nullptr;
-            std::size_t m_chunkSize;
-        public:
-            PoolAllocator(const std::size_t totalSize, const std::size_t chunkSize);
+			using Node = StackLinkedList<FreeHeader>::Node;
+			StackLinkedList<FreeHeader> m_freeList;
 
-            virtual ~PoolAllocator();
+			void* m_start_ptr = nullptr;
+			std::size_t m_chunkSize;
+		public:
+			PoolAllocator(std::size_t totalSize, std::size_t chunkSize);
 
-            virtual void* Allocate(const std::size_t size, const std::size_t alignment = 0) override;
+			virtual ~PoolAllocator();
 
-            virtual void Free(void* ptr) override;
+			void* Allocate(std::size_t size, std::size_t alignment = 0) override;
 
-            virtual void Init() override;
+			void Free(void* ptr) override;
 
-            virtual void Reset();
-        private:
-            PoolAllocator(PoolAllocator& poolAllocator);
+			void Init() override;
 
-        };
-    }
+			virtual void Reset();
+		private:
+			PoolAllocator(PoolAllocator& poolAllocator);
+		};
+	}
 }

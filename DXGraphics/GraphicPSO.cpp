@@ -3,11 +3,11 @@
 #include "d3dUtil.h"
 #include "d3dx12.h"
 #include "GDevice.h"
+
 namespace DX
 {
 	namespace Graphics
 	{
-
 		GraphicPSO::GraphicPSO(PsoType::Type type) : type(type)
 		{
 			ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
@@ -105,34 +105,34 @@ namespace DX
 			switch (shader->GetType())
 			{
 			case VertexShader:
-			{
-				psoDesc.VS = shader->GetShaderResource();
-				break;
-			}
+				{
+					psoDesc.VS = shader->GetShaderResource();
+					break;
+				}
 			case PixelShader:
-			{
-				psoDesc.PS = shader->GetShaderResource();
-				break;
-			}
+				{
+					psoDesc.PS = shader->GetShaderResource();
+					break;
+				}
 			case DomainShader:
-			{
-				psoDesc.DS = shader->GetShaderResource();
-				break;
-			}
+				{
+					psoDesc.DS = shader->GetShaderResource();
+					break;
+				}
 			case GeometryShader:
-			{
-				psoDesc.GS = shader->GetShaderResource();
-				break;
-			}
+				{
+					psoDesc.GS = shader->GetShaderResource();
+					break;
+				}
 			case HullShader:
-			{
-				psoDesc.HS = shader->GetShaderResource();
-				break;
-			}
+				{
+					psoDesc.HS = shader->GetShaderResource();
+					break;
+				}
 			default:
-			{
-				assert("Bad Shader!!");
-			}
+				{
+					assert("Bad Shader!!");
+				}
 			}
 		}
 
@@ -145,7 +145,8 @@ namespace DX
 		{
 			if (isInitial) return;
 
-			ThrowIfFailed(device->GetDXDevice()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineStateObject)));
+			ThrowIfFailed(
+				device->GetDXDevice()->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&pipelineStateObject)));
 
 			isInitial = true;
 		}

@@ -5,13 +5,14 @@
 #include "Lazy.h"
 
 using namespace Microsoft::WRL;
+
 namespace DX
 {
 	namespace Graphics
 	{
-		using namespace DX::Allocator;
-		using namespace DX::Utils;
-		
+		using namespace Allocator;
+		using namespace Utils;
+
 		enum GraphicsAdapter : UINT
 		{
 			GraphicAdapterPrimary = 0,
@@ -40,7 +41,7 @@ namespace DX
 		public:
 
 			static ComPtr<IDXGISwapChain4> CreateSwapChain(std::shared_ptr<GDevice> device, DXGI_SWAP_CHAIN_DESC1& desc,
-				HWND hwnd);
+			                                               HWND hwnd);
 
 			static ComPtr<IDXGIFactory4> GetFactory();
 

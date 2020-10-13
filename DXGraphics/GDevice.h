@@ -6,13 +6,14 @@
 #include "MemoryAllocator.h"
 
 using namespace Microsoft::WRL;
+
 namespace DX
 {
 	namespace Graphics
 	{
-		using namespace DX::Allocator;
-		using namespace DX::Utils;
-		
+		using namespace Allocator;
+		using namespace Utils;
+
 		class GCommandQueue;
 		class GResource;
 		class GAllocator;
@@ -43,7 +44,6 @@ namespace DX
 
 			friend GDeviceFactory;
 
-			
 
 			void InitialDescriptorAllocator();
 			void InitialCommandQueue();
@@ -56,14 +56,15 @@ namespace DX
 
 			~GDevice();
 
-			HANDLE SharedHandle(ComPtr<ID3D12DeviceChild> deviceObject, const SECURITY_ATTRIBUTES* attributes, DWORD access,
-				LPCWSTR name) const;
+			HANDLE SharedHandle(ComPtr<ID3D12DeviceChild> deviceObject, const SECURITY_ATTRIBUTES* attributes,
+			                    DWORD access,
+			                    LPCWSTR name) const;
 
 			void ShareResource(GResource& resource, std::shared_ptr<GDevice> destDevice, GResource& destResource,
-				const SECURITY_ATTRIBUTES* attributes = nullptr,
-				DWORD access = GENERIC_ALL, LPCWSTR name = L"") const;
+			                   const SECURITY_ATTRIBUTES* attributes = nullptr,
+			                   DWORD access = GENERIC_ALL, LPCWSTR name = L"") const;
 
-			
+
 			void ResetAllocator(uint64_t frameCount);
 
 			GMemory AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t descriptorCount = 1);
@@ -74,9 +75,9 @@ namespace DX
 			bool IsCrossAdapterTextureSupported() const;
 
 			void SharedFence(ComPtr<ID3D12Fence>& primaryFence, std::shared_ptr<GDevice> sharedDevice,
-				ComPtr<ID3D12Fence>& sharedFence, UINT64 fenceValue = 0,
-				const SECURITY_ATTRIBUTES* attributes = nullptr,
-				DWORD access = GENERIC_ALL, LPCWSTR name = L"") const;
+			                 ComPtr<ID3D12Fence>& sharedFence, UINT64 fenceValue = 0,
+			                 const SECURITY_ATTRIBUTES* attributes = nullptr,
+			                 DWORD access = GENERIC_ALL, LPCWSTR name = L"") const;
 
 
 			std::shared_ptr<GCommandQueue> GetCommandQueue(

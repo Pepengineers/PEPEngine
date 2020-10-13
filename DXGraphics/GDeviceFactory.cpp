@@ -4,11 +4,11 @@
 #include "d3dUtil.h"
 #include "GDevice.h"
 #include "GCommandQueue.h"
+
 namespace DX
 {
 	namespace Graphics
 	{
-
 		ComPtr<IDXGIFactory4> GDeviceFactory::dxgiFactory = CreateFactory();
 		Lazy<bool> GDeviceFactory::isTearingSupport = Lazy<bool>(CheckTearingSupport);
 		custom_vector<ComPtr<IDXGIAdapter3>> GDeviceFactory::adapters = CreateAdapters();
@@ -76,9 +76,9 @@ namespace DX
 				auto adapter = adapters[i];
 
 				devices.push_back(Lazy<std::shared_ptr<GDevice>>([adapter]
-					{
-						return std::make_shared<GDevice>(adapter);
-					}));
+				{
+					return std::make_shared<GDevice>(adapter);
+				}));
 			}
 
 			return devices;
@@ -91,20 +91,20 @@ namespace DX
 			if (SUCCEEDED(dxgiFactory.As(&factory5)))
 			{
 				factory5->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING,
-					&allowTearing, sizeof(allowTearing));
+				                              &allowTearing, sizeof(allowTearing));
 			}
 
 			return allowTearing == TRUE;
 		}
 
 		ComPtr<IDXGISwapChain4> GDeviceFactory::CreateSwapChain(const std::shared_ptr<GDevice> device,
-			DXGI_SWAP_CHAIN_DESC1& desc, const HWND hwnd)
+		                                                        DXGI_SWAP_CHAIN_DESC1& desc, const HWND hwnd)
 		{
 			ComPtr<IDXGISwapChain4> swapChain;
 
 			desc.Flags = IsTearingSupport()
-				? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING
-				: DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+				             ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING
+				             : DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 
 			ComPtr<IDXGISwapChain1> swapChain1;
 			ThrowIfFailed(dxgiFactory->CreateSwapChainForHwnd(

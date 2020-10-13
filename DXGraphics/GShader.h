@@ -5,6 +5,7 @@
 #include <wrl/client.h>
 
 using namespace Microsoft::WRL;
+
 namespace DX
 {
 	namespace Graphics
@@ -30,7 +31,7 @@ namespace DX
 		public:
 
 			GShader(std::wstring fileName, ShaderType type, const D3D_SHADER_MACRO* defines = nullptr,
-				std::string entryPoint = "Main", std::string target = "ps_5_1");
+			        std::string entryPoint = "Main", std::string target = "ps_5_1");
 
 			void LoadAndCompile();
 

@@ -60,23 +60,23 @@ namespace DX
 
 
 			timestampResultBuffer = Lazy<GResource>([resultBufferSize, this]
-				{
-					return GResource(this->device, CD3DX12_RESOURCE_DESC::Buffer(resultBufferSize),
-						this->device->GetName() + L" TimestampBuffer", nullptr, D3D12_RESOURCE_STATE_COPY_DEST,
-						CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_READBACK));
-				});
+			{
+				return GResource(this->device, CD3DX12_RESOURCE_DESC::Buffer(resultBufferSize),
+				                 this->device->GetName() + L" TimestampBuffer", nullptr, D3D12_RESOURCE_STATE_COPY_DEST,
+				                 CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_READBACK));
+			});
 
 			timestampQueryHeap = Lazy<ComPtr<ID3D12QueryHeap>>([this, resultCount]
-				{
-					D3D12_QUERY_HEAP_DESC timestampHeapDesc = {};
-					timestampHeapDesc.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
-					timestampHeapDesc.Count = resultCount;
-					timestampHeapDesc.NodeMask = this->device->GetNodeMask();
+			{
+				D3D12_QUERY_HEAP_DESC timestampHeapDesc = {};
+				timestampHeapDesc.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
+				timestampHeapDesc.Count = resultCount;
+				timestampHeapDesc.NodeMask = this->device->GetNodeMask();
 
-					ComPtr<ID3D12QueryHeap> heap;
-					ThrowIfFailed(this->device->GetDXDevice()->CreateQueryHeap(&timestampHeapDesc, IID_PPV_ARGS(&heap)));
-					return heap;
-				});
+				ComPtr<ID3D12QueryHeap> heap;
+				ThrowIfFailed(this->device->GetDXDevice()->CreateQueryHeap(&timestampHeapDesc, IID_PPV_ARGS(&heap)));
+				return heap;
+			});
 
 
 			CommandListExecutorThread = std::thread(&GCommandQueue::ProccessInFlightCommandLists, this);
@@ -215,7 +215,7 @@ namespace DX
 			// Queue command lists for reuse.
 			for (const auto commandList : toBeQueued)
 			{
-				m_InFlightCommandLists.Push({ fenceValue, commandList });
+				m_InFlightCommandLists.Push({fenceValue, commandList});
 			}
 
 			return fenceValue;

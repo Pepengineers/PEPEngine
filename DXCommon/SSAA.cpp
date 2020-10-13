@@ -2,11 +2,11 @@
 #include "SSAA.h"
 #include "GCommandList.h"
 #include "GDevice.h"
+
 namespace DX
 {
 	namespace Common
 	{
-
 		D3D12_VIEWPORT SSAA::GetViewPort() const
 		{
 			return viewport;
@@ -44,7 +44,8 @@ namespace DX
 
 		void SSAA::OnResize(UINT newWidth, UINT newHeight)
 		{
-			if (viewport.Width == newWidth * ResolutionMultiplier && viewport.Height == newHeight * ResolutionMultiplier)
+			if (viewport.Width == newWidth * ResolutionMultiplier && viewport.Height == newHeight * ResolutionMultiplier
+			)
 			{
 				return;
 			}
@@ -59,7 +60,7 @@ namespace DX
 			viewport.TopLeftX = 0;
 			viewport.TopLeftY = 0;
 
-			scissorRect = { 0,0, width , height };
+			scissorRect = {0, 0, width, height};
 
 
 			if (!renderTarget.IsValid())
@@ -112,7 +113,6 @@ namespace DX
 			}
 
 
-
 			D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
 			rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 			rtvDesc.Format = rtvFormat;
@@ -137,7 +137,8 @@ namespace DX
 			depthMap.CreateDepthStencilView(&dsvDesc, &dsvMemory);
 		}
 
-		SSAA::SSAA(const std::shared_ptr<GDevice> device, UINT multiplier, UINT width, UINT height) : ResolutionMultiplier(multiplier), device(device)
+		SSAA::SSAA(const std::shared_ptr<GDevice> device, UINT multiplier, UINT width,
+		           UINT height) : ResolutionMultiplier(multiplier), device(device)
 		{
 			srvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1);
 			rtvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 1);

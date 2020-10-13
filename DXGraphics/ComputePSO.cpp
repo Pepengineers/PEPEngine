@@ -1,6 +1,7 @@
 #include "ComputePSO.h"
 #include "GDevice.h"
 #include "GShader.h"
+
 namespace DX
 {
 	namespace Graphics
@@ -12,7 +13,8 @@ namespace DX
 
 		void ComputePSO::Initialize(const std::shared_ptr<GDevice> device)
 		{
-			ThrowIfFailed(device->GetDXDevice()->CreateComputePipelineState(&computePSOdesc, IID_PPV_ARGS(&m_PipelineState)));
+			ThrowIfFailed(
+				device->GetDXDevice()->CreateComputePipelineState(&computePSOdesc, IID_PPV_ARGS(&m_PipelineState)));
 		}
 
 		ComPtr<ID3D12PipelineState> ComputePSO::GetPSO() const

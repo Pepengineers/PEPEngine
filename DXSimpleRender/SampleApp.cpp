@@ -12,19 +12,18 @@
 
 SampleApp::SampleApp(HINSTANCE hInstance): D3DApp(hInstance), assetLoader(AssetsLoader(GDeviceFactory::GetDevice()))
 {
-	
 }
 
 bool SampleApp::Initialize()
 {
 	device = GDeviceFactory::GetDevice();
-	
+
 	dsvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 	rtvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 3);
 	srvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, assetLoader.GetLoadTexturesCount());
-	
-	
-	if(!D3DApp::Initialize())
+
+
+	if (!D3DApp::Initialize())
 	{
 		return false;
 	}
@@ -46,7 +45,8 @@ bool SampleApp::Initialize()
 	texParam[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, StandardShaderSlot::SkyMap - 3, 0); //SkyMap
 	texParam[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, StandardShaderSlot::ShadowMap - 3, 0); //ShadowMap
 	texParam[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, StandardShaderSlot::AmbientMap - 3, 0); //SsaoMap
-	texParam[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, assetLoader.GetLoadTexturesCount(), StandardShaderSlot::TexturesMap - 3, 0);
+	texParam[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, assetLoader.GetLoadTexturesCount(),
+	                 StandardShaderSlot::TexturesMap - 3, 0);
 
 
 	rootSignature->AddConstantBufferParameter(0);
@@ -75,15 +75,15 @@ bool SampleApp::Initialize()
 
 	shaders[L"StandardVertex"] = std::move(
 		std::make_unique<GShader>(L"Shaders\\Default.hlsl", VertexShader, nullptr, "VS", "vs_5_1"));
-		
+
 	shaders[L"OpaquePixel"] = std::move(
 		std::make_unique<GShader>(L"Shaders\\Default.hlsl", PixelShader, defines, "PS", "ps_5_1"));
 
-	for (auto && sh : shaders)
+	for (auto&& sh : shaders)
 	{
 		sh.second->LoadAndCompile();
 	}
-	
+
 	defaultInputLayout =
 	{
 		{
@@ -107,7 +107,7 @@ bool SampleApp::Initialize()
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC basePsoDesc;
 
 	ZeroMemory(&basePsoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
-	basePsoDesc.InputLayout = { defaultInputLayout.data(), static_cast<UINT>(defaultInputLayout.size()) };
+	basePsoDesc.InputLayout = {defaultInputLayout.data(), static_cast<UINT>(defaultInputLayout.size())};
 	basePsoDesc.pRootSignature = rootSignature->GetRootSignature().Get();
 	basePsoDesc.VS = shaders[L"StandardVertex"]->GetShaderResource();
 	basePsoDesc.PS = shaders[L"OpaquePixel"]->GetShaderResource();
@@ -121,24 +121,24 @@ bool SampleApp::Initialize()
 	basePsoDesc.SampleDesc.Count = isM4xMsaa ? 4 : 1;
 	basePsoDesc.SampleDesc.Quality = isM4xMsaa ? (m4xMsaaQuality - 1) : 0;
 	basePsoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-	
+
 	opaque = std::make_shared<GraphicPSO>();
 	opaque->SetPsoDesc(basePsoDesc);
 	opaque->Initialize(device);
 
 	auto sun1 = std::make_unique<GameObject>("Directional Light");
 	auto light = std::make_shared<Light>(Directional);
-	light->Direction({ 0.57735f, -0.57735f, 0.57735f });
-	light->Strength({ 0.8f, 0.8f, 0.8f });
+	light->Direction({0.57735f, -0.57735f, 0.57735f});
+	light->Strength({0.8f, 0.8f, 0.8f});
 	sun1->AddComponent(light);
 	gameObjects.push_back(std::move(sun1));
 
-	
+
 	auto cameraGO = std::make_unique<GameObject>("MainCamera");
 	cameraGO->GetTransform()->SetEulerRotate(Vector3(-30, 270, 0));
 	cameraGO->GetTransform()->SetPosition(Vector3(-1000, 190, -32));
-	cameraGO->AddComponent(std::make_shared < Camera>(AspectRatio()));
-	cameraGO->AddComponent(std::make_shared < CameraController>());
+	cameraGO->AddComponent(std::make_shared<Camera>(AspectRatio()));
+	cameraGO->AddComponent(std::make_shared<CameraController>());
 	gameObjects.push_back(std::move(cameraGO));
 
 	for (int i = 0; i < 12; ++i)
@@ -146,16 +146,17 @@ bool SampleApp::Initialize()
 		for (int j = 0; j < 3; ++j)
 		{
 			auto rModel = std::make_unique<GameObject>();
-			auto renderer = std::make_shared <ModelRenderer>(device, models[L"atlas"]);
-			rModel->AddComponent(renderer);		
-			rModel->GetTransform()->SetPosition(Vector3::Right * -60 + Vector3::Right * -30 * j + Vector3::Up * 11 + Vector3::Forward * 10 * i);
+			auto renderer = std::make_shared<ModelRenderer>(device, models[L"atlas"]);
+			rModel->AddComponent(renderer);
+			rModel->GetTransform()->SetPosition(
+				Vector3::Right * -60 + Vector3::Right * -30 * j + Vector3::Up * 11 + Vector3::Forward * 10 * i);
 			gameObjects.push_back(std::move(rModel));
 		}
 	}
 
 	auto materials = assetLoader.GetMaterials();
 
-	for (auto && pair : materials)
+	for (auto&& pair : materials)
 	{
 		pair->InitMaterial(&srvMemory);
 	}
@@ -172,7 +173,7 @@ bool SampleApp::Initialize()
 		{
 			lights.push_back(lightComponent.get());
 		}
-		
+
 		auto cam = item->GetComponent<Camera>();
 		if (cam != nullptr)
 		{
@@ -185,10 +186,10 @@ bool SampleApp::Initialize()
 void SampleApp::Update(const GameTimer& gt)
 {
 	auto renderQueue = device->GetCommandQueue();
-		
+
 	currentFrameResource = frameResources[MainWindow->GetCurrentBackBufferIndex()];
 
-	if(currentFrameResource->FenceValue != 0 && renderQueue->IsFinish(currentFrameResource->FenceValue))
+	if (currentFrameResource->FenceValue != 0 && renderQueue->IsFinish(currentFrameResource->FenceValue))
 	{
 		renderQueue->WaitForFenceValue(currentFrameResource->FenceValue);
 	}
@@ -223,14 +224,14 @@ void SampleApp::Update(const GameTimer& gt)
 	mainPassCB.ViewProjTex = viewProjTex.Transpose();
 	mainPassCB.EyePosW = camera->gameObject->GetTransform()->GetWorldPosition();
 	mainPassCB.RenderTargetSize = Vector2(static_cast<float>(MainWindow->GetClientWidth()),
-		static_cast<float>(MainWindow->GetClientHeight()));
+	                                      static_cast<float>(MainWindow->GetClientHeight()));
 	mainPassCB.InvRenderTargetSize = Vector2(1.0f / mainPassCB.RenderTargetSize.x,
-		1.0f / mainPassCB.RenderTargetSize.y);
+	                                         1.0f / mainPassCB.RenderTargetSize.y);
 	mainPassCB.NearZ = 1.0f;
 	mainPassCB.FarZ = 1000.0f;
 	mainPassCB.TotalTime = gt.TotalTime();
 	mainPassCB.DeltaTime = gt.DeltaTime();
-	mainPassCB.AmbientLight = Vector4{ 0.25f, 0.25f, 0.35f, 1.0f };
+	mainPassCB.AmbientLight = Vector4{0.25f, 0.25f, 0.35f, 1.0f};
 
 	for (int i = 0; i < MaxLights; ++i)
 	{
@@ -250,7 +251,7 @@ void SampleApp::Update(const GameTimer& gt)
 
 void SampleApp::Draw(const GameTimer& gt)
 {
-	if(isResizing) return;
+	if (isResizing) return;
 
 	auto renderQueue = device->GetCommandQueue();
 	auto cmdList = renderQueue->GetCommandList();
@@ -263,7 +264,7 @@ void SampleApp::Draw(const GameTimer& gt)
 	cmdList->TransitionBarrier(depthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 	cmdList->FlushResourceBarriers();
 
-	
+
 	cmdList->SetRenderTargets(1, &rtvMemory, MainWindow->GetCurrentBackBufferIndex(), &dsvMemory);
 	cmdList->ClearRenderTarget(&rtvMemory, MainWindow->GetCurrentBackBufferIndex(), DirectX::Colors::Yellow);
 	cmdList->ClearDepthStencil(&dsvMemory, 0);
@@ -271,21 +272,19 @@ void SampleApp::Draw(const GameTimer& gt)
 	cmdList->SetRootSignature(rootSignature.get());
 	cmdList->SetRootConstantBufferView(1, *currentFrameResource->PassConstantBuffer);
 	cmdList->SetPipelineState(*opaque.get());
-	for (auto && object : gameObjects)
+	for (auto&& object : gameObjects)
 	{
 		object->Draw(cmdList);
 	}
 
-	
 
-	
 	cmdList->TransitionBarrier(MainWindow->GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT);
 	cmdList->TransitionBarrier(depthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
 	cmdList->FlushResourceBarriers();
 
 	currentFrameResource->FenceValue = renderQueue->ExecuteCommandList(cmdList);
-	
-	MainWindow->Present();	
+
+	MainWindow->Present();
 }
 
 void SampleApp::OnResize()
@@ -298,11 +297,11 @@ void SampleApp::OnResize()
 	viewport.MaxDepth = 1.0f;
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
-	rect = { 0,0, MainWindow->GetClientWidth() , MainWindow->GetClientHeight() };
+	rect = {0, 0, MainWindow->GetClientWidth(), MainWindow->GetClientHeight()};
 
 
 	auto backBufferDesc = MainWindow->GetCurrentBackBuffer().GetD3D12ResourceDesc();
-	
+
 	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
 	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 	rtvDesc.Format = GetSRGBFormat(backBufferDesc.Format);
@@ -311,8 +310,8 @@ void SampleApp::OnResize()
 	{
 		MainWindow->GetBackBuffer(i).CreateRenderTargetView(&rtvDesc, &rtvMemory, i);
 	}
-	
-	if(!depthBuffer.IsValid())
+
+	if (!depthBuffer.IsValid())
 	{
 		D3D12_RESOURCE_DESC depthStencilDesc;
 		depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
@@ -345,156 +344,148 @@ void SampleApp::OnResize()
 	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	dsvDesc.Texture2D.MipSlice = 0;
-	
-	depthBuffer.CreateDepthStencilView(&dsvDesc, &dsvMemory);	
 
+	depthBuffer.CreateDepthStencilView(&dsvDesc, &dsvMemory);
 }
 
 LRESULT SampleApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-
 	switch (msg)
 	{
 	case WM_INPUT:
-	{
-		UINT dataSize;
-		GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, nullptr, &dataSize,
-			sizeof(RAWINPUTHEADER));
-		//Need to populate data size first
-
-		if (dataSize > 0)
 		{
-			std::unique_ptr<BYTE[]> rawdata = std::make_unique<BYTE[]>(dataSize);
-			if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, rawdata.get(), &dataSize,
-				sizeof(RAWINPUTHEADER)) == dataSize)
+			UINT dataSize;
+			GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, nullptr, &dataSize,
+			                sizeof(RAWINPUTHEADER));
+			//Need to populate data size first
+
+			if (dataSize > 0)
 			{
-				RAWINPUT* raw = reinterpret_cast<RAWINPUT*>(rawdata.get());
-				if (raw->header.dwType == RIM_TYPEMOUSE)
+				std::unique_ptr<BYTE[]> rawdata = std::make_unique<BYTE[]>(dataSize);
+				if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, rawdata.get(), &dataSize,
+				                    sizeof(RAWINPUTHEADER)) == dataSize)
 				{
-					mouse.OnMouseMoveRaw(raw->data.mouse.lLastX, raw->data.mouse.lLastY);
+					RAWINPUT* raw = reinterpret_cast<RAWINPUT*>(rawdata.get());
+					if (raw->header.dwType == RIM_TYPEMOUSE)
+					{
+						mouse.OnMouseMoveRaw(raw->data.mouse.lLastX, raw->data.mouse.lLastY);
+					}
+				}
+			}
+
+			return DefWindowProc(hwnd, msg, wParam, lParam);
+		}
+		//Mouse Messages
+	case WM_MOUSEMOVE:
+		{
+			int x = LOWORD(lParam);
+			int y = HIWORD(lParam);
+			mouse.OnMouseMove(x, y);
+			return 0;
+		}
+	case WM_LBUTTONDOWN:
+		{
+			int x = LOWORD(lParam);
+			int y = HIWORD(lParam);
+			mouse.OnLeftPressed(x, y);
+			return 0;
+		}
+	case WM_RBUTTONDOWN:
+		{
+			int x = LOWORD(lParam);
+			int y = HIWORD(lParam);
+			mouse.OnRightPressed(x, y);
+			return 0;
+		}
+	case WM_MBUTTONDOWN:
+		{
+			int x = LOWORD(lParam);
+			int y = HIWORD(lParam);
+			mouse.OnMiddlePressed(x, y);
+			return 0;
+		}
+	case WM_LBUTTONUP:
+		{
+			int x = LOWORD(lParam);
+			int y = HIWORD(lParam);
+			mouse.OnLeftReleased(x, y);
+			return 0;
+		}
+	case WM_RBUTTONUP:
+		{
+			int x = LOWORD(lParam);
+			int y = HIWORD(lParam);
+			mouse.OnRightReleased(x, y);
+			return 0;
+		}
+	case WM_MBUTTONUP:
+		{
+			int x = LOWORD(lParam);
+			int y = HIWORD(lParam);
+			mouse.OnMiddleReleased(x, y);
+			return 0;
+		}
+	case WM_MOUSEWHEEL:
+		{
+			int x = LOWORD(lParam);
+			int y = HIWORD(lParam);
+			if (GET_WHEEL_DELTA_WPARAM(wParam) > 0)
+			{
+				mouse.OnWheelUp(x, y);
+			}
+			else if (GET_WHEEL_DELTA_WPARAM(wParam) < 0)
+			{
+				mouse.OnWheelDown(x, y);
+			}
+			return 0;
+		}
+	case WM_KEYUP:
+
+		{
+			/*if ((int)wParam == VK_F2)
+				Set4xMsaaState(!isM4xMsaa);*/
+			unsigned char keycode = static_cast<unsigned char>(wParam);
+			keyboard.OnKeyReleased(keycode);
+
+
+			return 0;
+		}
+	case WM_KEYDOWN:
+		{
+			{
+				unsigned char keycode = static_cast<unsigned char>(wParam);
+				if (keyboard.IsKeysAutoRepeat())
+				{
+					keyboard.OnKeyPressed(keycode);
+				}
+				else
+				{
+					const bool wasPressed = lParam & 0x40000000;
+					if (!wasPressed)
+					{
+						keyboard.OnKeyPressed(keycode);
+					}
 				}
 			}
 		}
 
-		return DefWindowProc(hwnd, msg, wParam, lParam);
-	}
-	//Mouse Messages
-	case WM_MOUSEMOVE:
-	{
-		int x = LOWORD(lParam);
-		int y = HIWORD(lParam);
-		mouse.OnMouseMove(x, y);
-		return 0;
-	}
-	case WM_LBUTTONDOWN:
-	{
-		int x = LOWORD(lParam);
-		int y = HIWORD(lParam);
-		mouse.OnLeftPressed(x, y);
-		return 0;
-	}
-	case WM_RBUTTONDOWN:
-	{
-		int x = LOWORD(lParam);
-		int y = HIWORD(lParam);
-		mouse.OnRightPressed(x, y);
-		return 0;
-	}
-	case WM_MBUTTONDOWN:
-	{
-		int x = LOWORD(lParam);
-		int y = HIWORD(lParam);
-		mouse.OnMiddlePressed(x, y);
-		return 0;
-	}
-	case WM_LBUTTONUP:
-	{
-		int x = LOWORD(lParam);
-		int y = HIWORD(lParam);
-		mouse.OnLeftReleased(x, y);
-		return 0;
-	}
-	case WM_RBUTTONUP:
-	{
-		int x = LOWORD(lParam);
-		int y = HIWORD(lParam);
-		mouse.OnRightReleased(x, y);
-		return 0;
-	}
-	case WM_MBUTTONUP:
-	{
-		int x = LOWORD(lParam);
-		int y = HIWORD(lParam);
-		mouse.OnMiddleReleased(x, y);
-		return 0;
-	}
-	case WM_MOUSEWHEEL:
-	{
-		int x = LOWORD(lParam);
-		int y = HIWORD(lParam);
-		if (GET_WHEEL_DELTA_WPARAM(wParam) > 0)
+	case WM_CHAR:
 		{
-			mouse.OnWheelUp(x, y);
-		}
-		else if (GET_WHEEL_DELTA_WPARAM(wParam) < 0)
-		{
-			mouse.OnWheelDown(x, y);
-		}
-		return 0;
-	}
-	case WM_KEYUP:
-
-	{
-
-
-
-		/*if ((int)wParam == VK_F2)
-			Set4xMsaaState(!isM4xMsaa);*/
-		unsigned char keycode = static_cast<unsigned char>(wParam);
-		keyboard.OnKeyReleased(keycode);
-
-
-
-		return 0;
-	}
-	case WM_KEYDOWN:
-	{
-		{
-			unsigned char keycode = static_cast<unsigned char>(wParam);
-			if (keyboard.IsKeysAutoRepeat())
+			unsigned char ch = static_cast<unsigned char>(wParam);
+			if (keyboard.IsCharsAutoRepeat())
 			{
-				keyboard.OnKeyPressed(keycode);
+				keyboard.OnChar(ch);
 			}
 			else
 			{
 				const bool wasPressed = lParam & 0x40000000;
 				if (!wasPressed)
 				{
-					keyboard.OnKeyPressed(keycode);
+					keyboard.OnChar(ch);
 				}
 			}
-
-			
+			return 0;
 		}
-	}
-
-	case WM_CHAR:
-	{
-		unsigned char ch = static_cast<unsigned char>(wParam);
-		if (keyboard.IsCharsAutoRepeat())
-		{
-			keyboard.OnChar(ch);
-		}
-		else
-		{
-			const bool wasPressed = lParam & 0x40000000;
-			if (!wasPressed)
-			{
-				keyboard.OnChar(ch);
-			}
-		}
-		return 0;
-	}
 	}
 
 	return D3DApp::MsgProc(hwnd, msg, wParam, lParam);

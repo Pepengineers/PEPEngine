@@ -1,14 +1,14 @@
 #include "GAllocator.h"
 #include "GHeap.h"
+
 namespace DX
 {
 	namespace Graphics
 	{
-
 		GAllocator::GAllocator(const std::shared_ptr<GDevice> device, D3D12_DESCRIPTOR_HEAP_TYPE type,
-			uint32_t descriptorsPerPage)
+		                       uint32_t descriptorsPerPage)
 			: allocatorType(type)
-			, numDescriptorsPerPage(descriptorsPerPage), device(device)
+			  , numDescriptorsPerPage(descriptorsPerPage), device(device)
 		{
 		}
 

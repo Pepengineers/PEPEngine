@@ -4,27 +4,28 @@
 #include "Component.h"
 #include "ModelRenderer.h"
 #include "Transform.h"
+
 namespace DX
 {
 	namespace Common
 	{
-		using namespace DX::Allocator;
-		using namespace DX::Graphics;
-		using namespace DX::Utils;
-		
+		using namespace Allocator;
+		using namespace Graphics;
+		using namespace Utils;
+
 		GameObject::GameObject() : GameObject("Game Object")
 		{
 		};
 
 		GameObject::GameObject(std::string name)
 			: GameObject(std::move(name), Vector3::Zero,
-				Vector3::One, Quaternion::Identity)
+			             Vector3::One, Quaternion::Identity)
 		{
 		}
 
 		GameObject::
-			GameObject(std::string name, Vector3 position, Vector3 scale, Quaternion rotate) : name(
-				std::move(name))
+		GameObject(std::string name, Vector3 position, Vector3 scale, Quaternion rotate) : name(
+			std::move(name))
 		{
 			transform = std::make_shared<Transform>(position, rotate, scale);
 

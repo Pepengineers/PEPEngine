@@ -4,6 +4,7 @@
 #include "d3dUtil.h"
 #include "GResource.h"
 using namespace Microsoft::WRL;
+
 namespace DX
 {
 	namespace Graphics
@@ -11,7 +12,8 @@ namespace DX
 		class ShaderBuffer : public GResource
 		{
 		public:
-			ShaderBuffer(std::shared_ptr<GDevice> device, UINT elementCount, UINT elementByteSize, std::wstring name = L"");
+			ShaderBuffer(std::shared_ptr<GDevice> device, UINT elementCount, UINT elementByteSize,
+			             std::wstring name = L"");
 
 			ShaderBuffer(const ShaderBuffer& rhs) = delete;
 			ShaderBuffer& operator=(const ShaderBuffer& rhs) = delete;
@@ -46,8 +48,9 @@ namespace DX
 			//  UINT64 OffsetInBytes; // multiple of 256
 			//  UINT  SizeInBytes;  // multiple of 256
 			// } D3D12_CONSTANT_BUFFER_VIEW_DESC;
-			ConstantBuffer(const std::shared_ptr<GDevice> device, UINT elementCount, std::wstring name = L"") : ShaderBuffer(
-				device, elementCount, Utils::d3dUtil::CalcConstantBufferByteSize(sizeof(T)), name = L"")
+			ConstantBuffer(const std::shared_ptr<GDevice> device, UINT elementCount, std::wstring name = L"") :
+				ShaderBuffer(
+					device, elementCount, Utils::d3dUtil::CalcConstantBufferByteSize(sizeof(T)), name = L"")
 			{
 			}
 
@@ -61,8 +64,9 @@ namespace DX
 		class UploadBuffer : public virtual ShaderBuffer
 		{
 		public:
-			UploadBuffer(const std::shared_ptr<GDevice> device, UINT elementCount, std::wstring name = L"") : ShaderBuffer(
-				device, elementCount, (sizeof(T)), name)
+			UploadBuffer(const std::shared_ptr<GDevice> device, UINT elementCount, std::wstring name = L"") :
+				ShaderBuffer(
+					device, elementCount, (sizeof(T)), name)
 			{
 			}
 

@@ -17,7 +17,7 @@ namespace DX
 		public:
 			ConcurrentQueue(size_t buffer_size)
 				: buffer_(new cell_t[buffer_size])
-				, buffer_mask_(buffer_size - 1)
+				  , buffer_mask_(buffer_size - 1)
 			{
 				assert((buffer_size >= 2) && ((buffer_size & (buffer_size - 1)) == 0));
 				for (size_t i = 0; i != buffer_size; i += 1)
@@ -44,7 +44,7 @@ namespace DX
 					if (dif == 0)
 					{
 						if (enqueue_pos_.compare_exchange_weak
-						(pos, pos + 1, std::memory_order_relaxed))
+							(pos, pos + 1, std::memory_order_relaxed))
 							break;
 					}
 					else if (dif < 0)
@@ -70,7 +70,7 @@ namespace DX
 					if (dif == 0)
 					{
 						if (dequeue_pos_.compare_exchange_weak
-						(pos, pos + 1, std::memory_order_relaxed))
+							(pos, pos + 1, std::memory_order_relaxed))
 							break;
 					}
 					else if (dif < 0)
@@ -80,7 +80,7 @@ namespace DX
 				}
 				data = cell->data_;
 				cell->sequence_.store
-				(pos + buffer_mask_ + 1, std::memory_order_release);
+					(pos + buffer_mask_ + 1, std::memory_order_release);
 				return true;
 			}
 
@@ -103,6 +103,5 @@ namespace DX
 			std::atomic<size_t> dequeue_pos_;
 			cacheline_pad_t pad3_;
 		};
-
 	}
 }

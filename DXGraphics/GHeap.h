@@ -11,9 +11,9 @@ namespace DX
 {
 	namespace Graphics
 	{
-		using namespace DX::Allocator;
+		using namespace Allocator;
 		using namespace Microsoft::WRL;
-		
+
 		class GDevice;
 
 		class GHeap : public std::enable_shared_from_this<GHeap>
@@ -67,8 +67,8 @@ namespace DX
 			{
 				DescriptorInfo(OffsetType offset, SizeType size, uint64_t frame)
 					: Offset(offset)
-					, Size(size)
-					, FrameNumber(frame)
+					  , Size(size)
+					  , FrameNumber(frame)
 				{
 				}
 
@@ -77,7 +77,8 @@ namespace DX
 				uint64_t FrameNumber;
 			};
 
-			custom_map<OffsetType, FreeBlockInfo> freeListByOffset = MemoryAllocator::CreateMap<OffsetType, FreeBlockInfo>();
+			custom_map<OffsetType, FreeBlockInfo> freeListByOffset = MemoryAllocator::CreateMap<
+				OffsetType, FreeBlockInfo>();
 			custom_multimap<SizeType, custom_map<OffsetType, FreeBlockInfo>::iterator> freeListBySize =
 				MemoryAllocator::CreateMultimap<SizeType, custom_map<OffsetType, FreeBlockInfo>::iterator>();
 

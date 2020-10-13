@@ -1,6 +1,7 @@
 #pragma once
 #include <queue>
 #include <mutex>
+
 namespace DX
 {
 	namespace Utils

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Transform.h"
 #include "GameObject.h"
+
 namespace DX
 {
 	namespace Common
@@ -8,7 +9,7 @@ namespace DX
 		UINT Transform::gConstantBufferIndex = 0;
 
 		Transform::Transform(Vector3 pos, Quaternion rot, Vector3 scale) : Component(), localPosition(pos),
-			localRotate(rot), localScale(scale)
+		                                                                   localRotate(rot), localScale(scale)
 		{
 			bufferIndex = gConstantBufferIndex++;
 		}
@@ -25,7 +26,6 @@ namespace DX
 
 		void Transform::Update()
 		{
-
 #if defined(_DEBUG)
 			if (gameObject->GetName() == "MainCamera")
 			{
@@ -69,7 +69,7 @@ namespace DX
 
 		Vector3 Transform::GetBackwardVector() const
 		{
-			auto v = Vector3{ worldTranspose._13, worldTranspose._23, worldTranspose._33 };
+			auto v = Vector3{worldTranspose._13, worldTranspose._23, worldTranspose._33};
 			v.Normalize();
 			return v;
 		}
@@ -81,7 +81,7 @@ namespace DX
 
 		Vector3 Transform::GetLeftVector() const
 		{
-			auto v = Vector3{ worldTranspose._11, worldTranspose._21, worldTranspose._31 };
+			auto v = Vector3{worldTranspose._11, worldTranspose._21, worldTranspose._31};
 			v.Normalize();
 			return v;
 		}
@@ -93,7 +93,7 @@ namespace DX
 
 		Vector3 Transform::GetUpVector() const
 		{
-			auto v = Vector3{ worldTranspose._12, worldTranspose._22, worldTranspose._32 };
+			auto v = Vector3{worldTranspose._12, worldTranspose._22, worldTranspose._32};
 			v.Normalize();
 			return v;
 		}
@@ -145,17 +145,22 @@ namespace DX
 		void Transform::SetEulerRotate(const Vector3& eulerAngl)
 		{
 			localEulerAngles = eulerAngl;
-			localRotate = Quaternion::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(eulerAngl.y), DirectX::XMConvertToRadians(eulerAngl.x), DirectX::XMConvertToRadians(eulerAngl.z));
+			localRotate = Quaternion::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(eulerAngl.y),
+			                                                 DirectX::XMConvertToRadians(eulerAngl.x),
+			                                                 DirectX::XMConvertToRadians(eulerAngl.z));
 			world = CalculateWorldMatrix();
 			NumFramesDirty = globalCountFrameResources;
 		}
 
 		void Transform::SetRadianRotate(const Vector3& radianAngl)
 		{
-			localEulerAngles = Vector3(DirectX::XMConvertToDegrees(radianAngl.x), DirectX::XMConvertToDegrees(radianAngl.y),
-				DirectX::XMConvertToDegrees(radianAngl.z));
+			localEulerAngles = Vector3(DirectX::XMConvertToDegrees(radianAngl.x),
+			                           DirectX::XMConvertToDegrees(radianAngl.y),
+			                           DirectX::XMConvertToDegrees(radianAngl.z));
 
-			localRotate = Quaternion::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(radianAngl.y), DirectX::XMConvertToRadians(radianAngl.x), DirectX::XMConvertToRadians(radianAngl.z));
+			localRotate = Quaternion::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(radianAngl.y),
+			                                                 DirectX::XMConvertToRadians(radianAngl.x),
+			                                                 DirectX::XMConvertToRadians(radianAngl.z));
 
 			world = CalculateWorldMatrix();
 			NumFramesDirty = globalCountFrameResources;

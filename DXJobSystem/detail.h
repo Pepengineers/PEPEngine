@@ -36,7 +36,7 @@ namespace DX
 
 		template <typename Function, typename... Args>
 		auto apply(Function func, std::tuple<Args...> args,
-			typename std::enable_if<!std::is_member_function_pointer<Function>::value>::type* = nullptr)
+		           typename std::enable_if<!std::is_member_function_pointer<Function>::value>::type* = nullptr)
 		{
 			using indices = to_index_tuple<Args...>;
 			return apply_impl(func, args, indices());

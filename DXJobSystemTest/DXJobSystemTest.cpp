@@ -36,11 +36,13 @@ void main_test(JobManager* mgr)
 	mgr->WaitForSingle(JobPriority::Normal, test_job_1, &count);
 
 	// 2: Lambda
-	for (uint16_t i = 0, length = 10000; i < length; ++i) {
-		mgr->WaitForSingle(JobPriority::Normal, [&count]() {
+	for (uint16_t i = 0, length = 10000; i < length; ++i)
+	{
+		mgr->WaitForSingle(JobPriority::Normal, [&count]()
+		{
 			//std::cout << "lambda with " << count << std::endl;
 			count++;
-			});
+		});
 	}
 
 	// 3: Member Function
@@ -51,7 +53,6 @@ void main_test(JobManager* mgr)
 	mgr->WaitForSingle(JobPriority::Normal, &tj2_inst, &count);
 
 
-
 	// List / Queues
 	JobList list(mgr);
 	list.Add(JobPriority::Normal, test_job_1, &count);
@@ -60,7 +61,7 @@ void main_test(JobManager* mgr)
 	JobQueue queue(mgr, JobPriority::High); // default Priority is high
 	queue.Add(test_job_1, &count);
 	queue += JobInfo(test_job_1, &count);
-	
+
 	queue.Execute();
 }
 

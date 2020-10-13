@@ -82,13 +82,14 @@ namespace DX
 			void SetRootUnorderedAccessView(UINT rootSignatureSlot, ShaderBuffer& resource, UINT offset = 0);
 
 			void SetRoot32BitConstants(UINT rootSignatureSlot, UINT Count32BitValueToSet, const void* data,
-				UINT DestOffsetIn32BitValueToSet) const;
+			                           UINT DestOffsetIn32BitValueToSet) const;
 
 			void SetRoot32BitConstant(UINT shaderRegister, UINT value, UINT offset) const;
 
 			void SetRootDescriptorTable(UINT rootSignatureSlot, const GMemory* memory, UINT offset = 0) const;
 
-			void UpdateSubresource(GResource& destResource, D3D12_SUBRESOURCE_DATA* subresources, size_t countSubresources);
+			void UpdateSubresource(GResource& destResource, D3D12_SUBRESOURCE_DATA* subresources,
+			                       size_t countSubresources);
 
 			void SetViewports(const D3D12_VIEWPORT* viewports, size_t count) const;
 
@@ -104,38 +105,38 @@ namespace DX
 			void SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY primitiveTopology);
 
 			void ClearRenderTarget(GMemory* memory, size_t offset = 0, const FLOAT rgba[4] = DirectX::Colors::Black,
-				D3D12_RECT* rects = nullptr, size_t rectCount = 0) const;
+			                       D3D12_RECT* rects = nullptr, size_t rectCount = 0) const;
 
 			void SetRenderTargets(size_t RTCount = 0, GMemory* rtvMemory = nullptr, size_t rtvOffset = 0,
-				GMemory* dsvMemory = nullptr, size_t dsvOffset = 0) const;
+			                      GMemory* dsvMemory = nullptr, size_t dsvOffset = 0) const;
 
 			void ClearDepthStencil(GMemory* dsvMemory, size_t dsvOffset,
-				D3D12_CLEAR_FLAGS flags = D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL,
-				FLOAT depthValue = 1.0f, UINT stencilValue = 0, D3D12_RECT* rects = nullptr, size_t
-				rectCount = 0) const;
+			                       D3D12_CLEAR_FLAGS flags = D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL,
+			                       FLOAT depthValue = 1.0f, UINT stencilValue = 0, D3D12_RECT* rects = nullptr, size_t
+			                       rectCount = 0) const;
 
 			void TransitionBarrier(const GResource& resource, D3D12_RESOURCE_STATES stateAfter,
-				UINT subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
-				bool flushBarriers = false) const;
+			                       UINT subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+			                       bool flushBarriers = false) const;
 
 			void CopyTextureRegion(ComPtr<ID3D12Resource> dstRes, UINT DstX,
-				UINT DstY,
-				UINT DstZ, ComPtr<ID3D12Resource> srcRes, const D3D12_BOX* srcBox);
+			                       UINT DstY,
+			                       UINT DstZ, ComPtr<ID3D12Resource> srcRes, const D3D12_BOX* srcBox);
 
 			void CopyTextureRegion(const GResource& dstRes, UINT DstX, UINT DstY, UINT DstZ, const GResource& srcRes,
-				const D3D12_BOX* srcBox);
+			                       const D3D12_BOX* srcBox);
 
 			void TransitionBarrier(ComPtr<ID3D12Resource> resource, D3D12_RESOURCE_STATES stateAfter,
-				UINT subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
-				bool flushBarriers = false) const;
+			                       UINT subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES,
+			                       bool flushBarriers = false) const;
 
 			void UAVBarrier(const GResource& resource, bool flushBarriers = false) const;
 			void UAVBarrier(ComPtr<ID3D12Resource> resource, bool flushBarriers = false) const;
 
 			void AliasingBarrier(const GResource& beforeResource, const GResource& afterResource,
-				bool flushBarriers = false) const;
+			                     bool flushBarriers = false) const;
 			void AliasingBarrier(ComPtr<ID3D12Resource> beforeResource, ComPtr<ID3D12Resource> afterResource,
-				bool flushBarriers = false) const;
+			                     bool flushBarriers = false) const;
 
 			void FlushResourceBarriers() const;
 
@@ -146,12 +147,13 @@ namespace DX
 			 * Resolve a multisampled resource into a non-multisampled resource.
 			 */
 			void ResolveSubresource(GResource& dstRes, const GResource& srcRes, uint32_t dstSubresource = 0,
-				uint32_t srcSubresource = 0);
+			                        uint32_t srcSubresource = 0);
 
 			void Draw(uint32_t vertexCount, uint32_t instanceCount = 1, uint32_t startVertex = 0,
-				uint32_t startInstance = 0) const;
-			void DrawIndexed(uint32_t indexCount, uint32_t instanceCount = 1, uint32_t startIndex = 0, int32_t baseVertex = 0,
-				uint32_t startInstance = 0) const;
+			          uint32_t startInstance = 0) const;
+			void DrawIndexed(uint32_t indexCount, uint32_t instanceCount = 1, uint32_t startIndex = 0,
+			                 int32_t baseVertex = 0,
+			                 uint32_t startInstance = 0) const;
 
 			void Dispatch(uint32_t numGroupsX, uint32_t numGroupsY = 1, uint32_t numGroupsZ = 1) const;
 

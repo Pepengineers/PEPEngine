@@ -9,8 +9,7 @@
 namespace DX
 {
 	namespace Common
-	{		
-		
+	{
 		void ModelRenderer::Draw(std::shared_ptr<GCommandList> cmdList)
 		{
 			for (int i = 0; i < model->GetMeshesCount(); ++i)
@@ -18,7 +17,7 @@ namespace DX
 				const auto mesh = model->GetMesh(i);
 
 				cmdList->SetRootConstantBufferView(StandardShaderSlot::ObjectData,
-					*modelDataBuffer, i);
+				                                   *modelDataBuffer, i);
 				mesh->Draw(cmdList);
 			}
 		}
@@ -40,7 +39,7 @@ namespace DX
 		}
 
 		ModelRenderer::ModelRenderer(const std::shared_ptr<GDevice> device,
-			std::shared_ptr<GModel> model) : Renderer(), device(device), model(model)
+		                             std::shared_ptr<GModel> model) : Renderer(), device(device), model(model)
 		{
 			SetModel(model);
 		}
@@ -50,12 +49,11 @@ namespace DX
 			if (modelDataBuffer == nullptr || modelDataBuffer->GetElementCount() < asset->GetMeshesCount())
 			{
 				modelDataBuffer.reset();
-				modelDataBuffer = std::make_shared<ConstantBuffer<ObjectConstants>>(device, asset->GetMeshesCount(), asset->GetName());
+				modelDataBuffer = std::make_shared<ConstantBuffer<ObjectConstants>>(
+					device, asset->GetMeshesCount(), asset->GetName());
 			}
 
 			model = asset;
 		}
-
-
 	}
 }

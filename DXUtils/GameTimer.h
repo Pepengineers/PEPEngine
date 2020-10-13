@@ -1,5 +1,6 @@
 #ifndef GAMETIMER_H
 #define GAMETIMER_H
+
 namespace DX
 {
 	namespace Utils

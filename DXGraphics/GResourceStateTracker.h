@@ -6,12 +6,13 @@
 
 
 #include "MemoryAllocator.h"
+
 namespace DX
 {
 	namespace Graphics
 	{
-		using namespace DX::Allocator;
-		
+		using namespace Allocator;
+
 		class GCommandList;
 		class GResource;
 
@@ -27,13 +28,13 @@ namespace DX
 			static bool TryGetCurrentState(ComPtr<ID3D12Resource> resource, D3D12_RESOURCE_STATES& currentState);
 
 			static void AddCurrentState(ComPtr<ID3D12Resource> resource, D3D12_RESOURCE_STATES currentState,
-				UINT subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+			                            UINT subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
 
 			void ResourceBarrier(const D3D12_RESOURCE_BARRIER& barrier);
 			void TransitionResource(ID3D12Resource* resource, D3D12_RESOURCE_STATES stateAfter,
-				UINT subResource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+			                        UINT subResource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
 			void TransitionResource(const GResource& resource, D3D12_RESOURCE_STATES stateAfter,
-				UINT subResource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
+			                        UINT subResource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES);
 
 
 			void UAVBarrier(const GResource* resource = nullptr);

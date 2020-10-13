@@ -8,17 +8,19 @@ namespace DX
 {
 	namespace Common
 	{
+		using namespace Allocator;
+		using namespace Graphics;
+		using namespace Utils;
 
-		using namespace DX::Allocator;
-		using namespace DX::Graphics;
-		using namespace DX::Utils;
-		
-		DX::Allocator::custom_unordered_map<std::string, std::shared_ptr<GShader>> ShaderFactory::shaders = MemoryAllocator::CreateUnorderedMap<std::string, std::shared_ptr<GShader>>();
+		custom_unordered_map<std::string, std::shared_ptr<GShader>> ShaderFactory::shaders =
+			MemoryAllocator::CreateUnorderedMap<std::string, std::shared_ptr<GShader>>();
 
-		void ShaderFactory::LoadDefaultPSO(std::shared_ptr<GDevice> device, std::shared_ptr<GRootSignature> rootSignature,
-			D3D12_INPUT_LAYOUT_DESC defautlInputDesc, DXGI_FORMAT backBufferFormat,
-			DXGI_FORMAT depthStencilFormat,
-			std::shared_ptr<GRootSignature> ssaoRootSignature, DXGI_FORMAT normalMapFormat, DXGI_FORMAT ambientMapFormat)
+		void ShaderFactory::LoadDefaultPSO(std::shared_ptr<GDevice> device,
+		                                   std::shared_ptr<GRootSignature> rootSignature,
+		                                   D3D12_INPUT_LAYOUT_DESC defautlInputDesc, DXGI_FORMAT backBufferFormat,
+		                                   DXGI_FORMAT depthStencilFormat,
+		                                   std::shared_ptr<GRootSignature> ssaoRootSignature,
+		                                   DXGI_FORMAT normalMapFormat, DXGI_FORMAT ambientMapFormat)
 		{
 			D3D12_GRAPHICS_PIPELINE_STATE_DESC basePsoDesc;
 
@@ -92,7 +94,7 @@ namespace DX
 
 			auto ssaoPSO = std::make_shared<GraphicPSO>(PsoType::Ssao);
 			ssaoPSO->SetPsoDesc(basePsoDesc);
-			ssaoPSO->SetInputLayout({ nullptr, 0 });
+			ssaoPSO->SetInputLayout({nullptr, 0});
 			ssaoPSO->SetRootSignature(ssaoRootSignature->GetRootSignature().Get());
 			ssaoPSO->SetShader(shaders["ssaoVS"].get());
 			ssaoPSO->SetShader(shaders["ssaoPS"].get());
@@ -252,7 +254,5 @@ namespace DX
 		{
 			return shaders[name];
 		}
-
-
 	}
 }

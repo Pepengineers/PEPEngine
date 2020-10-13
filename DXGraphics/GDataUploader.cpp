@@ -3,11 +3,11 @@
 
 #include "d3dUtil.h"
 #include "GDevice.h"
+
 namespace DX
 {
 	namespace Graphics
 	{
-
 		GDataUploader::GDataUploader(const std::shared_ptr<GDevice> device, size_t pageSize)
 			: device(device), PageSize(pageSize)
 		{
@@ -77,9 +77,9 @@ namespace DX
 
 		GDataUploader::UploadMemoryPage::UploadMemoryPage(const std::shared_ptr<GDevice> device, size_t sizeInBytes)
 			: CPUPtr(nullptr)
-			, GPUPtr(static_cast<D3D12_GPU_VIRTUAL_ADDRESS>(0))
-			, PageSize(sizeInBytes)
-			, Offset(0)
+			  , GPUPtr(static_cast<D3D12_GPU_VIRTUAL_ADDRESS>(0))
+			  , PageSize(sizeInBytes)
+			  , Offset(0)
 		{
 			ThrowIfFailed(device->GetDXDevice()->CreateCommittedResource(
 				&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
@@ -119,7 +119,7 @@ namespace DX
 
 			const UploadAllocation allocation
 			{
-				(CPUPtr)+Offset,
+				(CPUPtr) + Offset,
 				GPUPtr + Offset,
 				*d3d12Resource.Get(),
 				Offset

@@ -2,6 +2,7 @@
 #include "Counter.h"
 #include "Job.h" // Priority
 #include "JobManager.h"
+
 namespace DX
 {
 	namespace JobSystem

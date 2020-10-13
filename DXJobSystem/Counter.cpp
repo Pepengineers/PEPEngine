@@ -5,16 +5,17 @@
 
 #include "JobManager.h"
 #include "TLS.h"
+
 namespace DX
 {
 	namespace JobSystem
 	{
 		BaseCounter::BaseCounter(JobManager* mgr, uint8_t numWaitingFibers, WaitingFibers* waitingFibers,
-			std::atomic_bool* freeWaitingSlots)
+		                         std::atomic_bool* freeWaitingSlots)
 			: _numWaitingFibers(numWaitingFibers),
-			_waitingFibers(waitingFibers),
-			_freeWaitingSlots(freeWaitingSlots),
-			_manager(mgr)
+			  _waitingFibers(waitingFibers),
+			  _freeWaitingSlots(freeWaitingSlots),
+			  _manager(mgr)
 		{
 		}
 
@@ -66,7 +67,7 @@ namespace DX
 				// Acquire Free Waiting Slot
 				bool expected = true;
 				if (!std::atomic_compare_exchange_strong_explicit(&_freeWaitingSlots[i], &expected, false,
-					std::memory_order_seq_cst, std::memory_order_relaxed))
+				                                                  std::memory_order_seq_cst, std::memory_order_relaxed))
 				{
 					continue;
 				}
@@ -91,8 +92,9 @@ namespace DX
 				}
 
 				expected = false;
-				if (!std::atomic_compare_exchange_strong_explicit(&slot->_inUse, &expected, true, std::memory_order_seq_cst,
-					std::memory_order_relaxed))
+				if (!std::atomic_compare_exchange_strong_explicit(&slot->_inUse, &expected, true,
+				                                                  std::memory_order_seq_cst,
+				                                                  std::memory_order_relaxed))
 				{
 					return false;
 				}
@@ -127,12 +129,13 @@ namespace DX
 
 				bool expected = false;
 				if (!std::atomic_compare_exchange_strong_explicit(&waitingSlot->_inUse, &expected, true,
-					std::memory_order_seq_cst, std::memory_order_relaxed))
+				                                                  std::memory_order_seq_cst, std::memory_order_relaxed))
 				{
 					continue;
 				}
 
-				_manager->GetCurrentTLS()->_readyFibers.emplace_back(waitingSlot->_fiberIndex, waitingSlot->_fiberStored);
+				_manager->GetCurrentTLS()->_readyFibers.emplace_back(waitingSlot->_fiberIndex,
+				                                                     waitingSlot->_fiberStored);
 				_freeWaitingSlots[i].store(true, std::memory_order_release);
 			}
 		}

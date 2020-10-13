@@ -31,27 +31,33 @@ namespace DX
 
 		GMesh::GMesh(std::shared_ptr<NativeMesh> meshData, std::shared_ptr<GCommandList>& cmdList) : mesh(meshData)
 		{
-			indexBuffer = std::make_shared<GBuffer>(std::move(GBuffer::CreateBuffer(cmdList, mesh->GetIndexes().data(), mesh->GetIndexSize(), mesh->GetIndexes().size(), mesh->GetName() + L" Indexes")));
+			indexBuffer = std::make_shared<GBuffer>(std::move(GBuffer::CreateBuffer(
+				cmdList, mesh->GetIndexes().data(), mesh->GetIndexSize(), mesh->GetIndexes().size(),
+				mesh->GetName() + L" Indexes")));
 
-			vertexBuffer = std::make_shared<GBuffer>(std::move(GBuffer::CreateBuffer(cmdList, mesh->GetVertexes().data(), mesh->GetVertexSize(), mesh->GetVertexes().size(), mesh->GetName() + L" Vertexes")));
+			vertexBuffer = std::make_shared<GBuffer>(std::move(GBuffer::CreateBuffer(
+				cmdList, mesh->GetVertexes().data(), mesh->GetVertexSize(), mesh->GetVertexes().size(),
+				mesh->GetName() + L" Vertexes")));
 
-			vertexView = Lazy< D3D12_VERTEX_BUFFER_VIEW>([this]
-				{
-					return	vertexBuffer->VertexBufferView();
-				});
+			vertexView = Lazy<D3D12_VERTEX_BUFFER_VIEW>([this]
+			{
+				return vertexBuffer->VertexBufferView();
+			});
 
-			indexView = Lazy< D3D12_INDEX_BUFFER_VIEW>([this]
-				{
-					return	indexBuffer->IndexBufferView();
-				});
+			indexView = Lazy<D3D12_INDEX_BUFFER_VIEW>([this]
+			{
+				return indexBuffer->IndexBufferView();
+			});
 		}
 
 
 		GMesh::GMesh(const GMesh& copy) : mesh(copy.mesh),
-			vertexBuffer(copy.vertexBuffer), indexBuffer(copy.indexBuffer), vertexView(copy.vertexView), indexView((copy.indexView))
-		{}
+		                                  vertexBuffer(copy.vertexBuffer), indexBuffer(copy.indexBuffer),
+		                                  vertexView(copy.vertexView), indexView((copy.indexView))
+		{
+		}
 
-		void GMesh::Draw(std::shared_ptr<Graphics::GCommandList> cmdList)
+		void GMesh::Draw(std::shared_ptr<GCommandList> cmdList)
 		{
 			cmdList->SetVBuffer(0, 1, GetVertexView());
 			cmdList->SetIBuffer(GetIndexView());

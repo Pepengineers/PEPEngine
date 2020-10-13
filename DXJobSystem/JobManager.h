@@ -4,13 +4,14 @@
 
 #include "ConcurrentQueue.h"
 #include "Job.h"
+
 namespace DX
 {
 	namespace JobSystem
 	{
-		using namespace DX::Utils;
+		using namespace Utils;
 
-		
+
 		class Thread;
 		struct TLS;
 		class Fiber;
@@ -108,7 +109,7 @@ namespace DX
 			static void FiberCallback_Main(Fiber*);
 
 		public:
-			JobManager(const ManagerOptions & = ManagerOptions());
+			JobManager(const ManagerOptions& = ManagerOptions());
 			~JobManager();
 
 			// Initialize & Run Manager

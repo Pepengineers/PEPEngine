@@ -5,6 +5,7 @@
 #include "DirectXBuffers.h"
 #include "GShader.h"
 #include "SimpleMath.h"
+
 namespace DX
 {
 	namespace Graphics

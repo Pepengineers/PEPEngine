@@ -23,17 +23,16 @@ namespace DX
 {
 	namespace JobSystem
 	{
-
 		JobManager::JobManager(const ManagerOptions& options)
 			: _numThreads(options.NumThreads + 1 /* IO */),
-			_hasThreadAffinity(options.ThreadAffinity),
-			_autoSpawnThreads(options.AutoSpawnThreads),
-			_numFibers(options.NumFibers),
-			_highPriorityQueue(options.HighPriorityQueueSize),
-			_normalPriorityQueue(options.NormalPriorityQueueSize),
-			_lowPriorityQueue(options.LowPriorityQueueSize),
-			_ioQueue(options.IOQueueSize),
-			_shutdownAfterMain(options.ShutdownAfterMainCallback)
+			  _hasThreadAffinity(options.ThreadAffinity),
+			  _autoSpawnThreads(options.AutoSpawnThreads),
+			  _numFibers(options.NumFibers),
+			  _highPriorityQueue(options.HighPriorityQueueSize),
+			  _normalPriorityQueue(options.NormalPriorityQueueSize),
+			  _lowPriorityQueue(options.LowPriorityQueueSize),
+			  _ioQueue(options.IOQueueSize),
+			  _shutdownAfterMain(options.ShutdownAfterMainCallback)
 		{
 		}
 
@@ -206,8 +205,9 @@ namespace DX
 					}
 
 					bool expected = true;
-					if (std::atomic_compare_exchange_weak_explicit(&_idleFibers[i], &expected, false, std::memory_order_release,
-						std::memory_order_relaxed))
+					if (std::atomic_compare_exchange_weak_explicit(&_idleFibers[i], &expected, false,
+					                                               std::memory_order_release,
+					                                               std::memory_order_relaxed))
 					{
 						return i;
 					}
@@ -405,7 +405,8 @@ namespace DX
 
 #include <condition_variable>
 
-		void WaitForCounter_Proxy(JobManager* mgr, BaseCounter* counter, uint32_t targetValue, std::condition_variable* cv)
+		void WaitForCounter_Proxy(JobManager* mgr, BaseCounter* counter, uint32_t targetValue,
+		                          std::condition_variable* cv)
 		{
 			mgr->WaitForCounter(counter, targetValue, false);
 			cv->notify_all();

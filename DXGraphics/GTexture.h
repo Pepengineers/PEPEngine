@@ -2,6 +2,7 @@
 #include "GCommandQueue.h"
 #include "ComputePSO.h"
 #include "GResource.h"
+
 namespace DX
 {
 	namespace Graphics
@@ -42,11 +43,11 @@ namespace DX
 			GTexture(std::wstring name = L"", TextureUsage use = TextureUsage::Diffuse);
 
 			GTexture(std::shared_ptr<GDevice> device, const D3D12_RESOURCE_DESC& resourceDesc,
-				const std::wstring& name = L"", TextureUsage textureUsage = TextureUsage::Albedo,
-				const D3D12_CLEAR_VALUE* clearValue = nullptr);
+			         const std::wstring& name = L"", TextureUsage textureUsage = TextureUsage::Albedo,
+			         const D3D12_CLEAR_VALUE* clearValue = nullptr);
 			GTexture(std::shared_ptr<GDevice> device, ComPtr<ID3D12Resource> resource,
-				TextureUsage textureUsage = TextureUsage::Albedo,
-				const std::wstring& name = L"");
+			         TextureUsage textureUsage = TextureUsage::Albedo,
+			         const std::wstring& name = L"");
 
 			GTexture(const GTexture& copy);
 			GTexture(GTexture&& copy);
@@ -59,8 +60,8 @@ namespace DX
 
 
 			static std::shared_ptr<GTexture> LoadTextureFromFile(std::wstring filepath,
-				std::shared_ptr<GCommandList> commandList,
-				TextureUsage usage = TextureUsage::Diffuse);
+			                                                     std::shared_ptr<GCommandList> commandList,
+			                                                     TextureUsage usage = TextureUsage::Diffuse);
 
 			void ClearTrack();
 

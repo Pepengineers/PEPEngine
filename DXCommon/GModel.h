@@ -3,25 +3,26 @@
 #include <SimpleMath.h>
 #include "MemoryAllocator.h"
 #include "GCommandList.h"
+
 namespace DX
 {
 	namespace Common
 	{
-		using namespace DX::Allocator;
-		using namespace DX::Graphics;
-		
+		using namespace Allocator;
+		using namespace Graphics;
+
 		class NativeModel;
 		class Material;
 		class GMesh;
 
 		class GModel
 		{
-			
 			std::shared_ptr<NativeModel> model;
 
 			std::vector<std::shared_ptr<GMesh>> gmeshes{};
 
-			custom_vector<std::shared_ptr<Material>> meshesMaterials = MemoryAllocator::CreateVector< std::shared_ptr<Material>>();
+			custom_vector<std::shared_ptr<Material>> meshesMaterials = MemoryAllocator::CreateVector<std::shared_ptr<
+				Material>>();
 
 		public:
 
@@ -35,8 +36,8 @@ namespace DX
 
 			std::wstring GetName() const;;
 
-			GModel(std::shared_ptr<NativeModel> model, std::shared_ptr<Graphics::GCommandList> uploadCmdList);
-			
+			GModel(std::shared_ptr<NativeModel> model, std::shared_ptr<GCommandList> uploadCmdList);
+
 			void SetMeshMaterial(UINT index, std::shared_ptr<Material> material);
 
 			GModel(const GModel& copy);;
@@ -45,10 +46,7 @@ namespace DX
 
 			void Draw(std::shared_ptr<GCommandList> cmdList);
 
-			std::shared_ptr<GModel> Dublicate(std::shared_ptr<Graphics::GCommandList> otherDeviceCmdList) const;
+			std::shared_ptr<GModel> Dublicate(std::shared_ptr<GCommandList> otherDeviceCmdList) const;
 		};
-
-
-
 	}
 }

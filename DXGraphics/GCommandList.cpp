@@ -9,6 +9,7 @@
 #include "GRootSignature.h"
 #include "GDevice.h"
 #include "GTexture.h"
+
 namespace DX
 {
 	namespace Graphics
@@ -65,8 +66,9 @@ namespace DX
 
 		void GCommandList::ResolveQuery(UINT index, UINT quriesCount, UINT64 aligned) const
 		{
-			cmdList->ResolveQueryData(queue->timestampQueryHeap.value().Get(), D3D12_QUERY_TYPE_TIMESTAMP, index, quriesCount,
-				queue->timestampResultBuffer.value().GetD3D12Resource().Get(), aligned);
+			cmdList->ResolveQueryData(queue->timestampQueryHeap.value().Get(), D3D12_QUERY_TYPE_TIMESTAMP, index,
+			                          quriesCount,
+			                          queue->timestampResultBuffer.value().GetD3D12Resource().Get(), aligned);
 		}
 
 		D3D12_COMMAND_LIST_TYPE GCommandList::GetCommandListType() const
@@ -206,18 +208,18 @@ namespace DX
 
 
 		void GCommandList::SetRoot32BitConstants(UINT rootSignatureSlot, UINT Count32BitValueToSet, const void* data,
-			UINT DestOffsetIn32BitValueToSet) const
+		                                         UINT DestOffsetIn32BitValueToSet) const
 		{
 			if (type == D3D12_COMMAND_LIST_TYPE_DIRECT)
 			{
 				cmdList->SetGraphicsRoot32BitConstants(rootSignatureSlot, Count32BitValueToSet, data,
-					DestOffsetIn32BitValueToSet);
+				                                       DestOffsetIn32BitValueToSet);
 			}
 
 			if (type == D3D12_COMMAND_LIST_TYPE_COMPUTE)
 			{
 				cmdList->SetComputeRoot32BitConstants(rootSignatureSlot, Count32BitValueToSet, data,
-					DestOffsetIn32BitValueToSet);
+				                                      DestOffsetIn32BitValueToSet);
 			}
 		}
 
@@ -254,7 +256,8 @@ namespace DX
 			}
 		}
 
-		UploadAllocation GCommandList::UploadData(size_t sizeInBytes, const void* bufferData, size_t alignment = 8) const
+		UploadAllocation GCommandList::UploadData(size_t sizeInBytes, const void* bufferData,
+		                                          size_t alignment = 8) const
 		{
 			const auto allocation = uploadBuffer->Allocate(sizeInBytes, alignment);
 			if (bufferData != nullptr)
@@ -263,12 +266,12 @@ namespace DX
 		}
 
 		void GCommandList::UpdateSubresource(GResource& destResource, D3D12_SUBRESOURCE_DATA* subresources,
-			size_t countSubresources)
+		                                     size_t countSubresources)
 		{
 			auto res = destResource.GetD3D12Resource();
 
 			const UINT64 uploadBufferSize = GetRequiredIntermediateSize(res.Get(),
-				0, countSubresources);
+			                                                            0, countSubresources);
 
 			auto upload = UploadData(uploadBufferSize, nullptr, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
 
@@ -276,9 +279,9 @@ namespace DX
 			FlushResourceBarriers();
 
 			UpdateSubresources(cmdList.Get(),
-				res.Get(), &upload.d3d12Resource,
-				upload.Offset, 0, countSubresources,
-				subresources);
+			                   res.Get(), &upload.d3d12Resource,
+			                   upload.Offset, 0, countSubresources,
+			                   subresources);
 
 			TrackResource(res.Get());
 		}
@@ -333,12 +336,12 @@ namespace DX
 
 
 		void GCommandList::TransitionBarrier(ComPtr<ID3D12Resource> resource, D3D12_RESOURCE_STATES stateAfter,
-			UINT subresource, bool flushBarriers) const
+		                                     UINT subresource, bool flushBarriers) const
 		{
 			if (resource)
 			{
 				const auto barrier = CD3DX12_RESOURCE_BARRIER::Transition(resource.Get(), D3D12_RESOURCE_STATE_COMMON,
-					stateAfter, subresource);
+				                                                          stateAfter, subresource);
 				tracker->ResourceBarrier(barrier);
 			}
 
@@ -366,13 +369,13 @@ namespace DX
 		}
 
 		void GCommandList::AliasingBarrier(const GResource& beforeResource, const GResource& afterResource,
-			bool flushBarriers) const
+		                                   bool flushBarriers) const
 		{
 			AliasingBarrier(beforeResource.GetD3D12Resource(), afterResource.GetD3D12Resource(), flushBarriers);
 		}
 
 		void GCommandList::AliasingBarrier(ComPtr<ID3D12Resource> beforeResource,
-			ComPtr<ID3D12Resource> afterResource, bool flushBarriers) const
+		                                   ComPtr<ID3D12Resource> afterResource, bool flushBarriers) const
 		{
 			const auto barrier = CD3DX12_RESOURCE_BARRIER::Aliasing(beforeResource.Get(), afterResource.Get());
 
@@ -389,22 +392,23 @@ namespace DX
 			tracker->FlushResourceBarriers(cmdList);
 		}
 
-		void GCommandList::TransitionBarrier(const GResource& resource, D3D12_RESOURCE_STATES stateAfter, UINT subresource,
-			bool flushBarriers) const
+		void GCommandList::TransitionBarrier(const GResource& resource, D3D12_RESOURCE_STATES stateAfter,
+		                                     UINT subresource,
+		                                     bool flushBarriers) const
 		{
 			TransitionBarrier(resource.GetD3D12Resource(), stateAfter, subresource, flushBarriers);
 		}
 
 		void GCommandList::CopyTextureRegion(ComPtr<ID3D12Resource> dstRes, UINT DstX,
-			UINT DstY,
-			UINT DstZ, ComPtr<ID3D12Resource> srcRes, const D3D12_BOX* srcBox)
+		                                     UINT DstY,
+		                                     UINT DstZ, ComPtr<ID3D12Resource> srcRes, const D3D12_BOX* srcBox)
 		{
 			TransitionBarrier(dstRes, D3D12_RESOURCE_STATE_COPY_DEST);
 			TransitionBarrier(srcRes, D3D12_RESOURCE_STATE_COPY_SOURCE);
 			FlushResourceBarriers();
 
 			cmdList->CopyTextureRegion(&CD3DX12_TEXTURE_COPY_LOCATION(dstRes.Get()), DstX, DstY, DstZ,
-				&CD3DX12_TEXTURE_COPY_LOCATION(srcRes.Get()), srcBox);
+			                           &CD3DX12_TEXTURE_COPY_LOCATION(srcRes.Get()), srcBox);
 
 			TrackResource(dstRes.Get());
 			TrackResource(srcRes.Get());
@@ -412,8 +416,8 @@ namespace DX
 
 
 		void GCommandList::CopyTextureRegion(const GResource& dstRes, UINT DstX,
-			UINT DstY,
-			UINT DstZ, const GResource& srcRes, const D3D12_BOX* srcBox)
+		                                     UINT DstY,
+		                                     UINT DstZ, const GResource& srcRes, const D3D12_BOX* srcBox)
 		{
 			CopyTextureRegion(dstRes.GetD3D12Resource(), DstX, DstY, DstZ, srcRes.GetD3D12Resource(), srcBox);
 		}
@@ -437,30 +441,32 @@ namespace DX
 		}
 
 		void GCommandList::ResolveSubresource(GResource& dstRes, const GResource& srcRes, uint32_t dstSubresource,
-			uint32_t srcSubresource)
+		                                      uint32_t srcSubresource)
 		{
 			TransitionBarrier(dstRes, D3D12_RESOURCE_STATE_RESOLVE_DEST, dstSubresource);
 			TransitionBarrier(srcRes, D3D12_RESOURCE_STATE_RESOLVE_SOURCE, srcSubresource);
 
 			FlushResourceBarriers();
 
-			cmdList->ResolveSubresource(dstRes.GetD3D12Resource().Get(), dstSubresource, srcRes.GetD3D12Resource().Get(),
-				srcSubresource, dstRes.GetD3D12ResourceDesc().Format);
+			cmdList->ResolveSubresource(dstRes.GetD3D12Resource().Get(), dstSubresource,
+			                            srcRes.GetD3D12Resource().Get(),
+			                            srcSubresource, dstRes.GetD3D12ResourceDesc().Format);
 
 			TrackResource(srcRes);
 			TrackResource(dstRes);
 		}
 
 		void GCommandList::Draw(uint32_t vertexCount, uint32_t instanceCount, uint32_t startVertex,
-			uint32_t startInstance) const
+		                        uint32_t startInstance) const
 		{
 			FlushResourceBarriers();
 
 			cmdList->DrawInstanced(vertexCount, instanceCount, startVertex, startInstance);
 		}
 
-		void GCommandList::DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t startIndex, int32_t baseVertex,
-			uint32_t startInstance) const
+		void GCommandList::DrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t startIndex,
+		                               int32_t baseVertex,
+		                               uint32_t startInstance) const
 		{
 			FlushResourceBarriers();
 
@@ -542,7 +548,7 @@ namespace DX
 		}
 
 		void GCommandList::ClearRenderTarget(GMemory* memory, size_t offset, const FLOAT rgba[4], D3D12_RECT* rects,
-			size_t rectCount) const
+		                                     size_t rectCount) const
 		{
 			if (memory == nullptr || memory->IsNull())
 			{
@@ -552,20 +558,26 @@ namespace DX
 		}
 
 		void GCommandList::SetRenderTargets(size_t RTCount, GMemory* rtvMemory, size_t rtvOffset, GMemory* dsvMemory,
-			size_t dsvOffset) const
+		                                    size_t dsvOffset) const
 		{
-			auto* rtvPtr = (rtvMemory == nullptr || rtvMemory->IsNull()) ? nullptr : &rtvMemory->GetCPUHandle(rtvOffset);
+			auto* rtvPtr = (rtvMemory == nullptr || rtvMemory->IsNull())
+				               ? nullptr
+				               : &rtvMemory->GetCPUHandle(rtvOffset);
 
-			auto* dsvPtr = (dsvMemory == nullptr || dsvMemory->IsNull()) ? nullptr : &dsvMemory->GetCPUHandle(dsvOffset);
+			auto* dsvPtr = (dsvMemory == nullptr || dsvMemory->IsNull())
+				               ? nullptr
+				               : &dsvMemory->GetCPUHandle(dsvOffset);
 
 			cmdList->OMSetRenderTargets(RTCount, rtvPtr, RTCount == 1, dsvPtr);
 		}
 
-		void GCommandList::ClearDepthStencil(GMemory* dsvMemory, size_t dsvOffset, D3D12_CLEAR_FLAGS flags, FLOAT depthValue,
-			UINT stencilValue, D3D12_RECT* rects, size_t rectCount) const
+		void GCommandList::ClearDepthStencil(GMemory* dsvMemory, size_t dsvOffset, D3D12_CLEAR_FLAGS flags,
+		                                     FLOAT depthValue,
+		                                     UINT stencilValue, D3D12_RECT* rects, size_t rectCount) const
 		{
-			cmdList->ClearDepthStencilView(dsvMemory->GetCPUHandle(dsvOffset), flags, depthValue, stencilValue, rectCount,
-				rects);
+			cmdList->ClearDepthStencilView(dsvMemory->GetCPUHandle(dsvOffset), flags, depthValue, stencilValue,
+			                               rectCount,
+			                               rects);
 		}
 	}
 }

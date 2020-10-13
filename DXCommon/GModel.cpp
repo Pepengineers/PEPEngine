@@ -7,7 +7,6 @@ namespace DX
 {
 	namespace Common
 	{
-		
 		UINT GModel::GetMeshesCount() const
 		{
 			return model->GetMeshesCount();
@@ -28,7 +27,7 @@ namespace DX
 			return model->GetName();
 		}
 
-		GModel::GModel(std::shared_ptr<NativeModel> model, std::shared_ptr<Graphics::GCommandList> uploadCmdList): model(model)
+		GModel::GModel(std::shared_ptr<NativeModel> model, std::shared_ptr<GCommandList> uploadCmdList): model(model)
 		{
 			if (meshesMaterials.size() < model->GetMeshesCount())
 			{
@@ -59,7 +58,7 @@ namespace DX
 
 		GModel::~GModel() = default;
 
-		void GModel::Draw(std::shared_ptr<Graphics::GCommandList> cmdList)
+		void GModel::Draw(std::shared_ptr<GCommandList> cmdList)
 		{
 			for (auto&& mesh : gmeshes)
 			{
@@ -67,7 +66,7 @@ namespace DX
 			}
 		}
 
-		std::shared_ptr<GModel> GModel::Dublicate(std::shared_ptr<Graphics::GCommandList> otherDeviceCmdList) const
+		std::shared_ptr<GModel> GModel::Dublicate(std::shared_ptr<GCommandList> otherDeviceCmdList) const
 		{
 			auto dublciate = std::make_shared<GModel>(model, otherDeviceCmdList);
 			dublciate->scaleMatrix = scaleMatrix;

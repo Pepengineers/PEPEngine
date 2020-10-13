@@ -7,24 +7,23 @@ namespace DX
 {
 	namespace Allocator
 	{
-		class LinearAllocator : public Allocator {
+		class LinearAllocator : public Allocator
+		{
 		protected:
 			void* startPtr = nullptr;
 			std::size_t offset;
 		public:
-			LinearAllocator(const std::size_t totalSize);
+			LinearAllocator(std::size_t totalSize);
 
 			virtual ~LinearAllocator();
 
-			virtual void* Allocate(const std::size_t size, const std::size_t alignment = 0) override;
+			void* Allocate(std::size_t size, std::size_t alignment = 0) override;
 
-			virtual void Free(void* ptr) override;
+			void Free(void* ptr) override;
 
-			virtual void Init() override;
+			void Init() override;
 
 			virtual void Reset();
-
 		};
-
 	}
 }

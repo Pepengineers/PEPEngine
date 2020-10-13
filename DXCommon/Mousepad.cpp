@@ -1,10 +1,10 @@
 #include "pch.h"
 #include "Mousepad.h"
+
 namespace DX
 {
 	namespace Common
 	{
-
 		MouseEvent::MouseEvent()
 			:
 			type(Invalid),
@@ -33,7 +33,7 @@ namespace DX
 
 		MousePoint MouseEvent::GetPos() const
 		{
-			return { this->x, this->y };
+			return {this->x, this->y};
 		}
 
 		int MouseEvent::GetPosX() const
@@ -132,7 +132,7 @@ namespace DX
 
 		MousePoint Mousepad::GetPos()
 		{
-			return { this->x, this->y };
+			return {this->x, this->y};
 		}
 
 		bool Mousepad::EventBufferIsEmpty()

@@ -1,14 +1,15 @@
 #include "pch.h"
 #include "JobQueue.h"
 #include "JobManager.h"
+
 namespace DX
 {
 	namespace JobSystem
 	{
 		JobQueue::JobQueue(JobManager* mgr, JobPriority defaultPriority)
 			: _manager(mgr),
-			_defaultPriority(defaultPriority),
-			_counter(mgr)
+			  _defaultPriority(defaultPriority),
+			  _counter(mgr)
 		{
 		}
 

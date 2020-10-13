@@ -1,14 +1,15 @@
 #pragma once
 #include "GMemory.h"
 #include "GTexture.h"
+
 namespace DX
 {
 	namespace Common
 	{
-		using namespace DX::Utils;
-		using namespace DX::Allocator;
-		using namespace DX::Graphics;
-		
+		using namespace Utils;
+		using namespace Allocator;
+		using namespace Graphics;
+
 		class SSAA
 		{
 			GTexture renderTarget;
@@ -46,8 +47,7 @@ namespace DX
 
 			void OnResize(UINT newWidth, UINT newHeight);
 
-			SSAA(const std::shared_ptr<GDevice> device, UINT multiplier, UINT width, UINT height);
+			SSAA(std::shared_ptr<GDevice> device, UINT multiplier, UINT width, UINT height);
 		};
-
 	}
 }

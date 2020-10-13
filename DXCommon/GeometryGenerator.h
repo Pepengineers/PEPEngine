@@ -7,12 +7,13 @@
 
 #include "ShaderBuffersData.h"
 #include "MemoryAllocator.h"
+
 namespace DX
 {
 	namespace Common
 	{
-		using namespace DX::Allocator;
-		
+		using namespace Allocator;
+
 		static void CalculateTangent(UINT i1, UINT i2, UINT i3, Vertex* vertices)
 		{
 			UINT idx[3];
@@ -107,7 +108,8 @@ namespace DX
 			/// The bottom and top radius can vary to form various cone shapes rather than true
 			// cylinders.  The slices and stacks parameters control the degree of tessellation.
 			///</summary>
-			MeshData CreateCylinder(float bottomRadius, float topRadius, float height, uint32 sliceCount, uint32 stackCount);
+			MeshData CreateCylinder(float bottomRadius, float topRadius, float height, uint32 sliceCount,
+			                        uint32 stackCount);
 
 			///<summary>
 			/// Creates an mxn grid in the xz-plane with m rows and n columns, centered
@@ -123,10 +125,12 @@ namespace DX
 		private:
 			void Subdivide(MeshData& meshData);
 			Vertex MidPoint(const Vertex& v0, const Vertex& v1);
-			void BuildCylinderTopCap(float bottomRadius, float topRadius, float height, uint32 sliceCount, uint32 stackCount,
-				MeshData& meshData);
-			void BuildCylinderBottomCap(float bottomRadius, float topRadius, float height, uint32 sliceCount, uint32 stackCount,
-				MeshData& meshData);
+			void BuildCylinderTopCap(float bottomRadius, float topRadius, float height, uint32 sliceCount,
+			                         uint32 stackCount,
+			                         MeshData& meshData);
+			void BuildCylinderBottomCap(float bottomRadius, float topRadius, float height, uint32 sliceCount,
+			                            uint32 stackCount,
+			                            MeshData& meshData);
 		};
 	}
 }

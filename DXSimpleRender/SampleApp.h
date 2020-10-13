@@ -12,7 +12,7 @@ using namespace Graphics;
 using namespace Allocator;
 
 class SampleApp :
-    public DX::Common::D3DApp
+	public D3DApp
 {
 public:
 	SampleApp(HINSTANCE hInstance);
@@ -30,8 +30,8 @@ private:
 
 	std::shared_ptr<GDevice> device;
 	AssetsLoader assetLoader;
-	
-	std::unordered_map<std::wstring,std::shared_ptr<GModel>> models;
+
+	std::unordered_map<std::wstring, std::shared_ptr<GModel>> models;
 
 	std::vector<std::shared_ptr<FrameResource>> frameResources;
 	std::shared_ptr<FrameResource> currentFrameResource;
@@ -41,12 +41,12 @@ private:
 	std::unique_ptr<Camera> camera = nullptr;
 
 	PassConstants mainPassCB;
-	
+
 	D3D12_VIEWPORT viewport;
 	D3D12_RECT rect;
-	
+
 	GTexture depthBuffer;
-	
+
 
 	GMemory dsvMemory;
 	GMemory rtvMemory;
@@ -56,4 +56,3 @@ private:
 	std::vector<D3D12_INPUT_ELEMENT_DESC> defaultInputLayout;
 	std::shared_ptr<GraphicPSO> opaque;
 };
-

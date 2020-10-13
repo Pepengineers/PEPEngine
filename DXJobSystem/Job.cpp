@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Job.h"
+
 namespace DX
 {
 	namespace JobSystem

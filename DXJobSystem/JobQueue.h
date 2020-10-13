@@ -2,11 +2,11 @@
 #include "Counter.h"
 #include "Job.h" // Priority
 #include <vector>
+
 namespace DX
 {
 	namespace JobSystem
 	{
-
 		class JobManager;
 		class Counter;
 

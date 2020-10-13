@@ -3,6 +3,7 @@
 #include "GResource.h"
 
 using namespace Microsoft::WRL;
+
 namespace DX
 {
 	namespace Graphics
@@ -21,7 +22,7 @@ namespace DX
 		public:
 
 			static GBuffer CreateBuffer(std::shared_ptr<GCommandList> cmdList, void* data, UINT elementSize, UINT count,
-				const std::wstring& name = L"");
+			                            const std::wstring& name = L"");
 
 			GBuffer(const GBuffer& rhs) : GResource(rhs)
 			{
@@ -57,8 +58,8 @@ namespace DX
 		public:
 
 			GBuffer(std::shared_ptr<GDevice> device, const std::wstring& name, const D3D12_RESOURCE_DESC& resourceDesc,
-				UINT elementSize, UINT elementCount,
-				void* data);
+			        UINT elementSize, UINT elementCount,
+			        void* data);
 
 		private:
 		};

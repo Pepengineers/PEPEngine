@@ -10,8 +10,8 @@ namespace DX
 {
 	namespace Graphics
 	{
-		using namespace DX::Allocator;
-		
+		using namespace Allocator;
+
 		class GHeap;
 		class GDevice;
 
@@ -19,7 +19,8 @@ namespace DX
 		{
 		public:
 
-			GAllocator(std::shared_ptr<GDevice> device, D3D12_DESCRIPTOR_HEAP_TYPE type, uint32_t descriptorsPerPage = 1024);
+			GAllocator(std::shared_ptr<GDevice> device, D3D12_DESCRIPTOR_HEAP_TYPE type,
+			           uint32_t descriptorsPerPage = 1024);
 
 			virtual ~GAllocator();
 

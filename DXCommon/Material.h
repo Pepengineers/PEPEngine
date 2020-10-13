@@ -6,14 +6,15 @@
 #include "GraphicPSO.h"
 #include "ShaderBuffersData.h"
 #include "GTexture.h"
+
 namespace DX
 {
 	namespace Common
 	{
 		using namespace Microsoft::WRL;
-		using namespace DX::Allocator;
-		using namespace DX::Utils;
-		using namespace DX::Graphics;
+		using namespace Allocator;
+		using namespace Utils;
+		using namespace Graphics;
 
 		class Material
 		{
@@ -76,7 +77,7 @@ namespace DX
 			std::wstring& GetName();
 
 			Vector4 DiffuseAlbedo = DirectX::XMFLOAT4(DirectX::Colors::White);
-			Vector3 FresnelR0 = { 0.01f, 0.01f, 0.01f };
+			Vector3 FresnelR0 = {0.01f, 0.01f, 0.01f};
 			float Roughness = .25f;
 			Matrix MatTransform = Matrix::Identity;
 		};

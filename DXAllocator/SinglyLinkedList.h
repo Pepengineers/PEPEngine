@@ -4,24 +4,25 @@
 
 namespace DX
 {
-    namespace Allocator
-    {
-        template <class T>
-        class SinglyLinkedList {
-        public:
-            struct Node {
-                T data;
-                Node* next;
-            };
+	namespace Allocator
+	{
+		template <class T>
+		class SinglyLinkedList
+		{
+		public:
+			struct Node
+			{
+				T data;
+				Node* next;
+			};
 
-            Node* head;
+			Node* head;
 
-        public:
-            SinglyLinkedList();
+		public:
+			SinglyLinkedList();
 
-            void insert(Node* previousNode, Node* newNode);
-            void remove(Node* previousNode, Node* deleteNode);
-        };
-
-    }
+			void insert(Node* previousNode, Node* newNode);
+			void remove(Node* previousNode, Node* deleteNode);
+		};
+	}
 }

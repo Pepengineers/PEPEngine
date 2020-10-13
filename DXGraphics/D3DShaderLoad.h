@@ -2,12 +2,13 @@
 #include <d3dcompiler.h>
 #include <fstream>
 #include "d3dUtil.h"
+
 namespace DX
 {
 	namespace Graphics
 	{
-		using namespace DX::Utils;
-		
+		using namespace Utils;
+
 		ComPtr<ID3DBlob> LoadBinary(const std::wstring& filename)
 		{
 			std::ifstream fin(filename, std::ios::binary);
@@ -64,12 +65,12 @@ namespace DX
 			// will copy the CPU memory into the intermediate upload heap.  Then, using ID3D12CommandList::CopySubresourceRegion,
 			// the intermediate upload heap data will be copied to mBuffer.
 			commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(defaultBuffer.Get(),
-				D3D12_RESOURCE_STATE_COMMON,
-				D3D12_RESOURCE_STATE_COPY_DEST));
+				                             D3D12_RESOURCE_STATE_COMMON,
+				                             D3D12_RESOURCE_STATE_COPY_DEST));
 			UpdateSubresources<1>(commandList, defaultBuffer.Get(), uploadBuffer.Get(), 0, 0, 1, &subResourceData);
 			commandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(defaultBuffer.Get(),
-				D3D12_RESOURCE_STATE_COPY_DEST,
-				D3D12_RESOURCE_STATE_GENERIC_READ));
+				                             D3D12_RESOURCE_STATE_COPY_DEST,
+				                             D3D12_RESOURCE_STATE_GENERIC_READ));
 
 			// Note: uploadBuffer has to be kept alive after the above function calls because
 			// the command list has not been executed yet that performs the actual copy.
@@ -96,7 +97,7 @@ namespace DX
 			ComPtr<ID3DBlob> byteCode = nullptr;
 			ComPtr<ID3DBlob> errors;
 			hr = D3DCompileFromFile(filename.c_str(), defines, D3D_COMPILE_STANDARD_FILE_INCLUDE,
-				entrypoint.c_str(), target.c_str(), compileFlags, 0, &byteCode, &errors);
+			                        entrypoint.c_str(), target.c_str(), compileFlags, 0, &byteCode, &errors);
 
 			if (errors != nullptr)
 				OutputDebugStringA(static_cast<char*>(errors->GetBufferPointer()));

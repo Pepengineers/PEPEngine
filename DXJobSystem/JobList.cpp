@@ -2,14 +2,15 @@
 #include "JobList.h"
 
 #include <cstdint>
+
 namespace DX
 {
 	namespace JobSystem
 	{
 		JobList::JobList(JobManager* mgr, JobPriority defaultPriority)
 			: _manager(mgr),
-			_defaultPriority(defaultPriority),
-			_counter(mgr)
+			  _defaultPriority(defaultPriority),
+			  _counter(mgr)
 		{
 		}
 

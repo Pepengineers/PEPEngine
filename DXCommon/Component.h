@@ -2,13 +2,14 @@
 #include "MemoryAllocator.h"
 #include "GCommandList.h"
 #include <memory>
+
 namespace DX
 {
 	namespace Common
 	{
-		using namespace DX::Allocator;
-		using namespace DX::Graphics;
-		
+		using namespace Allocator;
+		using namespace Graphics;
+
 		class GameObject;
 
 		class Component

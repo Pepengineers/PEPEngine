@@ -10,21 +10,22 @@ namespace DX
 {
 	namespace Graphics
 	{
-
 		// Static definitions.
 		std::mutex GResourceStateTracker::globalMutex;
 		bool GResourceStateTracker::isLocked = false;
-		GResourceStateTracker::ResourceStateMap GResourceStateTracker::globalResourceState = MemoryAllocator::CreateUnorderedMap
+		GResourceStateTracker::ResourceStateMap GResourceStateTracker::globalResourceState =
+			MemoryAllocator::CreateUnorderedMap
 			<ID3D12Resource*, ResourceState>();
 
 
 		GResourceStateTracker::GResourceStateTracker()
-			= default;
+		= default;
 
 		GResourceStateTracker::~GResourceStateTracker()
-			= default;
+		= default;
 
-		bool GResourceStateTracker::TryGetCurrentState(ComPtr<ID3D12Resource> resource, D3D12_RESOURCE_STATES& currentState)
+		bool GResourceStateTracker::TryGetCurrentState(ComPtr<ID3D12Resource> resource,
+		                                               D3D12_RESOURCE_STATES& currentState)
 		{
 			if (resource == nullptr) return false;
 
@@ -40,7 +41,7 @@ namespace DX
 		}
 
 		void GResourceStateTracker::AddCurrentState(ComPtr<ID3D12Resource> resource, D3D12_RESOURCE_STATES currentState,
-			UINT subresource)
+		                                            UINT subresource)
 		{
 			if (resource == nullptr) return;
 
@@ -122,17 +123,18 @@ namespace DX
 		}
 
 		void GResourceStateTracker::TransitionResource(ID3D12Resource* resource, D3D12_RESOURCE_STATES stateAfter,
-			UINT subResource)
+		                                               UINT subResource)
 		{
 			if (resource)
 			{
 				ResourceBarrier(
-					CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_COMMON, stateAfter, subResource));
+					CD3DX12_RESOURCE_BARRIER::Transition(resource, D3D12_RESOURCE_STATE_COMMON, stateAfter,
+					                                     subResource));
 			}
 		}
 
 		void GResourceStateTracker::TransitionResource(const GResource& resource, D3D12_RESOURCE_STATES stateAfter,
-			UINT subResource)
+		                                               UINT subResource)
 		{
 			TransitionResource(resource.GetD3D12Resource().Get(), stateAfter, subResource);
 		}
@@ -146,8 +148,12 @@ namespace DX
 
 		void GResourceStateTracker::AliasBarrier(const GResource* resourceBefore, const GResource* resourceAfter)
 		{
-			ID3D12Resource* pResourceBefore = resourceBefore != nullptr ? resourceBefore->GetD3D12Resource().Get() : nullptr;
-			ID3D12Resource* pResourceAfter = resourceAfter != nullptr ? resourceAfter->GetD3D12Resource().Get() : nullptr;
+			ID3D12Resource* pResourceBefore = resourceBefore != nullptr
+				                                  ? resourceBefore->GetD3D12Resource().Get()
+				                                  : nullptr;
+			ID3D12Resource* pResourceAfter = resourceAfter != nullptr
+				                                 ? resourceAfter->GetD3D12Resource().Get()
+				                                 : nullptr;
 
 			ResourceBarrier(CD3DX12_RESOURCE_BARRIER::Aliasing(pResourceBefore, pResourceAfter));
 		}

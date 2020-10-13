@@ -1,5 +1,6 @@
 #pragma once
 #include <queue>
+
 namespace DX
 {
 	namespace Common

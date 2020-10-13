@@ -8,10 +8,10 @@ namespace DX
 {
 	namespace Common
 	{
-		using namespace DX::Allocator;
-		using namespace DX::Graphics;
-		using namespace DX::Utils;
-		
+		using namespace Allocator;
+		using namespace Graphics;
+		using namespace Utils;
+
 		class Transform : public Component
 		{
 		public:

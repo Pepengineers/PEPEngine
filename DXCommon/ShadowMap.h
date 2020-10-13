@@ -8,10 +8,11 @@ namespace DX
 {
 	namespace Common
 	{
-		using namespace DX::Allocator;
-		using namespace DX::Utils;
-		using namespace DX::Graphics;
+		using namespace Allocator;
+		using namespace Utils;
+		using namespace Graphics;
 		using namespace Microsoft::WRL;
+
 		class ShadowMap
 		{
 		public:
@@ -61,7 +62,6 @@ namespace DX
 			GMemory dsvMemory;
 
 			GTexture shadowMap;
-
 		};
 	}
 }

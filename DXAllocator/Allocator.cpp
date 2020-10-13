@@ -10,7 +10,8 @@ namespace DX
 		{
 		}
 
-		Allocator::~Allocator() {
+		Allocator::~Allocator()
+		{
 			totalSize = 0;
 		}
 	}

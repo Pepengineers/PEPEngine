@@ -85,7 +85,7 @@ namespace DX
 			if (_returnFiber && _returnFiber
 				->
 				_fiber
-				)
+			)
 			{
 				SwitchToFiber(_returnFiber->_fiber);
 				return;

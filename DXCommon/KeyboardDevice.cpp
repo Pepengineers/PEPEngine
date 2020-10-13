@@ -1,10 +1,10 @@
 #include "pch.h"
 #include "KeyboardDevice.h"
+
 namespace DX
 {
 	namespace Common
 	{
-
 		KeyboardEvent::KeyboardEvent() :
 			type(Invalid),
 			key(0u)

@@ -3,11 +3,11 @@
 
 #include "d3dUtil.h"
 #include "GDevice.h"
+
 namespace DX
 {
 	namespace Graphics
 	{
-
 		std::vector<CD3DX12_STATIC_SAMPLER_DESC> GetStaticSamplers()
 		{
 			const CD3DX12_STATIC_SAMPLER_DESC pointWrap(
@@ -70,8 +70,8 @@ namespace DX
 
 			return std::vector<CD3DX12_STATIC_SAMPLER_DESC>{
 				pointWrap, pointClamp,
-					linearWrap, linearClamp,
-					anisotropicWrap, anisotropicClamp, shadow
+				linearWrap, linearClamp,
+				anisotropicWrap, anisotropicClamp, shadow
 			};
 		}
 
@@ -94,7 +94,7 @@ namespace DX
 		}
 
 		void GRootSignature::AddDescriptorParameter(CD3DX12_DESCRIPTOR_RANGE* rangeParameters, UINT size,
-			D3D12_SHADER_VISIBILITY visibility)
+		                                            D3D12_SHADER_VISIBILITY visibility)
 		{
 			CD3DX12_ROOT_PARAMETER slotParameter;
 			slotParameter.InitAsDescriptorTable(size, rangeParameters, visibility);
@@ -102,7 +102,7 @@ namespace DX
 		}
 
 		void GRootSignature::AddConstantBufferParameter(UINT shaderRegister, UINT registerSpace,
-			D3D12_SHADER_VISIBILITY visibility)
+		                                                D3D12_SHADER_VISIBILITY visibility)
 		{
 			CD3DX12_ROOT_PARAMETER slotParameter;
 			slotParameter.InitAsConstantBufferView(shaderRegister, registerSpace, visibility);
@@ -110,21 +110,23 @@ namespace DX
 		}
 
 		void GRootSignature::AddConstantParameter(UINT valueCount, UINT shaderRegister, UINT registerSpace,
-			D3D12_SHADER_VISIBILITY visibility)
+		                                          D3D12_SHADER_VISIBILITY visibility)
 		{
 			CD3DX12_ROOT_PARAMETER slotParameter;
 			slotParameter.InitAsConstants(valueCount, shaderRegister, registerSpace, visibility);
 			AddParameter(slotParameter);
 		}
 
-		void GRootSignature::AddShaderResourceView(UINT shaderRegister, UINT registerSpace, D3D12_SHADER_VISIBILITY visibility)
+		void GRootSignature::AddShaderResourceView(UINT shaderRegister, UINT registerSpace,
+		                                           D3D12_SHADER_VISIBILITY visibility)
 		{
 			CD3DX12_ROOT_PARAMETER slotParameter;
 			slotParameter.InitAsShaderResourceView(shaderRegister, registerSpace, visibility);
 			AddParameter(slotParameter);
 		}
 
-		void GRootSignature::AddUnorderedAccessView(UINT shaderRegister, UINT registerSpace, D3D12_SHADER_VISIBILITY visibility)
+		void GRootSignature::AddUnorderedAccessView(UINT shaderRegister, UINT registerSpace,
+		                                            D3D12_SHADER_VISIBILITY visibility)
 		{
 			CD3DX12_ROOT_PARAMETER slotParameter;
 			slotParameter.InitAsUnorderedAccessView(shaderRegister, registerSpace, visibility);
@@ -147,21 +149,21 @@ namespace DX
 			if (!staticSampler.empty())
 			{
 				rootSigDesc = CD3DX12_ROOT_SIGNATURE_DESC(slotRootParameters.size(), slotRootParameters.data(),
-					staticSampler.size(), staticSampler.data(),
-					D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+				                                          staticSampler.size(), staticSampler.data(),
+				                                          D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 			}
 			else
 			{
 				rootSigDesc = CD3DX12_ROOT_SIGNATURE_DESC(slotRootParameters.size(), slotRootParameters.data(),
-					staticSamplersVector.size(), staticSamplersVector.data(),
-					D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+				                                          staticSamplersVector.size(), staticSamplersVector.data(),
+				                                          D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 			}
 
 
 			ComPtr<ID3DBlob> serializedRootSig = nullptr;
 			ComPtr<ID3DBlob> errorBlob = nullptr;
 			const HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1,
-				serializedRootSig.GetAddressOf(), errorBlob.GetAddressOf());
+			                                               serializedRootSig.GetAddressOf(), errorBlob.GetAddressOf());
 
 			if (errorBlob != nullptr)
 			{

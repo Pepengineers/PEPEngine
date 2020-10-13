@@ -4,11 +4,11 @@
 
 #include <mutex>
 #include <condition_variable>
+
 namespace DX
 {
 	namespace JobSystem
 	{
-
 		class Fiber;
 
 		class Thread

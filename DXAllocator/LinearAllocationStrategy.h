@@ -10,11 +10,10 @@ namespace DX
 {
 	namespace Allocator
 	{
-
 		constexpr std::size_t INIT_LINEAR_SIZE = 1024u * 1024u * 256u;
 
 		//по 256 мб 
-		template<std::size_t INIT_LINEAR_SIZE = INIT_LINEAR_SIZE>
+		template <std::size_t INIT_LINEAR_SIZE = INIT_LINEAR_SIZE>
 		class LinearAllocationStrategy
 		{
 			static_assert(INIT_LINEAR_SIZE != 0u, "Linear size must be more, than zero");
@@ -55,7 +54,6 @@ namespace DX
 			{
 				if ((!memory_ptr) || (size == 0u))
 				{
-					return;
 				}
 
 				/*А что нам делать? Линейный же аллокатор, сидим ждем когда вызовут деструктор у класса чтобы все почистить за собой*/
@@ -75,14 +73,9 @@ namespace DX
 			{
 				ClearAll();
 			}
+
 		private:
 			std::vector<LinearAllocator> pages;
 		};
-
-
-
-
 	}
 }
-
-

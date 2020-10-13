@@ -27,7 +27,7 @@ namespace DX
 					theta += 2.0f * Pi; // in [0, 2*pi).
 			}
 
-			// Quadrant II or III
+				// Quadrant II or III
 			else
 				theta = atanf(y / x) + Pi; // in [0, 2*pi).
 
@@ -107,7 +107,7 @@ namespace DX
 		}
 
 		SimpleMath::Quaternion MathHelper::ToQuaternion(const double const xRoll, const double const yPitch,
-			const double const zYaw)
+		                                                const double const zYaw)
 		{
 			return SimpleMath::Quaternion::CreateFromYawPitchRoll(zYaw, yPitch, xRoll);
 

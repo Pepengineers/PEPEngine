@@ -13,10 +13,10 @@ namespace DX
 	namespace Common
 
 	{
-		using namespace DX::Allocator;
-		using namespace DX::Utils;
-		using namespace DX::Graphics;
-		
+		using namespace Allocator;
+		using namespace Utils;
+		using namespace Graphics;
+
 		class Window
 		{
 		public:
@@ -65,7 +65,8 @@ namespace DX
 			friend class D3DApp;
 
 			Window() = delete;
-			Window(std::shared_ptr<GDevice> device, WNDCLASS hwnd, const std::wstring& windowName, int clientWidth, int clientHeight, bool vSync);
+			Window(std::shared_ptr<GDevice> device, WNDCLASS hwnd, const std::wstring& windowName, int clientWidth,
+			       int clientHeight, bool vSync);
 			virtual ~Window();
 
 

@@ -18,10 +18,10 @@ namespace DX
 	namespace Common
 
 	{
-		using namespace DX::Allocator;
-		using namespace DX::Utils;
-		using namespace DX::Graphics;
-		
+		using namespace Allocator;
+		using namespace Utils;
+		using namespace Graphics;
+
 		constexpr wchar_t WINDOW_CLASS_NAME[] = L"DXLibRenderWindowClass";
 
 		using WindowPtr = std::shared_ptr<Window>;
@@ -29,10 +29,11 @@ namespace DX
 		using WindowNameMap = custom_unordered_map<std::wstring, std::shared_ptr<Window>>;
 
 		static WindowMap gs_Windows = MemoryAllocator::CreateUnorderedMap<HWND, std::shared_ptr<Window>>();
-		static WindowNameMap gs_WindowByName = MemoryAllocator::CreateUnorderedMap<std::wstring, std::shared_ptr<Window>>();
+		static WindowNameMap gs_WindowByName = MemoryAllocator::CreateUnorderedMap<
+			std::wstring, std::shared_ptr<Window>>();
 
 		LRESULT CALLBACK
-			MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+		MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 			return D3DApp::GetApp().MsgProc(hwnd, msg, wParam, lParam);
 		}
@@ -115,17 +116,20 @@ namespace DX
 		{
 			MakeWindow() = default;
 
-			MakeWindow(std::shared_ptr<GDevice> device, WNDCLASS classWindow, const std::wstring& windowName, int clientWidth, int clientHeight, bool vSync)
+			MakeWindow(std::shared_ptr<GDevice> device, WNDCLASS classWindow, const std::wstring& windowName,
+			           int clientWidth, int clientHeight, bool vSync)
 				: Window(device, classWindow, windowName, clientWidth, clientHeight, vSync)
 			{
 			}
 		};
 
 
-		std::shared_ptr<Window> D3DApp::CreateRenderWindow(std::shared_ptr<GDevice> device, const std::wstring& windowName, int clientWidth,
-			int clientHeight, bool vSync)
+		std::shared_ptr<Window> D3DApp::CreateRenderWindow(std::shared_ptr<GDevice> device,
+		                                                   const std::wstring& windowName, int clientWidth,
+		                                                   int clientHeight, bool vSync)
 		{
-			auto pWindow = std::make_shared<MakeWindow>(device, windowClass, windowName, clientWidth, clientHeight, vSync);
+			auto pWindow = std::make_shared<MakeWindow>(device, windowClass, windowName, clientWidth, clientHeight,
+			                                            vSync);
 			gs_Windows.insert(WindowMap::value_type(pWindow->GetWindowHandle(), pWindow));
 			gs_WindowByName.insert(WindowNameMap::value_type(windowName, pWindow));
 
@@ -206,7 +210,7 @@ namespace DX
 
 		int D3DApp::Run()
 		{
-			MSG msg = { nullptr };
+			MSG msg = {nullptr};
 
 			timer.Reset();
 
@@ -225,7 +229,7 @@ namespace DX
 					TranslateMessage(&msg);
 					DispatchMessage(&msg);
 				}
-				// Otherwise, do animation/game stuff.
+					// Otherwise, do animation/game stuff.
 				else
 				{
 					timer.Tick();
@@ -318,67 +322,67 @@ namespace DX
 
 					// WM_SIZE is sent when the user resizes the window.  
 				case WM_SIZE:
-				{
-					// Save the new client area dimensions.
-
-					int width = static_cast<int>(static_cast<short>(LOWORD(lParam)));
-					int height = static_cast<int>(static_cast<short>(HIWORD(lParam)));
-
-					pWindow->SetWidth(width);
-					pWindow->SetHeight(height);
-
 					{
-						if (wParam == SIZE_MINIMIZED)
+						// Save the new client area dimensions.
+
+						int width = static_cast<int>(static_cast<short>(LOWORD(lParam)));
+						int height = static_cast<int>(static_cast<short>(HIWORD(lParam)));
+
+						pWindow->SetWidth(width);
+						pWindow->SetHeight(height);
+
 						{
-							isAppPaused = true;
-							isMinimized = true;
-							isMaximized = false;
-						}
-						else if (wParam == SIZE_MAXIMIZED)
-						{
-							isAppPaused = false;
-							isMinimized = false;
-							isMaximized = true;
-							OnResize();
-						}
-						else if (wParam == SIZE_RESTORED)
-						{
-							// Restoring from minimized state?
-							if (isMinimized)
+							if (wParam == SIZE_MINIMIZED)
+							{
+								isAppPaused = true;
+								isMinimized = true;
+								isMaximized = false;
+							}
+							else if (wParam == SIZE_MAXIMIZED)
 							{
 								isAppPaused = false;
 								isMinimized = false;
+								isMaximized = true;
 								OnResize();
 							}
+							else if (wParam == SIZE_RESTORED)
+							{
+								// Restoring from minimized state?
+								if (isMinimized)
+								{
+									isAppPaused = false;
+									isMinimized = false;
+									OnResize();
+								}
 
-							// Restoring from maximized state?
-							else if (isMaximized)
-							{
-								isAppPaused = false;
-								isMaximized = false;
-								OnResize();
-							}
-							else if (isResizing)
-							{
-								// If user is dragging the resize bars, we do not resize 
-								// the buffers here because as the user continuously 
-								// drags the resize bars, a stream of WM_SIZE messages are
-								// sent to the window, and it would be pointless (and slow)
-								// to resize for each WM_SIZE message received from dragging
-								// the resize bars.  So instead, we reset after the user is 
-								// done resizing the window and releases the resize bars, which 
-								// sends a WM_EXITSIZEMOVE message.
-							}
-							else // API call such as SetWindowPos or swapChain->SetFullscreenState.
-							{
-								OnResize();
+									// Restoring from maximized state?
+								else if (isMaximized)
+								{
+									isAppPaused = false;
+									isMaximized = false;
+									OnResize();
+								}
+								else if (isResizing)
+								{
+									// If user is dragging the resize bars, we do not resize 
+									// the buffers here because as the user continuously 
+									// drags the resize bars, a stream of WM_SIZE messages are
+									// sent to the window, and it would be pointless (and slow)
+									// to resize for each WM_SIZE message received from dragging
+									// the resize bars.  So instead, we reset after the user is 
+									// done resizing the window and releases the resize bars, which 
+									// sends a WM_EXITSIZEMOVE message.
+								}
+								else // API call such as SetWindowPos or swapChain->SetFullscreenState.
+								{
+									OnResize();
+								}
 							}
 						}
+						return 0;
 					}
-					return 0;
-				}
 
-				// WM_EXITSIZEMOVE is sent when the user grabs the resize bars.
+					// WM_EXITSIZEMOVE is sent when the user grabs the resize bars.
 				case WM_ENTERSIZEMOVE:
 					isAppPaused = true;
 					isResizing = true;

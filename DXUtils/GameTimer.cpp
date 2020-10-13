@@ -1,13 +1,14 @@
 #include "pch.h"
 #include <windows.h>
 #include "GameTimer.h"
+
 namespace DX
 {
 	namespace Utils
 	{
 		GameTimer::GameTimer()
 			: mSecondsPerCount(0.0), mDeltaTime(-1.0), mBaseTime(0),
-			mPausedTime(0), mPrevTime(0), mCurrTime(0), mStopped(false)
+			  mPausedTime(0), mPrevTime(0), mCurrTime(0), mStopped(false)
 		{
 			__int64 countsPerSec;
 			QueryPerformanceFrequency((LARGE_INTEGER*)&countsPerSec);

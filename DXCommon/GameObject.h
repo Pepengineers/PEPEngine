@@ -5,13 +5,14 @@
 #include "GCommandList.h"
 
 using namespace DirectX::SimpleMath;
+
 namespace DX
 {
 	namespace Common
 	{
-		using namespace DX::Allocator;
-		using namespace DX::Graphics;
-		
+		using namespace Allocator;
+		using namespace Graphics;
+
 		class ModelRenderer;
 		class Component;
 		class Transform;
@@ -45,12 +46,13 @@ namespace DX
 
 			void SetScale(Vector3& scale) const;
 
-			std::string& GetName() { return  name; }
+			std::string& GetName() { return name; }
 
 		protected:
 
 
-			custom_vector<std::shared_ptr<Component>> components = MemoryAllocator::CreateVector<std::shared_ptr<Component>>();
+			custom_vector<std::shared_ptr<Component>> components = MemoryAllocator::CreateVector<std::shared_ptr<
+				Component>>();
 			std::shared_ptr<Transform> transform = nullptr;
 			std::shared_ptr<ModelRenderer> renderer = nullptr;
 			std::string name;

@@ -14,7 +14,6 @@ namespace DX
 		class GCommandQueue;
 
 
-
 		class GFence
 		{
 			ComPtr<ID3D12Fence> fence;

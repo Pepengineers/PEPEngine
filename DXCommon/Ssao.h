@@ -5,23 +5,24 @@
 #include "GMemory.h"
 #include "GTexture.h"
 #include "ShaderBuffersData.h"
+
 namespace DX
 {
 	namespace Common
 	{
 		using namespace DirectX::SimpleMath;
 
-		using namespace DX::Allocator;
-		using namespace DX::Utils;
-		using namespace DX::Graphics;
+		using namespace Allocator;
+		using namespace Utils;
+		using namespace Graphics;
 
 		class Ssao
 		{
 		public:
 
-			Ssao(const std::shared_ptr<GDevice> device,
-				std::shared_ptr<GCommandList> cmdList,
-				UINT width, UINT height);
+			Ssao(std::shared_ptr<GDevice> device,
+			     std::shared_ptr<GCommandList> cmdList,
+			     UINT width, UINT height);
 			Ssao(const Ssao& rhs) = delete;
 			Ssao& operator=(const Ssao& rhs) = delete;
 			~Ssao();
@@ -67,7 +68,8 @@ namespace DX
 		private:
 			std::shared_ptr<GDevice> device;
 
-			void BlurAmbientMap(std::shared_ptr<GCommandList> cmdList, std::shared_ptr<ConstantBuffer<SsaoConstants>> currFrame, int blurCount);
+			void BlurAmbientMap(std::shared_ptr<GCommandList> cmdList,
+			                    std::shared_ptr<ConstantBuffer<SsaoConstants>> currFrame, int blurCount);
 			void BlurAmbientMap(std::shared_ptr<GCommandList> cmdList, bool horzBlur);
 			GTexture CreateNormalMap() const;
 			GTexture CreateAmbientMap() const;

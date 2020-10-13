@@ -6,6 +6,7 @@
 #include "GShader.h"
 
 using namespace Microsoft::WRL;
+
 namespace DX
 {
 	namespace Graphics

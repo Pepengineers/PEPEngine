@@ -1,14 +1,15 @@
 #pragma once
 #include "Renderer.h"
 #include "GCommandList.h"
+
 namespace DX
 {
 	namespace Common
 	{
-		using namespace DX::Allocator;
-		using namespace DX::Utils;
-		using namespace DX::Graphics;
-		
+		using namespace Allocator;
+		using namespace Utils;
+		using namespace Graphics;
+
 		class Transform;
 		class GModel;
 
@@ -28,7 +29,7 @@ namespace DX
 
 		public:
 
-			ModelRenderer(const std::shared_ptr<GDevice> device, std::shared_ptr<GModel> model);
+			ModelRenderer(std::shared_ptr<GDevice> device, std::shared_ptr<GModel> model);
 
 			void SetModel(std::shared_ptr<GModel> asset);
 		};

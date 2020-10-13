@@ -6,52 +6,59 @@
 
 namespace DX
 {
-    namespace Allocator
-    {
-        class FreeListAllocator : public Allocator {
-        public:
-            enum PlacementPolicy {
-                FIND_FIRST,
-                FIND_BEST
-            };
+	namespace Allocator
+	{
+		class FreeListAllocator : public Allocator
+		{
+		public:
+			enum PlacementPolicy
+			{
+				FIND_FIRST,
+				FIND_BEST
+			};
 
-        private:
-            struct FreeHeader {
-                std::size_t blockSize;
-            };
-            struct AllocationHeader {
-                std::size_t blockSize;
-                char padding;
-            };
+		private:
+			struct FreeHeader
+			{
+				std::size_t blockSize;
+			};
 
-            typedef SinglyLinkedList<FreeHeader>::Node Node;
+			struct AllocationHeader
+			{
+				std::size_t blockSize;
+				char padding;
+			};
+
+			typedef SinglyLinkedList<FreeHeader>::Node Node;
 
 
-            void* m_start_ptr = nullptr;
-            PlacementPolicy m_pPolicy;
-            SinglyLinkedList<FreeHeader> m_freeList;
+			void* m_start_ptr = nullptr;
+			PlacementPolicy m_pPolicy;
+			SinglyLinkedList<FreeHeader> m_freeList;
 
-        public:
-            FreeListAllocator(const std::size_t totalSize, const PlacementPolicy pPolicy);
+		public:
+			FreeListAllocator(std::size_t totalSize, PlacementPolicy pPolicy);
 
-            virtual ~FreeListAllocator();
+			virtual ~FreeListAllocator();
 
-            virtual void* Allocate(const std::size_t size, const std::size_t alignment = 0) override;
+			void* Allocate(std::size_t size, std::size_t alignment = 0) override;
 
-            virtual void Free(void* ptr) override;
+			void Free(void* ptr) override;
 
-            virtual void Init() override;
+			void Init() override;
 
-            virtual void Reset();
-        private:
-            FreeListAllocator(FreeListAllocator& freeListAllocator) = delete;
+			virtual void Reset();
+		private:
+			FreeListAllocator(FreeListAllocator& freeListAllocator) = delete;
 
-            void Coalescence(Node* prevBlock, Node* freeBlock);
+			void Coalescence(Node* prevBlock, Node* freeBlock);
 
-            void Find(const std::size_t size, const std::size_t alignment, std::size_t& padding, Node*& previousNode, Node*& foundNode);
-            void FindBest(const std::size_t size, const std::size_t alignment, std::size_t& padding, Node*& previousNode, Node*& foundNode);
-            void FindFirst(const std::size_t size, const std::size_t alignment, std::size_t& padding, Node*& previousNode, Node*& foundNode);
-        };
-
-    }
+			void Find(std::size_t size, std::size_t alignment, std::size_t& padding, Node*& previousNode,
+			          Node*& foundNode);
+			void FindBest(std::size_t size, std::size_t alignment, std::size_t& padding, Node*& previousNode,
+			              Node*& foundNode);
+			void FindFirst(std::size_t size, std::size_t alignment, std::size_t& padding, Node*& previousNode,
+			               Node*& foundNode);
+		};
+	}
 }

@@ -6,13 +6,13 @@
 #include "GCommandQueue.h"
 #include "GResource.h"
 #include "MemoryAllocator.h"
+
 namespace DX
 {
 	namespace Graphics
 	{
+		using namespace Utils;
 
-		using namespace DX::Utils;
-		
 		UINT GDevice::GetNodeMask() const
 		{
 			return 0;
@@ -24,8 +24,9 @@ namespace DX
 		}
 
 		void GDevice::SharedFence(ComPtr<ID3D12Fence>& primaryFence, const std::shared_ptr<GDevice> sharedDevice,
-			ComPtr<ID3D12Fence>& sharedFence, UINT64 fenceValue, const SECURITY_ATTRIBUTES* attributes,
-			const DWORD access, const LPCWSTR name) const
+		                          ComPtr<ID3D12Fence>& sharedFence, UINT64 fenceValue,
+		                          const SECURITY_ATTRIBUTES* attributes,
+		                          const DWORD access, const LPCWSTR name) const
 		{
 			// Create fence for cross adapter resources
 			ThrowIfFailed(device->CreateFence(fenceValue,
@@ -44,21 +45,21 @@ namespace DX
 		void GDevice::InitialCommandQueue()
 		{
 			queues = Lazy<custom_vector<Lazy<std::shared_ptr<GCommandQueue>>>>([this]
+			{
+				auto shared = std::shared_ptr<GDevice>(this);
+				auto queues = MemoryAllocator::CreateVector<Lazy<std::shared_ptr<GCommandQueue>>>();
+
+				for (UINT i = 0; i != D3D12_COMMAND_LIST_TYPE_VIDEO_ENCODE; ++i)
 				{
-					auto shared = std::shared_ptr<GDevice>(this);
-					auto queues = MemoryAllocator::CreateVector<Lazy<std::shared_ptr<GCommandQueue>>>();
+					D3D12_COMMAND_LIST_TYPE type = static_cast<D3D12_COMMAND_LIST_TYPE>(i);
 
-					for (UINT i = 0; i != D3D12_COMMAND_LIST_TYPE_VIDEO_ENCODE; ++i)
+					queues.push_back(Lazy<std::shared_ptr<GCommandQueue>>([type, shared]
 					{
-						D3D12_COMMAND_LIST_TYPE type = static_cast<D3D12_COMMAND_LIST_TYPE>(i);
-
-						queues.push_back(Lazy<std::shared_ptr<GCommandQueue>>([type, shared]
-							{
-								return std::make_shared<GCommandQueue>(shared, type);
-							}));
-					}
-					return queues;
-				});
+						return std::make_shared<GCommandQueue>(shared, type);
+					}));
+				}
+				return queues;
+			});
 		}
 
 		void GDevice::InitialQueryTimeStamp()
@@ -68,27 +69,28 @@ namespace DX
 			const UINT resultBufferSize = resultCount * sizeof(UINT64);
 
 			timestampResultBuffer = Lazy<GResource>([resultBufferSize, this]
-				{
-					return GResource(std::shared_ptr<GDevice>(this), CD3DX12_RESOURCE_DESC::Buffer(resultBufferSize),
-						name + L" TimestampBuffer", nullptr, D3D12_RESOURCE_STATE_COPY_DEST,
-						CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_READBACK));
-				});
+			{
+				return GResource(std::shared_ptr<GDevice>(this), CD3DX12_RESOURCE_DESC::Buffer(resultBufferSize),
+				                 name + L" TimestampBuffer", nullptr, D3D12_RESOURCE_STATE_COPY_DEST,
+				                 CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_READBACK));
+			});
 
 			timestampQueryHeap = Lazy<ComPtr<ID3D12QueryHeap>>([this, resultCount]
-				{
-					D3D12_QUERY_HEAP_DESC timestampHeapDesc = {};
-					timestampHeapDesc.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
-					timestampHeapDesc.Count = resultCount;
-					timestampHeapDesc.NodeMask = GetNodeMask();
+			{
+				D3D12_QUERY_HEAP_DESC timestampHeapDesc = {};
+				timestampHeapDesc.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
+				timestampHeapDesc.Count = resultCount;
+				timestampHeapDesc.NodeMask = GetNodeMask();
 
-					ComPtr<ID3D12QueryHeap> heap;
-					ThrowIfFailed(device->CreateQueryHeap(&timestampHeapDesc, IID_PPV_ARGS(&heap)));
-					return heap;
-				});
+				ComPtr<ID3D12QueryHeap> heap;
+				ThrowIfFailed(device->CreateQueryHeap(&timestampHeapDesc, IID_PPV_ARGS(&heap)));
+				return heap;
+			});
 		}
 
-		HANDLE GDevice::SharedHandle(ComPtr<ID3D12DeviceChild> deviceObject, const SECURITY_ATTRIBUTES* attributes = nullptr,
-			const DWORD access = GENERIC_ALL, const LPCWSTR name = L"") const
+		HANDLE GDevice::SharedHandle(ComPtr<ID3D12DeviceChild> deviceObject,
+		                             const SECURITY_ATTRIBUTES* attributes = nullptr,
+		                             const DWORD access = GENERIC_ALL, const LPCWSTR name = L"") const
 		{
 			HANDLE sharedHandle = nullptr;
 			ThrowIfFailed(
@@ -97,8 +99,9 @@ namespace DX
 		}
 
 
-		void GDevice::ShareResource(GResource& resource, const std::shared_ptr<GDevice> destDevice, GResource& destResource,
-			const SECURITY_ATTRIBUTES* attributes, const DWORD access, const LPCWSTR name) const
+		void GDevice::ShareResource(GResource& resource, const std::shared_ptr<GDevice> destDevice,
+		                            GResource& destResource,
+		                            const SECURITY_ATTRIBUTES* attributes, const DWORD access, const LPCWSTR name) const
 		{
 			const HANDLE handle = SharedHandle(resource.GetD3D12Resource(), attributes, access, name);
 
@@ -113,20 +116,20 @@ namespace DX
 		void GDevice::InitialDescriptorAllocator()
 		{
 			graphicAllocators = Lazy<custom_vector<Lazy<std::unique_ptr<GAllocator>>>>([this]
+			{
+				auto device = std::shared_ptr<GDevice>(this);
+				auto adapterAllocators = MemoryAllocator::CreateVector<Lazy<std::unique_ptr<GAllocator>>>();
+				for (uint8_t i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i)
 				{
-					auto device = std::shared_ptr<GDevice>(this);
-					auto adapterAllocators = MemoryAllocator::CreateVector<Lazy<std::unique_ptr<GAllocator>>>();
-					for (uint8_t i = 0; i < D3D12_DESCRIPTOR_HEAP_TYPE_NUM_TYPES; ++i)
+					auto type = i;
+					adapterAllocators.push_back(Lazy<std::unique_ptr<GAllocator>>([type, device]
 					{
-						auto type = i;
-						adapterAllocators.push_back(Lazy<std::unique_ptr<GAllocator>>([type, device]
-							{
-								return std::make_unique<GAllocator>(device, static_cast<D3D12_DESCRIPTOR_HEAP_TYPE>(type));
-							}));
-					}
+						return std::make_unique<GAllocator>(device, static_cast<D3D12_DESCRIPTOR_HEAP_TYPE>(type));
+					}));
+				}
 
-					return adapterAllocators;
-				});
+				return adapterAllocators;
+			});
 		}
 
 		void GDevice::InitialDevice()
@@ -196,13 +199,14 @@ namespace DX
 			InitialDescriptorAllocator();
 
 			crossAdapterTextureSupport = Lazy<bool>([this]
-				{
-					D3D12_FEATURE_DATA_D3D12_OPTIONS options = {};
-					ThrowIfFailed(
-						device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, reinterpret_cast<void*>(&options), sizeof(options)
-						));
-					return options.CrossAdapterRowMajorTextureSupported;
-				});
+			{
+				D3D12_FEATURE_DATA_D3D12_OPTIONS options = {};
+				ThrowIfFailed(
+					device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, reinterpret_cast<void*>(&options), sizeof(
+							options)
+					));
+				return options.CrossAdapterRowMajorTextureSupported;
+			});
 		}
 
 		ComPtr<ID3D12Device> GDevice::GetDXDevice() const

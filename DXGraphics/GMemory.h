@@ -1,9 +1,10 @@
 #pragma once
 #include "d3dx12.h"
+
 namespace DX
 {
 	namespace Graphics
-	{		
+	{
 		class GHeap;
 
 		class GMemory
@@ -11,8 +12,9 @@ namespace DX
 		public:
 			GMemory();
 
-			GMemory(D3D12_CPU_DESCRIPTOR_HANDLE descriptor, D3D12_GPU_DESCRIPTOR_HANDLE gpuDescriptor, uint32_t handlerCount,
-				uint32_t descriptorSize, std::shared_ptr<GHeap> heap);
+			GMemory(D3D12_CPU_DESCRIPTOR_HANDLE descriptor, D3D12_GPU_DESCRIPTOR_HANDLE gpuDescriptor,
+			        uint32_t handlerCount,
+			        uint32_t descriptorSize, std::shared_ptr<GHeap> heap);
 
 			~GMemory();
 

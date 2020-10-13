@@ -4,12 +4,13 @@
 #include <string>
 #include <memory>
 #include "d3dx12.h"
+
 namespace DX
 {
 	namespace Graphics
 	{
 		class GMemory;
-		class GDevice;		
+		class GDevice;
 
 		class GResource
 		{
@@ -18,13 +19,13 @@ namespace DX
 
 			GResource(const std::wstring& name = L"");
 			GResource(std::shared_ptr<GDevice> device, const D3D12_RESOURCE_DESC& resourceDesc,
-				const std::wstring& name = L"",
-				const D3D12_CLEAR_VALUE* clearValue = nullptr,
-				D3D12_RESOURCE_STATES initState = D3D12_RESOURCE_STATE_COMMON,
-				D3D12_HEAP_PROPERTIES heapProp = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-				D3D12_HEAP_FLAGS heapFlags = D3D12_HEAP_FLAG_NONE);
+			          const std::wstring& name = L"",
+			          const D3D12_CLEAR_VALUE* clearValue = nullptr,
+			          D3D12_RESOURCE_STATES initState = D3D12_RESOURCE_STATE_COMMON,
+			          D3D12_HEAP_PROPERTIES heapProp = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+			          D3D12_HEAP_FLAGS heapFlags = D3D12_HEAP_FLAG_NONE);
 			GResource(std::shared_ptr<GDevice> device, Microsoft::WRL::ComPtr<ID3D12Resource>& resource,
-				const std::wstring& name = L"");
+			          const std::wstring& name = L"");
 			GResource(const GResource& copy);
 			GResource(GResource&& move);
 
@@ -40,16 +41,19 @@ namespace DX
 
 			D3D12_RESOURCE_DESC GetD3D12ResourceDesc() const;
 
-			virtual void SetD3D12Resource(std::shared_ptr<GDevice> device, Microsoft::WRL::ComPtr<ID3D12Resource> d3d12Resource,
-				const D3D12_CLEAR_VALUE* clearValue = nullptr);
+			virtual void SetD3D12Resource(std::shared_ptr<GDevice> device,
+			                              Microsoft::WRL::ComPtr<ID3D12Resource> d3d12Resource,
+			                              const D3D12_CLEAR_VALUE* clearValue = nullptr);
 
 
 			void CreateShaderResourceView(const D3D12_SHADER_RESOURCE_VIEW_DESC* srvDesc, GMemory* memory,
-				size_t offset = 0) const;
+			                              size_t offset = 0) const;
 			void CreateUnorderedAccessView(const D3D12_UNORDERED_ACCESS_VIEW_DESC* uavDesc, GMemory* memory,
-				size_t offset = 0) const;
-			void CreateRenderTargetView(const D3D12_RENDER_TARGET_VIEW_DESC* rtvDesc, GMemory* memory, size_t offset = 0) const;
-			void CreateDepthStencilView(const D3D12_DEPTH_STENCIL_VIEW_DESC* dsvDesc, GMemory* memory, size_t offset = 0) const;
+			                               size_t offset = 0) const;
+			void CreateRenderTargetView(const D3D12_RENDER_TARGET_VIEW_DESC* rtvDesc, GMemory* memory,
+			                            size_t offset = 0) const;
+			void CreateDepthStencilView(const D3D12_DEPTH_STENCIL_VIEW_DESC* dsvDesc, GMemory* memory,
+			                            size_t offset = 0) const;
 
 
 			void SetName(const std::wstring& name);

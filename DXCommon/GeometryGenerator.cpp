@@ -2,14 +2,15 @@
 #include "GeometryGenerator.h"
 #include <algorithm>
 #include "ShaderBuffersData.h"
+
 namespace DX
 {
 	namespace Common
 	{
-
 		using namespace DirectX;
 
-		GeometryGenerator::MeshData GeometryGenerator::CreateBox(float width, float height, float depth, uint32 numSubdivisions)
+		GeometryGenerator::MeshData GeometryGenerator::CreateBox(float width, float height, float depth,
+		                                                         uint32 numSubdivisions)
 		{
 			MeshData meshData;
 
@@ -406,7 +407,7 @@ namespace DX
 		}
 
 		GeometryGenerator::MeshData GeometryGenerator::CreateCylinder(float bottomRadius, float topRadius, float height,
-			uint32 sliceCount, uint32 stackCount)
+		                                                              uint32 sliceCount, uint32 stackCount)
 		{
 			MeshData meshData;
 
@@ -501,7 +502,7 @@ namespace DX
 		}
 
 		void GeometryGenerator::BuildCylinderTopCap(float bottomRadius, float topRadius, float height,
-			uint32 sliceCount, uint32 stackCount, MeshData& meshData)
+		                                            uint32 sliceCount, uint32 stackCount, MeshData& meshData)
 		{
 			uint32 baseIndex = static_cast<uint32>(meshData.Vertices.size());
 
@@ -537,7 +538,7 @@ namespace DX
 		}
 
 		void GeometryGenerator::BuildCylinderBottomCap(float bottomRadius, float topRadius, float height,
-			uint32 sliceCount, uint32 stackCount, MeshData& meshData)
+		                                               uint32 sliceCount, uint32 stackCount, MeshData& meshData)
 		{
 			// 
 			// Build bottom cap.
@@ -709,7 +710,8 @@ namespace DX
 				{
 					sphereYaw = j * (6.28 / (LongLines));
 					auto Rotationy = XMMatrixRotationZ(sphereYaw);
-					currVertPos = XMVector3TransformNormal(XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f), (Rotationx * Rotationy));
+					currVertPos =
+						XMVector3TransformNormal(XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f), (Rotationx * Rotationy));
 					currVertPos = XMVector3Normalize(currVertPos);
 					meshData.Vertices[i * LongLines + j + 1].Position.x = XMVectorGetX(currVertPos);
 					meshData.Vertices[i * LongLines + j + 1].Position.y = XMVectorGetY(currVertPos);

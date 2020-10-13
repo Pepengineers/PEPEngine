@@ -78,10 +78,10 @@ namespace DX
 			void init() const
 			{
 				std::call_once(state->initialized, [&]
-					{
-						state->value = std::make_unique<T>(state->createValue());
-						state->isInit = true;
-					});
+				{
+					state->value = std::make_unique<T>(state->createValue());
+					state->isInit = true;
+				});
 			}
 
 

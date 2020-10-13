@@ -18,22 +18,24 @@ namespace DX
 {
 	namespace Common
 	{
-
 		static Assimp::Importer importer;
 
 		custom_unordered_map<std::wstring, std::shared_ptr<NativeModel>> AssetsLoader::loadedModels =
 			MemoryAllocator::CreateUnorderedMap<std::wstring, std::shared_ptr<NativeModel>>();
-		custom_unordered_map<std::shared_ptr<NativeMesh>, std::shared_ptr<aiMaterial>> AssetsLoader::loadedAiMaterialForMesh =
+		custom_unordered_map<std::shared_ptr<NativeMesh>, std::shared_ptr<aiMaterial>>
+		AssetsLoader::loadedAiMaterialForMesh =
 			MemoryAllocator::CreateUnorderedMap<std::shared_ptr<NativeMesh>, std::shared_ptr<aiMaterial>>();
 		custom_unordered_map<std::shared_ptr<NativeMesh>, std::vector<UINT>> AssetsLoader::loadedTexturesForMesh =
 			MemoryAllocator::CreateUnorderedMap<std::shared_ptr<NativeMesh>, std::vector<UINT>>();
 
 		inline std::shared_ptr<GModel> CreateModelFromGenerated(std::shared_ptr<GCommandList> cmdList,
-			GeometryGenerator::MeshData generatedData, std::wstring name)
+		                                                        GeometryGenerator::MeshData generatedData,
+		                                                        std::wstring name)
 		{
 			auto nativeMesh = std::make_shared<NativeMesh>(generatedData.Vertices.data(), generatedData.Vertices.size(),
-				generatedData.Indices32.data(), generatedData.Indices32.size(),
-				D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			                                               generatedData.Indices32.data(),
+			                                               generatedData.Indices32.size(),
+			                                               D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 			auto nativeModel = std::make_shared<NativeModel>(name);
 			nativeModel->AddMesh(std::move(nativeMesh));
@@ -41,16 +43,18 @@ namespace DX
 			return std::make_shared<GModel>(nativeModel, cmdList);
 		}
 
-		std::shared_ptr<GModel> AssetsLoader::GenerateSphere(std::shared_ptr<GCommandList> cmdList, float radius, UINT sliceCount,
-			UINT stackCount)
+		std::shared_ptr<GModel> AssetsLoader::GenerateSphere(std::shared_ptr<GCommandList> cmdList, float radius,
+		                                                     UINT sliceCount,
+		                                                     UINT stackCount)
 		{
 			const GeometryGenerator::MeshData sphere = geoGen.CreateSphere(radius, sliceCount, stackCount);
 
 			return CreateModelFromGenerated(cmdList, sphere, L"sphere");
 		}
 
-		std::shared_ptr<GModel> AssetsLoader::GenerateQuad(std::shared_ptr<GCommandList> cmdList, float x, float y, float w,
-			float h, float depth)
+		std::shared_ptr<GModel> AssetsLoader::GenerateQuad(std::shared_ptr<GCommandList> cmdList, float x, float y,
+		                                                   float w,
+		                                                   float h, float depth)
 		{
 			const GeometryGenerator::MeshData genMesh = geoGen.CreateQuad(x, y, w, h, depth);
 
@@ -89,7 +93,7 @@ namespace DX
 
 				vertices.push_back(vertex);
 			}
-			return  vertices;
+			return vertices;
 		}
 
 		std::vector<DWORD> GetIndices(aiMesh* mesh)
@@ -111,23 +115,25 @@ namespace DX
 		std::shared_ptr<NativeMesh> AssetsLoader::CreateSubMesh(aiMesh* mesh, std::wstring modelName) const
 		{
 			// Data to fill
-			auto  vertices = GetVertices(mesh);
+			auto vertices = GetVertices(mesh);
 			auto indices = GetIndices(mesh);
 
 			RecalculateTangent(indices.data(), indices.size(), vertices.data());
 
-			auto nativeMesh = std::make_shared<NativeMesh>(vertices.data(), vertices.size(), indices.data(), indices.size(),
-				D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
-				modelName + L" " + AnsiToWString(mesh->mName.C_Str()));
+			auto nativeMesh = std::make_shared<NativeMesh>(vertices.data(), vertices.size(), indices.data(),
+			                                               indices.size(),
+			                                               D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
+			                                               modelName + L" " + AnsiToWString(mesh->mName.C_Str()));
 			vertices.clear();
 			indices.clear();
 
 			return nativeMesh;
 		}
 
-		std::shared_ptr<GTexture> AssetsLoader::LoadTextureByAiMaterial(const aiMaterial* material, const aiTextureType type,
-			const std::wstring directory,
-			std::shared_ptr<GCommandList> cmdList)
+		std::shared_ptr<GTexture> AssetsLoader::LoadTextureByAiMaterial(const aiMaterial* material,
+		                                                                const aiTextureType type,
+		                                                                const std::wstring directory,
+		                                                                std::shared_ptr<GCommandList> cmdList)
 		{
 			aiString str;
 			material->GetTexture(type, 0, &str);
@@ -137,7 +143,7 @@ namespace DX
 			if (modelTexturePath.find(L"\\") != std::wstring::npos)
 			{
 				auto fileName = modelTexturePath.substr(modelTexturePath.find_last_of('\\'),
-					modelTexturePath.size() - modelTexturePath.find_last_of('\\'));
+				                                        modelTexturePath.size() - modelTexturePath.find_last_of('\\'));
 
 				modelTexturePath = fileName.replace(fileName.find(L"\\"), 1, L"");
 			}
@@ -151,9 +157,9 @@ namespace DX
 			OutputDebugStringW((texturePath + L"\n").c_str());
 
 			auto texture = GTexture::LoadTextureFromFile(texturePath, cmdList,
-				type == aiTextureType_DIFFUSE
-				? TextureUsage::Albedo
-				: TextureUsage::Normalmap);
+			                                             type == aiTextureType_DIFFUSE
+				                                             ? TextureUsage::Albedo
+				                                             : TextureUsage::Normalmap);
 			texture->SetName(textureName);
 
 			textures.push_back(texture);
@@ -164,8 +170,9 @@ namespace DX
 		}
 
 		std::shared_ptr<GTexture> AssetsLoader::LoadTextureByPath(const std::wstring name,
-			const std::wstring fullPath,
-			std::shared_ptr<GCommandList> cmdList, TextureUsage usage)
+		                                                          const std::wstring fullPath,
+		                                                          std::shared_ptr<GCommandList> cmdList,
+		                                                          TextureUsage usage)
 		{
 			const auto it = texturesMap.find(name);
 			if (it != texturesMap.end()) return textures[it->second];
@@ -215,12 +222,13 @@ namespace DX
 
 					if (textureCount > 0)
 					{
-						texture = LoadTextureByAiMaterial(aiMaterial.get(), aiTextureType_DIFFUSE, modelDirectory, cmdList);
+						texture = LoadTextureByAiMaterial(aiMaterial.get(), aiTextureType_DIFFUSE, modelDirectory,
+						                                  cmdList);
 					}
 					else
 					{
 						texture = LoadTextureByPath(L"seamless", L"Data\\Textures\\seamless_grass.jpg", cmdList,
-							TextureUsage::Diffuse);
+						                            TextureUsage::Diffuse);
 					}
 
 					loadedTexturesForMesh[nativeMesh].push_back(texturesMap[texture->GetName()]);
@@ -231,7 +239,8 @@ namespace DX
 
 					if (textureCount > 0)
 					{
-						texture = LoadTextureByAiMaterial(aiMaterial.get(), aiTextureType_HEIGHT, modelDirectory, cmdList);
+						texture = LoadTextureByAiMaterial(aiMaterial.get(), aiTextureType_HEIGHT, modelDirectory,
+						                                  cmdList);
 					}
 					else
 					{
@@ -239,14 +248,14 @@ namespace DX
 
 						if (textureCount > 0)
 						{
-							texture = LoadTextureByAiMaterial(aiMaterial.get(), aiTextureType_NORMALS, modelDirectory, cmdList);
+							texture = LoadTextureByAiMaterial(aiMaterial.get(), aiTextureType_NORMALS, modelDirectory,
+							                                  cmdList);
 						}
 						else
 						{
-
-							texture = LoadTextureByPath(L"defaultNormalMap", L"Data\\Textures\\default_nmap.dds", cmdList,
-								TextureUsage::Normalmap);
-
+							texture = LoadTextureByPath(L"defaultNormalMap", L"Data\\Textures\\default_nmap.dds",
+							                            cmdList,
+							                            TextureUsage::Normalmap);
 						}
 					}
 
@@ -263,13 +272,15 @@ namespace DX
 			}
 		}
 
-		void AssetsLoader::RecursivlyLoadMeshes(std::shared_ptr<NativeModel> model, aiNode* node, const aiScene* scene) const
+		void AssetsLoader::RecursivlyLoadMeshes(std::shared_ptr<NativeModel> model, aiNode* node,
+		                                        const aiScene* scene) const
 		{
 			for (UINT i = 0; i < node->mNumMeshes; i++)
 			{
 				aiMesh* aMesh = scene->mMeshes[node->mMeshes[i]];
 				auto nativeMesh = CreateSubMesh(aMesh, model->GetName());
-				loadedAiMaterialForMesh[nativeMesh] = std::shared_ptr<aiMaterial>(scene->mMaterials[aMesh->mMaterialIndex]);
+				loadedAiMaterialForMesh[nativeMesh] = std::shared_ptr<aiMaterial>(
+					scene->mMaterials[aMesh->mMaterialIndex]);
 				model->AddMesh((nativeMesh));
 			}
 
@@ -280,7 +291,7 @@ namespace DX
 		}
 
 		std::shared_ptr<GModel> AssetsLoader::CreateModelFromFile(std::shared_ptr<GCommandList> cmdList,
-			const std::string filePath)
+		                                                          const std::string filePath)
 		{
 			auto it = loadedModels.find(AnsiToWString(filePath));
 			if (it != loadedModels.end())
@@ -290,8 +301,8 @@ namespace DX
 
 
 			const aiScene* sceneModel = importer.ReadFile(filePath,
-				aiProcess_Triangulate | aiProcess_GenNormals |
-				aiProcess_ConvertToLeftHanded);
+			                                              aiProcess_Triangulate | aiProcess_GenNormals |
+			                                              aiProcess_ConvertToLeftHanded);
 
 			assert(sceneModel != nullptr && "Model Path dosen't exist or wrong file");
 

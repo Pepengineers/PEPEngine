@@ -66,7 +66,7 @@ namespace DX
 
 
 			auto mipMapsMemory = cmdList->GetDevice()->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
-				2 * requiredHeapSize);
+			                                                               2 * requiredHeapSize);
 
 
 			CD3DX12_DESCRIPTOR_RANGE srvCbvRanges[2];
@@ -95,8 +95,9 @@ namespace DX
 			signature.AddStaticSampler(samplerDesc);
 			signature.Initialize(textures[0]->device);
 
-			auto shader = std::make_unique<GShader>(L"Shaders\\MipMapCS.hlsl", ComputeShader, nullptr, "GenerateMipMaps",
-				"cs_5_1");
+			auto shader = std::make_unique<GShader>(L"Shaders\\MipMapCS.hlsl", ComputeShader, nullptr,
+			                                        "GenerateMipMaps",
+			                                        "cs_5_1");
 			shader->LoadAndCompile();
 
 
@@ -131,9 +132,9 @@ namespace DX
 				for (uint32_t TopMip = 0; TopMip < textureDesc.MipLevels - 1; TopMip++)
 				{
 					uint32_t dstWidth = std::max(static_cast<uint32_t>(textureDesc.Width >> (TopMip + 1)),
-						static_cast<uint32_t>(1));
+					                             static_cast<uint32_t>(1));
 					uint32_t dstHeight = std::max(static_cast<uint32_t>(textureDesc.Height >> (TopMip + 1)),
-						static_cast<uint32_t>(1));
+					                              static_cast<uint32_t>(1));
 
 					srcTextureSRVDesc.Format = GetUAVCompatableFormat(textureDesc.Format);
 					srcTextureSRVDesc.Texture2D.MipLevels = 1;
@@ -171,19 +172,20 @@ namespace DX
 
 
 		GTexture::GTexture(std::wstring name, TextureUsage use) : GResource(name),
-			usage(use)
+		                                                          usage(use)
 		{
 		}
 
 		GTexture::GTexture(const std::shared_ptr<GDevice> device, const D3D12_RESOURCE_DESC& resourceDesc,
-			const std::wstring& name, TextureUsage textureUsage, const D3D12_CLEAR_VALUE* clearValue) :
+		                   const std::wstring& name, TextureUsage textureUsage, const D3D12_CLEAR_VALUE* clearValue) :
 			GResource(device, resourceDesc, name, clearValue),
 			usage(textureUsage)
 		{
 		}
 
-		GTexture::GTexture(const std::shared_ptr<GDevice> device, ComPtr<ID3D12Resource> resource, TextureUsage textureUsage,
-			const std::wstring& name) : GResource(device, resource, name), usage(textureUsage)
+		GTexture::GTexture(const std::shared_ptr<GDevice> device, ComPtr<ID3D12Resource> resource,
+		                   TextureUsage textureUsage,
+		                   const std::wstring& name) : GResource(device, resource, name), usage(textureUsage)
 		{
 		}
 
@@ -242,7 +244,8 @@ namespace DX
 
 
 		std::shared_ptr<GTexture> GTexture::LoadTextureFromFile(std::wstring filepath,
-			std::shared_ptr<GCommandList> commandList, TextureUsage usage)
+		                                                        std::shared_ptr<GCommandList> commandList,
+		                                                        TextureUsage usage)
 		{
 			std::filesystem::path filePath(filepath);
 			if (!exists(filePath))
@@ -259,7 +262,8 @@ namespace DX
 
 			if (filePath.extension() == ".dds" || filePath.extension() == ".DDS")
 			{
-				ThrowIfFailed(DirectX::LoadFromDDSFile(filepath.c_str(), DirectX::DDS_FLAGS_NONE, &metadata, scratchImage));
+				ThrowIfFailed(
+					DirectX::LoadFromDDSFile(filepath.c_str(), DirectX::DDS_FLAGS_NONE, &metadata, scratchImage));
 			}
 			else if (filePath.extension() == ".hdr" || filePath.extension() == ".HDR")
 			{
@@ -295,11 +299,11 @@ namespace DX
 			 */
 
 			desc.MipLevels = resFlags == D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS
-				? 0
-				: static_cast<UINT16>(metadata.mipLevels);
+				                 ? 0
+				                 : static_cast<UINT16>(metadata.mipLevels);
 			desc.DepthOrArraySize = (metadata.dimension == DirectX::TEX_DIMENSION_TEXTURE3D)
-				? static_cast<UINT16>(metadata.depth)
-				: static_cast<UINT16>(metadata.arraySize);
+				                        ? static_cast<UINT16>(metadata.depth)
+				                        : static_cast<UINT16>(metadata.arraySize);
 			desc.Format = metadata.format;
 			desc.Flags = static_cast<D3D12_RESOURCE_FLAGS>(resFlags);
 			desc.SampleDesc.Count = 1;
@@ -315,7 +319,8 @@ namespace DX
 			{
 				std::vector<D3D12_SUBRESOURCE_DATA> subresources(scratchImage.GetImageCount());
 				ThrowIfFailed(
-					PrepareUpload(ownerDevice->GetDXDevice().Get(), scratchImage.GetImages(), scratchImage.GetImageCount(),
+					PrepareUpload(ownerDevice->GetDXDevice().Get(), scratchImage.GetImages(), scratchImage.GetImageCount
+						(),
 						scratchImage.GetMetadata(),
 						subresources));
 
