@@ -201,7 +201,7 @@ namespace DX
 
 				aiString name;
 				aiMaterial->Get(AI_MATKEY_NAME, name);
-
+				
 				auto materialName = model->GetName() + L" " + AnsiToWString(name.C_Str());
 
 				auto it = materialsMap.find(materialName);
@@ -231,7 +231,7 @@ namespace DX
 
 					loadedTexturesForMesh[nativeMesh].push_back(texturesMap[texture->GetName()]);
 
-					material->SetDiffuseTexture(texture, texturesMap[texture->GetName()]);
+					material->SetMaterialMap(Material::BaseColor, texture);
 
 					textureCount = aiMaterial->GetTextureCount(aiTextureType_HEIGHT);
 
@@ -258,7 +258,7 @@ namespace DX
 					}
 
 					loadedTexturesForMesh[nativeMesh].push_back(texturesMap[texture->GetName()]);
-					material->SetNormalMap(texture, texturesMap[texture->GetName()]);
+					material->SetMaterialMap(Material::NormalMap, texture);
 					AddMaterial(material);
 				}
 				else

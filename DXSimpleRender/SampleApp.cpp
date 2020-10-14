@@ -17,11 +17,9 @@ SampleApp::SampleApp(HINSTANCE hInstance): D3DApp(hInstance), assetLoader(Assets
 bool SampleApp::Initialize()
 {
 	device = GDeviceFactory::GetDevice();
-
 	dsvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 	rtvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, globalCountFrameResources);
 	defferedRTVMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_RTV,  4);
-	srvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, assetLoader.GetLoadTexturesCount());
 	defferedSRVMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 4);
 
 	if (!D3DApp::Initialize())
@@ -40,14 +38,48 @@ bool SampleApp::Initialize()
 	copyQueue->Flush();
 
 
+	std::vector<GTexture*> noMipMapsTextures;
+
+	auto allTextures = assetLoader.GetTextures();
+
+	for (auto&& texture : allTextures)
+	{
+		texture->ClearTrack();
+
+		if (texture->GetD3D12Resource()->GetDesc().Flags != D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS)
+			continue;
+
+		if (!texture->HasMipMap)
+		{
+			noMipMapsTextures.push_back(texture.get());
+		}
+	}
+
+
+	const auto computeQueue = device->GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COMPUTE);
+	auto computeList = computeQueue->GetCommandList();
+	GTexture::GenerateMipMaps(computeList, noMipMapsTextures.data(), noMipMapsTextures.size());
+	for (auto&& texture : noMipMapsTextures)
+		computeList->TransitionBarrier(texture->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON);
+	computeList->FlushResourceBarriers();
+	computeQueue->WaitForFenceValue(computeQueue->ExecuteCommandList(computeList));
+	
+	
+	
+
 	rootSignature = std::make_shared<GRootSignature>();
 	
 
 	rootSignature->AddConstantBufferParameter(0);
 	rootSignature->AddConstantBufferParameter(1);
 	rootSignature->AddShaderResourceView(0, 1);
-	rootSignature->AddShaderResourceView(0, 2);
+	rootSignature->AddShaderResourceView(1, 1);
 
+	CD3DX12_DESCRIPTOR_RANGE texParam[1];
+	texParam[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, MaxMaterialTexturesMaps, 0, 0); //Material Maps
+
+	rootSignature->AddDescriptorParameter(&texParam[0], 1, D3D12_SHADER_VISIBILITY_PIXEL);
+	
 	rootSignature->Initialize(device);
 		
 
@@ -115,7 +147,6 @@ bool SampleApp::Initialize()
 
 	auto cameraGO = std::make_unique<GameObject>("MainCamera");
 	cameraGO->GetTransform()->SetEulerRotate(Vector3(-30, 270, 0));
-	cameraGO->GetTransform()->SetPosition(Vector3(-1000, 190, -32));
 	cameraGO->AddComponent(std::make_shared<Camera>(AspectRatio()));
 	cameraGO->AddComponent(std::make_shared<CameraController>());
 	gameObjects.push_back(std::move(cameraGO));
@@ -128,7 +159,7 @@ bool SampleApp::Initialize()
 			auto renderer = std::make_shared<ModelRenderer>(device, models[L"atlas"]);
 			rModel->AddComponent(renderer);
 			rModel->GetTransform()->SetPosition(
-				Vector3::Right * -60 + Vector3::Right * -30 * j + Vector3::Up * 11 + Vector3::Forward * 10 * i);
+				Vector3::Right * -30 * j + Vector3::Forward * 10 * i);
 			gameObjects.push_back(std::move(rModel));
 		}
 	}
@@ -137,7 +168,7 @@ bool SampleApp::Initialize()
 
 	for (auto&& pair : materials)
 	{
-		pair->InitMaterial(&srvMemory);
+		pair->InitMaterial(device);
 	}
 		
 
@@ -222,7 +253,7 @@ void SampleApp::Update(const GameTimer& gt)
 	{
 		material->Update();
 		auto constantData = material->GetMaterialConstantData();
-		currentMaterialBuffer->CopyData(material->GetIndex(), constantData);
+		currentMaterialBuffer->CopyData(material->GetMaterialIndex(), constantData);
 	}
 
 	auto currentLightsBuffer = currentFrameResource->LightsBuffer.get();
@@ -243,44 +274,35 @@ void SampleApp::Draw(const GameTimer& gt)
 	cmdList->SetViewports(&viewport, 1);
 	cmdList->SetScissorRects(&rect, 1);
 
+	
 	cmdList->TransitionBarrier(MainWindow->GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 	for (auto && texture : defferedGBufferTextures)
-	{
 		cmdList->TransitionBarrier(texture, D3D12_RESOURCE_STATE_RENDER_TARGET);
-	}
-	
 	cmdList->TransitionBarrier(depthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 	cmdList->FlushResourceBarriers();
 
-	cmdList->SetRenderTargets(defferedGBufferTextures.size(), &defferedRTVMemory, 0, &dsvMemory, 0, true);
-	
-	cmdList->ClearRenderTarget(&rtvMemory, currentFrameResourceIndex, DirectX::Colors::Yellow);
-
+	cmdList->SetRenderTargets(defferedGBufferTextures.size(), &defferedRTVMemory, 0, &dsvMemory, 0, true);	
+	cmdList->ClearRenderTarget(&rtvMemory, currentFrameResourceIndex, DirectX::Colors::Black);
 	for (int i = 0; i < defferedGBufferTextures.size(); ++i)
-	{
-		cmdList->ClearRenderTarget(&defferedRTVMemory, i, DirectX::Colors::Green);
-	}
-	
+		cmdList->ClearRenderTarget(&defferedRTVMemory, i, DirectX::Colors::Black);
 	cmdList->ClearDepthStencil(&dsvMemory, 0);
+	
 
 	cmdList->SetRootSignature(rootSignature.get());
 	cmdList->SetRootConstantBufferView(1, *currentFrameResource->PassConstantBuffer);
 	cmdList->SetRootShaderResourceView(2, *currentFrameResource->MaterialsBuffer);
 	cmdList->SetRootShaderResourceView(3, *currentFrameResource->LightsBuffer);
-	
+
 	cmdList->SetPipelineState(*opaque.get());	
 	for (auto&& object : gameObjects)
-	{
 		object->Draw(cmdList);
-	}
 
-	cmdList->CopyResource(MainWindow->GetCurrentBackBuffer(), defferedGBufferTextures[0]);
+	cmdList->CopyResource(MainWindow->GetCurrentBackBuffer(), defferedGBufferTextures[1]);
 
+	
 	cmdList->TransitionBarrier(MainWindow->GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT);
 	for (auto&& texture : defferedGBufferTextures)
-	{
 		cmdList->TransitionBarrier(texture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-	}
 	cmdList->TransitionBarrier(depthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
 	cmdList->FlushResourceBarriers();
 
@@ -488,9 +510,7 @@ LRESULT SampleApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		}
 	case WM_KEYUP:
 
-		{
-			/*if ((int)wParam == VK_F2)
-				Set4xMsaaState(!isM4xMsaa);*/
+		{		
 			unsigned char keycode = static_cast<unsigned char>(wParam);
 			keyboard.OnKeyReleased(keycode);
 
@@ -512,7 +532,7 @@ LRESULT SampleApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 					{
 						keyboard.OnKeyPressed(keycode);
 					}
-				}
+				}				
 			}
 		}
 

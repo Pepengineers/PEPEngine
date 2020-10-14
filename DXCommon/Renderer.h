@@ -15,7 +15,7 @@ namespace DX
 			};
 
 			void Update() override = 0;
-			void Draw(std::shared_ptr<GCommandList> cmdList) override = 0;
+			void PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList) override = 0;
 		};
 	}
 }

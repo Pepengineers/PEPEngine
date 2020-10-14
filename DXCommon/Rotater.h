@@ -20,7 +20,7 @@ namespace DX
 		private:
 			void Update() override;;
 
-			void Draw(std::shared_ptr<GCommandList> cmdList) override
+			void PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList) override
 			{
 			};
 

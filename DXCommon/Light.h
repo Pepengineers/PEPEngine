@@ -18,7 +18,7 @@ namespace DX
 			int NumFramesDirty = globalCountFrameResources;
 			LightData lightData{};
 			void Update() override;;
-			void Draw(std::shared_ptr<GCommandList> cmdList) override;
+			void PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList) override;
 			Matrix view = Matrix::Identity;
 			Matrix projection = Matrix::Identity;
 

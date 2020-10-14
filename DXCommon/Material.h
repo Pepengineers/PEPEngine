@@ -3,6 +3,7 @@
 #include <DirectXColors.h>
 #include "d3dUtil.h"
 #include "d3dx12.h"
+#include "GMemory.h"
 #include "GraphicPSO.h"
 #include "ShaderBuffersData.h"
 #include "GTexture.h"
@@ -16,32 +17,44 @@ namespace DX
 		using namespace Utils;
 		using namespace Graphics;
 
+		
+		
 		class Material
 		{
+		public:
+			enum MaterialTypes : UINT
+			{
+				DiffuseMap = 0,
+				BaseColor = DiffuseMap,
+				NormalMap = BaseColor + 1,
+				HeightMap = NormalMap + 1,
+				MetallicMap = HeightMap + 1,
+				RoughnessMap = MetallicMap + 1,
+				AOMap = RoughnessMap + 1
+			};
+			
+		private:
+			
 			static UINT materialIndexGlobal;
 
 			UINT materialIndex = -1;
-
+			
 			std::wstring Name;
 
-			PsoType::Type type = PsoType::Opaque;
+			RenderMode::Mode type = RenderMode::Opaque;
 
 			MaterialData matConstants{};
 
 			UINT NumFramesDirty = globalCountFrameResources;
 
-			std::shared_ptr<GTexture> diffuseMap = nullptr;
-			std::shared_ptr<GTexture> normalMap = nullptr;
+			std::vector<std::shared_ptr<GTexture>> materialMaps;
+						
+			std::unordered_map<MaterialTypes, UINT> slots;
 
-
-			UINT DiffuseMapIndex = -1;
-			UINT NormalMapIndex = -1;
-
-			CD3DX12_GPU_DESCRIPTOR_HANDLE gpuTextureHandle;
-			CD3DX12_CPU_DESCRIPTOR_HANDLE cpuTextureHandle;
-
+			GMemory textureMapsSRVMemory;
+			
 		public:
-
+						
 			Vector4  GlobalAmbient;
 			Vector4  AmbientColor;
 			Vector4  EmissiveColor;
@@ -50,48 +63,32 @@ namespace DX
 			Vector4  Reflectance;
 			float   Opacity;
 			float   SpecularPower;
-			float   IndexOfRefraction;
-			bool    HasAmbientTexture;
-			bool    HasEmissiveTexture;
-			bool    HasDiffuseTexture;
-			bool    HasSpecularTexture;
-			bool    HasSpecularPowerTexture;
-			bool    HasNormalTexture;
-			bool    HasBumpTexture;
-			bool    HasOpacityTexture;
+			float   IndexOfRefraction;		
 			float   BumpIntensity;
 			float   SpecularScale;
 			float   AlphaThreshold;
 			
-			UINT GetMaterialIndex();
+			UINT GetMaterialIndex() const;
 
 			void SetMaterialIndex(UINT index);
-
-			std::shared_ptr<GTexture> GetDiffuseTexture() const;
-
-			std::shared_ptr<GTexture> GetNormalTexture() const;
-
-			UINT GetDiffuseMapIndex() const;
-
-			UINT GetNormalMapDiffuseIndex() const;
-
+			
 			MaterialData& GetMaterialConstantData();
 
-			UINT GetIndex() const;
 
 			void SetDirty();
 
-			PsoType::Type GetPSO() const;
+			RenderMode::Mode GetRenderMode() const;
 
-			void SetNormalMap(std::shared_ptr<GTexture> texture, UINT index);
+			void SetMaterialMap(MaterialTypes type, std::shared_ptr<GTexture> texture);
 
-			void SetType(PsoType::Type pso);
+			void SetRenderMode(RenderMode::Mode pso);			
 
-			void SetDiffuseTexture(std::shared_ptr<GTexture> texture, UINT index);
+			Material(std::wstring name, RenderMode::Mode pso = RenderMode::Opaque);
 
-			Material(std::wstring name, PsoType::Type pso = PsoType::Opaque);
+			void InitMaterial(std::shared_ptr<GDevice> device);
 
-			void InitMaterial(GMemory* textureHeap);
+			void Draw(std::shared_ptr<GCommandList> cmdList) const;
+
 
 			void Update();
 

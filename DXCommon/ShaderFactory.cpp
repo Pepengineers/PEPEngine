@@ -49,7 +49,7 @@ namespace DX
 			depthStencilDesc = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 			opaquePSO->SetDepthStencilState(depthStencilDesc);
 
-			auto alphaDropPso = std::make_shared<GraphicPSO>(PsoType::OpaqueAlphaDrop);
+			auto alphaDropPso = std::make_shared<GraphicPSO>(RenderMode::OpaqueAlphaDrop);
 			alphaDropPso->SetPsoDesc(opaquePSO->GetPsoDescription());
 			alphaDropPso->SetShader(shaders["AlphaDrop"].get());
 			rasterizedDesc = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
@@ -57,7 +57,7 @@ namespace DX
 			alphaDropPso->SetRasterizationState(rasterizedDesc);
 
 
-			auto shadowMapPSO = std::make_shared<GraphicPSO>(PsoType::ShadowMapOpaque);
+			auto shadowMapPSO = std::make_shared<GraphicPSO>(RenderMode::ShadowMapOpaque);
 			shadowMapPSO->SetPsoDesc(basePsoDesc);
 			shadowMapPSO->SetShader(shaders["shadowVS"].get());
 			shadowMapPSO->SetShader(shaders["shadowOpaquePS"].get());
@@ -71,12 +71,12 @@ namespace DX
 			shadowMapPSO->SetRasterizationState(rasterizedDesc);
 
 
-			auto shadowMapDropPSO = std::make_shared<GraphicPSO>(PsoType::ShadowMapOpaqueDrop);
+			auto shadowMapDropPSO = std::make_shared<GraphicPSO>(RenderMode::ShadowMapOpaqueDrop);
 			shadowMapDropPSO->SetPsoDesc(shadowMapPSO->GetPsoDescription());
 			shadowMapDropPSO->SetShader(shaders["shadowOpaqueDropPS"].get());
 
 
-			auto drawNormalsPso = std::make_shared<GraphicPSO>(PsoType::DrawNormalsOpaque);
+			auto drawNormalsPso = std::make_shared<GraphicPSO>(RenderMode::DrawNormalsOpaque);
 			drawNormalsPso->SetPsoDesc(basePsoDesc);
 			drawNormalsPso->SetShader(shaders["drawNormalsVS"].get());
 			drawNormalsPso->SetShader(shaders["drawNormalsPS"].get());
@@ -85,14 +85,14 @@ namespace DX
 			drawNormalsPso->SetSampleQuality(0);
 			drawNormalsPso->SetDSVFormat(depthStencilFormat);
 
-			auto drawNormalsDropPso = std::make_shared<GraphicPSO>(PsoType::DrawNormalsOpaqueDrop);
+			auto drawNormalsDropPso = std::make_shared<GraphicPSO>(RenderMode::DrawNormalsOpaqueDrop);
 			drawNormalsDropPso->SetPsoDesc(drawNormalsPso->GetPsoDescription());
 			drawNormalsDropPso->SetShader(shaders["drawNormalsAlphaDropPS"].get());
 			rasterizedDesc = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 			rasterizedDesc.CullMode = D3D12_CULL_MODE_NONE;
 			drawNormalsDropPso->SetRasterizationState(rasterizedDesc);
 
-			auto ssaoPSO = std::make_shared<GraphicPSO>(PsoType::Ssao);
+			auto ssaoPSO = std::make_shared<GraphicPSO>(RenderMode::Ssao);
 			ssaoPSO->SetPsoDesc(basePsoDesc);
 			ssaoPSO->SetInputLayout({nullptr, 0});
 			ssaoPSO->SetRootSignature(ssaoRootSignature->GetRootSignature().Get());
@@ -108,12 +108,12 @@ namespace DX
 			ssaoPSO->SetDepthStencilState(depthStencilDesc);
 
 
-			auto ssaoBlurPSO = std::make_shared<GraphicPSO>(PsoType::SsaoBlur);
+			auto ssaoBlurPSO = std::make_shared<GraphicPSO>(RenderMode::SsaoBlur);
 			ssaoBlurPSO->SetPsoDesc(ssaoPSO->GetPsoDescription());
 			ssaoBlurPSO->SetShader(shaders["ssaoBlurVS"].get());
 			ssaoBlurPSO->SetShader(shaders["ssaoBlurPS"].get());
 
-			auto skyBoxPSO = std::make_shared<GraphicPSO>(PsoType::SkyBox);
+			auto skyBoxPSO = std::make_shared<GraphicPSO>(RenderMode::SkyBox);
 			skyBoxPSO->SetPsoDesc(basePsoDesc);
 			skyBoxPSO->SetShader(shaders["SkyBoxVertex"].get());
 			skyBoxPSO->SetShader(shaders["SkyBoxPixel"].get());
@@ -126,7 +126,7 @@ namespace DX
 			skyBoxPSO->SetRasterizationState(rasterizedDesc);
 
 
-			auto transperentPSO = std::make_shared<GraphicPSO>(PsoType::Transparent);
+			auto transperentPSO = std::make_shared<GraphicPSO>(RenderMode::Transparent);
 			transperentPSO->SetPsoDesc(basePsoDesc);
 			D3D12_RENDER_TARGET_BLEND_DESC transparencyBlendDesc = {};
 			transparencyBlendDesc.BlendEnable = true;
@@ -142,12 +142,12 @@ namespace DX
 			transperentPSO->SetRenderTargetBlendState(0, transparencyBlendDesc);
 
 
-			auto debugPso = std::make_shared<GraphicPSO>(PsoType::Debug);
+			auto debugPso = std::make_shared<GraphicPSO>(RenderMode::Debug);
 			debugPso->SetPsoDesc(basePsoDesc);
 			debugPso->SetShader(shaders["quadVS"].get());
 			debugPso->SetShader(shaders["quadPS"].get());
 
-			auto quadPso = std::make_shared<GraphicPSO>(PsoType::Quad);
+			auto quadPso = std::make_shared<GraphicPSO>(RenderMode::Quad);
 			quadPso->SetPsoDesc(basePsoDesc);
 			quadPso->SetShader(shaders["quadVS"].get());
 			quadPso->SetShader(shaders["quadPS"].get());

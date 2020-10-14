@@ -9,6 +9,8 @@ namespace DX
 	{
 		using namespace DirectX::SimpleMath;
 
+		static const UINT MaxMaterialTexturesMaps = 6;
+		
 		static const DXGI_FORMAT BackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		static const DXGI_FORMAT DepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 		static const DXGI_FORMAT AmbientMapFormat = DXGI_FORMAT_R16_UNORM;
@@ -138,19 +140,16 @@ namespace DX
 			Vector4  Reflectance;
 			float   Opacity;
 			float   SpecularPower;
-			float   IndexOfRefraction;
-			bool    HasAmbientTexture;
-			bool    HasEmissiveTexture;
-			bool    HasDiffuseTexture;
-			bool    HasSpecularTexture;
-			bool    HasSpecularPowerTexture;
-			bool    HasNormalTexture;
-			bool    HasBumpTexture;
-			bool    HasOpacityTexture;
+			float   IndexOfRefraction;			
 			float   BumpIntensity;
 			float   SpecularScale;
 			float   AlphaThreshold;
-			Vector2  Padding;			
+			float DiffuseMapIndex = -1;
+			float NormalMapIndex = -1;
+			float HeightMapIndex = -1;
+			float MetallicMapIndex = -1;
+			float RounghessMapIndex = -1;
+			float AOMapIndex = -1;			
 		};
 
 		class StandardForwardShaderSlot

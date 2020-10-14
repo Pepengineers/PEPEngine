@@ -23,7 +23,7 @@ namespace DX
 			std::shared_ptr<GModel> model;
 
 
-			void Draw(std::shared_ptr<GCommandList> cmdList) override;
+			void PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList) override;
 
 			void Update() override;
 

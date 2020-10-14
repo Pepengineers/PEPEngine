@@ -83,7 +83,7 @@ namespace DX
 			}
 		}
 
-		void CameraController::Draw(std::shared_ptr<GCommandList> cmdList)
+		void CameraController::PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList)
 		{
 		}
 	}

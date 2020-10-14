@@ -20,7 +20,7 @@ namespace DX
 			       GMemory* srvMemory, UINT offset = 0);
 
 		protected:
-			void Draw(std::shared_ptr<GCommandList> cmdList) override;
+			void PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList) override;
 			void Update() override;;;
 		};
 	}

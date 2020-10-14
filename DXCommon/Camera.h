@@ -11,7 +11,7 @@ namespace DX
 
 		class Camera : public Component
 		{
-			void Draw(std::shared_ptr<GCommandList> cmdList) override
+			void PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList) override
 			{
 			};
 			void Update() override;

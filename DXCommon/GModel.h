@@ -19,13 +19,13 @@ namespace DX
 		{
 			std::shared_ptr<NativeModel> model;
 
-			std::vector<std::shared_ptr<GMesh>> gmeshes{};
-
-			custom_vector<std::shared_ptr<Material>> meshesMaterials = MemoryAllocator::CreateVector<std::shared_ptr<
-				Material>>();
+			std::vector<std::shared_ptr<GMesh>> gmeshes{};			
 
 		public:
 
+			custom_vector<std::shared_ptr<Material>> meshesMaterials = MemoryAllocator::CreateVector<std::shared_ptr<
+				Material>>();
+			
 			DirectX::SimpleMath::Matrix scaleMatrix = DirectX::SimpleMath::Matrix::CreateScale(1);
 
 			UINT GetMeshesCount() const;

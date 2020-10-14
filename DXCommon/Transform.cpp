@@ -58,7 +58,7 @@ namespace DX
 			}
 		}
 
-		void Transform::Draw(std::shared_ptr<GCommandList> cmdList)
+		void Transform::PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList)
 		{
 		}
 

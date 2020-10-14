@@ -44,7 +44,7 @@ namespace DX
 		{
 			for (auto&& component : components)
 			{
-				component->Draw(cmdList);
+				component->PopulateDrawCommand(cmdList);
 			}
 		}
 

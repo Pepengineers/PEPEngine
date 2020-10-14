@@ -21,7 +21,7 @@ namespace DX
 			Component();
 
 			virtual void Update() = 0;
-			virtual void Draw(std::shared_ptr<GCommandList> cmdList) = 0;
+			virtual void PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList) = 0;
 		};
 	}
 }

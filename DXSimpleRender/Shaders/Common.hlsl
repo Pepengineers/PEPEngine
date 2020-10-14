@@ -17,13 +17,13 @@ struct ObjectData
 {
 	float4x4 World;
 	float4x4 TexTransform;
-	uint materialIndex;
+	uint MaterialIndex;
 	uint gObjPad0;
 	uint gObjPad1;
 	uint gObjPad2;
 };
 
-ConstantBuffer<ObjectData> Object : register(b0);
+ConstantBuffer<ObjectData> ObjectBuffer : register(b0);
 
 struct WorldData
 {
@@ -51,7 +51,7 @@ struct WorldData
 	float2 cbPerObjectPad2;
 };
 
-ConstantBuffer<WorldData> World : register(b1);
+ConstantBuffer<WorldData> WorldBuffer : register(b1);
 
 struct MaterialData
 {
@@ -64,21 +64,18 @@ struct MaterialData
 	float   Opacity;
 	float   SpecularPower;
 	float   IndexOfRefraction;
-	bool    HasAmbientTexture;
-	bool    HasEmissiveTexture;
-	bool    HasDiffuseTexture;
-	bool    HasSpecularTexture;
-	bool    HasSpecularPowerTexture;
-	bool    HasNormalTexture;
-	bool    HasBumpTexture;
-	bool    HasOpacityTexture;
 	float   BumpIntensity;
 	float   SpecularScale;
 	float   AlphaThreshold;
-	float2  Padding;
+	float   DiffuseMapIndex;
+	float   NormalMapIndex;
+	float   HeightMapIndex;
+	float   MetallicMapIndex;
+	float   RoughnessMapIndex;
+	float   AOMapIndex;
 };
 
-ConstantBuffer<MaterialData> Materials : register(b0, space1);
+StructuredBuffer<MaterialData> Materials : register(t0, space1);
 
 struct LightData
 {
@@ -96,7 +93,9 @@ struct LightData
 	float2  Padding;
 };
 
-ConstantBuffer<LightData> Lights : register(b1, space1);
+StructuredBuffer<LightData> Lights : register(t1, space1);
+
+Texture2D MaterialTexture[] : register(t0);
 
 SamplerState gsamPointWrap : register(s0);
 SamplerState gsamPointClamp : register(s1);

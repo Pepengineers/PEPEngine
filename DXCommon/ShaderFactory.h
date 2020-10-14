@@ -17,8 +17,8 @@ namespace DX
 		{
 			static custom_unordered_map<std::string, std::shared_ptr<GShader>> shaders;
 
-			custom_unordered_map<PsoType::Type, std::shared_ptr<GraphicPSO>> PSO = MemoryAllocator::CreateUnorderedMap<
-				PsoType::Type, std::shared_ptr<GraphicPSO>>();
+			custom_unordered_map<RenderMode::Mode, std::shared_ptr<GraphicPSO>> PSO = MemoryAllocator::CreateUnorderedMap<
+				RenderMode::Mode, std::shared_ptr<GraphicPSO>>();
 
 		public:
 
@@ -32,7 +32,7 @@ namespace DX
 
 			static std::shared_ptr<GShader> GetShader(std::string name);
 
-			std::shared_ptr<GraphicPSO> GetPSO(PsoType::Type type)
+			std::shared_ptr<GraphicPSO> GetPSO(RenderMode::Mode type)
 			{
 				return PSO[type];
 			}

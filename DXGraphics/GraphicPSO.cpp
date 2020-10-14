@@ -8,7 +8,7 @@ namespace DX
 {
 	namespace Graphics
 	{
-		GraphicPSO::GraphicPSO(PsoType::Type type) : type(type)
+		GraphicPSO::GraphicPSO(RenderMode::Mode type) : type(type)
 		{
 			ZeroMemory(&psoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
 			psoDesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
@@ -136,7 +136,7 @@ namespace DX
 			}
 		}
 
-		PsoType::Type GraphicPSO::GetType() const
+		RenderMode::Mode GraphicPSO::GetType() const
 		{
 			return type;
 		}

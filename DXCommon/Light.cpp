@@ -28,7 +28,7 @@ namespace DX
 			}
 		}
 
-		void Light::Draw(std::shared_ptr<GCommandList> cmdList)
+		void Light::PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList)
 		{
 		}
 

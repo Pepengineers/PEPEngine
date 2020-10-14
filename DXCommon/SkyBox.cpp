@@ -29,7 +29,7 @@ namespace DX
 			skyMapTexture.CreateShaderResourceView(&srvDesc, srvMemory, offset);
 		}
 
-		void SkyBox::Draw(std::shared_ptr<GCommandList> cmdList)
+		void SkyBox::PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList)
 		{
 			cmdList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(
 				StandardForwardShaderSlot::SkyMap, gpuTextureHandle);

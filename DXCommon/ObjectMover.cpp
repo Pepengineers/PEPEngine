@@ -11,7 +11,7 @@ namespace DX
 {
 	namespace Common
 	{
-		void ObjectMover::Draw(std::shared_ptr<GCommandList> cmdList)
+		void ObjectMover::PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList)
 		{
 		}
 

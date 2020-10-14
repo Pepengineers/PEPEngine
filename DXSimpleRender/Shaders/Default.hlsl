@@ -16,7 +16,7 @@ struct VertexOut
 	float3 PosW : POSITION2;
 	float3 NormalW : NORMAL;
 	float3 TangentW : TANGENT;
-	float2 TexC : TEXCOORD;
+	float2 UV : TEXCOORD;
 };
 
 
@@ -24,20 +24,20 @@ VertexOut VS(VertexIn vin)
 {
 	VertexOut vout = (VertexOut)0.0f;
 	
-	float4 posW = mul(float4(vin.PosL, 1.0f), Object.World);
+	float4 posW = mul(float4(vin.PosL, 1.0f), ObjectBuffer.World);
 	vout.PosW = posW.xyz;
 
-	vout.NormalW = mul(vin.NormalL, (float3x3)Object.World);
-	vout.PosView = mul(posW, World.ViewProj);
-	vout.TangentW = mul(vin.TangentU, (float3x3)Object.World);
-	float4 texC = mul(float4(vin.TexC, 0.0f, 1.0f), Object.TexTransform);
-	vout.TexC = texC.xy;
+	vout.NormalW = mul(vin.NormalL, (float3x3)ObjectBuffer.World);
+	vout.PosView = mul(posW, WorldBuffer.ViewProj);
+	vout.TangentW = mul(vin.TangentU, (float3x3)ObjectBuffer.World);
+	float4 texC = mul(float4(vin.TexC, 0.0f, 1.0f), ObjectBuffer.TexTransform);
+	vout.UV = texC.xy;
 
 	// Generate projective tex-coords to project SSAO map onto scene.
-	vout.SsaoPosH = mul(posW, World.ViewProjTex);
+	vout.SsaoPosH = mul(posW, WorldBuffer.ViewProjTex);
 
 	// Generate projective tex-coords to project shadow map onto scene.
-	vout.ShadowPosH = mul(posW, World.ShadowTransform);
+	vout.ShadowPosH = mul(posW, WorldBuffer.ShadowTransform);
 
 	return vout;
 }
@@ -53,10 +53,20 @@ struct PixelShaderOutput
 
 PixelShaderOutput PS(VertexOut pin)
 {
+	MaterialData material = Materials[ObjectBuffer.MaterialIndex];
+	
+	float4 baseColor = MaterialTexture[material.DiffuseMapIndex].Sample(gsamAnisotropicWrap, pin.UV);
+
+	pin.NormalW = normalize(pin.NormalW);	
+	float4 NormalMapColor = MaterialTexture[material.NormalMapIndex].Sample(gsamAnisotropicWrap, pin.UV);
+
+	float3 bumpedNormalW = NormalSampleToWorldSpace(NormalMapColor.rgb, pin.NormalW, pin.TangentW);
+
+	
 	PixelShaderOutput o;
-	o.LightAccumulation = float4(1.0,1.0,1.0,1.0);
-	o.Diffuse = float4(1.0,0.0,0.0,1.0);
+	o.LightAccumulation = float4(1.0, 1.0, 0.0, 1.0);
+	o.Diffuse = baseColor;
 	o.Specular = float4(1.0,1.0,0.0,1.0);
-	o.NormalVS = float4(1.0,0.0,1.0,1.0);
+	o.NormalVS = float4(bumpedNormalW, 0.0);
 	return o;
 }

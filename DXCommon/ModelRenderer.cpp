@@ -10,14 +10,16 @@ namespace DX
 {
 	namespace Common
 	{
-		void ModelRenderer::Draw(std::shared_ptr<GCommandList> cmdList)
+		void ModelRenderer::PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList)
 		{
 			for (int i = 0; i < model->GetMeshesCount(); ++i)
 			{
-				const auto mesh = model->GetMesh(i);
+				model->meshesMaterials[i]->Draw(cmdList);
 
 				cmdList->SetRootConstantBufferView(StandardForwardShaderSlot::ObjectData,
-				                                   *modelDataBuffer, i);
+					*modelDataBuffer, i);
+				
+				const auto mesh = model->GetMesh(i);				
 				mesh->Draw(cmdList);
 			}
 		}
@@ -32,7 +34,7 @@ namespace DX
 				objectWorldData.World = (transform->GetWorldMatrix() * model->scaleMatrix).Transpose();
 				for (int i = 0; i < model->GetMeshesCount(); ++i)
 				{
-					objectWorldData.MaterialIndex = model->GetMeshMaterial(i)->GetIndex();
+					objectWorldData.MaterialIndex = model->GetMeshMaterial(i)->GetMaterialIndex();
 					modelDataBuffer->CopyData(i, objectWorldData);
 				}
 			}

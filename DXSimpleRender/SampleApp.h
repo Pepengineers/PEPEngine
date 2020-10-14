@@ -48,10 +48,9 @@ private:
 
 	GTexture depthBuffer;
 
-
+	
 	GMemory dsvMemory;
 	GMemory rtvMemory;
-	GMemory srvMemory;
 	
 	GMemory defferedRTVMemory;
 	GMemory defferedSRVMemory;

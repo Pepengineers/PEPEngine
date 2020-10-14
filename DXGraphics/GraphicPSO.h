@@ -11,10 +11,10 @@ namespace DX
 {
 	namespace Graphics
 	{
-		class PsoType
+		class RenderMode
 		{
 		public:
-			enum Type
+			enum Mode
 			{
 				SkyBox,
 				Opaque,
@@ -41,14 +41,14 @@ namespace DX
 		class GraphicPSO
 		{
 			ComPtr<ID3D12PipelineState> pipelineStateObject;
-			PsoType::Type type;
+			RenderMode::Mode type;
 			D3D12_GRAPHICS_PIPELINE_STATE_DESC psoDesc{};
 
 			bool isInitial = false;
 
 		public:
 
-			GraphicPSO(PsoType::Type type = PsoType::Opaque);
+			GraphicPSO(RenderMode::Mode type = RenderMode::Opaque);
 
 			ComPtr<ID3D12PipelineState> GetPSO() const;
 
@@ -84,7 +84,7 @@ namespace DX
 
 			void SetShader(GShader* shader);
 
-			PsoType::Type GetType() const;
+			RenderMode::Mode GetType() const;
 
 			void Initialize(std::shared_ptr<GDevice> device);
 		};

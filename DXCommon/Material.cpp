@@ -10,7 +10,7 @@ namespace DX
 	{
 		UINT Material::materialIndexGlobal = 0;
 
-		UINT Material::GetMaterialIndex()
+		UINT Material::GetMaterialIndex() const
 		{
 			return materialIndex;
 		}
@@ -20,34 +20,9 @@ namespace DX
 			materialIndex = index;
 		}
 
-		std::shared_ptr<GTexture> Material::GetDiffuseTexture() const
-		{
-			return diffuseMap;
-		}
-
-		std::shared_ptr<GTexture> Material::GetNormalTexture() const
-		{
-			return normalMap;
-		}
-
-		UINT Material::GetDiffuseMapIndex() const
-		{
-			return DiffuseMapIndex;
-		}
-
-		UINT Material::GetNormalMapDiffuseIndex() const
-		{
-			return NormalMapIndex;
-		}
-
 		MaterialData& Material::GetMaterialConstantData()
 		{
 			return matConstants;
-		}
-
-		UINT Material::GetIndex() const
-		{
-			return materialIndex;
 		}
 
 		void Material::SetDirty()
@@ -55,45 +30,54 @@ namespace DX
 			NumFramesDirty = globalCountFrameResources;
 		}
 
-		void Material::SetNormalMap(std::shared_ptr<GTexture> texture, UINT index)
-		{
-			normalMap = texture;
-			NormalMapIndex = index;
-		}
-
-		void Material::SetType(PsoType::Type pso)
+		void Material::SetRenderMode(RenderMode::Mode pso)
 		{
 			this->type = pso;
 		}
 
-		PsoType::Type Material::GetPSO() const
+		RenderMode::Mode Material::GetRenderMode() const
 		{
 			return type;
 		}
 
-		void Material::SetDiffuseTexture(std::shared_ptr<GTexture> texture, UINT index)
+		void Material::SetMaterialMap(MaterialTypes type, std::shared_ptr<GTexture> texture)
 		{
-			diffuseMap = texture;
-			DiffuseMapIndex = index;
-		}
+			const auto it = slots.find(type);
 
-		Material::Material(std::wstring name, PsoType::Type pso) : Name(std::move(name)), type(pso)
+			if (it == slots.end())
+			{
+				materialMaps.push_back(texture);
+				slots[type] = materialMaps.size() - 1;
+			}
+			else
+			{
+				materialMaps[it->second] = texture;
+			}
+		}	
+
+		Material::Material(std::wstring name, RenderMode::Mode pso) : Name(std::move(name)), type(pso)
 		{
 			materialIndex = materialIndexGlobal++;
 		}
 
 
-		void Material::InitMaterial(GMemory* textureHeap)
+		void Material::InitMaterial(std::shared_ptr<GDevice> device)
 		{
+			if(textureMapsSRVMemory.IsNull())
+			{
+				textureMapsSRVMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, MaxMaterialTexturesMaps);
+			}
+
+			
 			D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 			srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
-			//TODO: Подумать как можно от этого избавиться, и работать всегда только с индексами
-			if (diffuseMap)
+			for (auto && slotPair : slots)
 			{
-				auto desc = diffuseMap->GetD3D12Resource()->GetDesc();
-
-				if (diffuseMap)
+				auto map = materialMaps[slotPair.second];
+				auto desc = map->GetD3D12ResourceDesc();
+				
+				if(slotPair.first == BaseColor)
 				{
 					srvDesc.Format = GetSRGBFormat(desc.Format);
 				}
@@ -101,37 +85,21 @@ namespace DX
 				{
 					srvDesc.Format = (desc.Format);
 				}
-
-
-				switch (type)
-				{
-				case PsoType::AlphaSprites:
-					srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2DARRAY;
-					srvDesc.Texture2DArray.MostDetailedMip = 0;
-					srvDesc.Texture2DArray.MipLevels = -1;
-					srvDesc.Texture2DArray.FirstArraySlice = 0;
-					srvDesc.Texture2DArray.ArraySize = desc.DepthOrArraySize;
-					break;
-				default:
-					{
-						srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-						srvDesc.Texture2D.MostDetailedMip = 0;
-						srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
-						srvDesc.Texture2D.MipLevels = desc.MipLevels;
-					}
-				}
-				diffuseMap->CreateShaderResourceView(&srvDesc, textureHeap, DiffuseMapIndex);
-			}
-
-			if (normalMap)
-			{
-				srvDesc.Format = normalMap->GetD3D12Resource()->GetDesc().Format;
+				
 				srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
 				srvDesc.Texture2D.MostDetailedMip = 0;
 				srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
-				srvDesc.Texture2D.MipLevels = normalMap->GetD3D12Resource()->GetDesc().MipLevels;
-				normalMap->CreateShaderResourceView(&srvDesc, textureHeap, NormalMapIndex);
-			}
+				srvDesc.Texture2D.MipLevels = desc.MipLevels;
+
+				map->CreateShaderResourceView(&srvDesc, &textureMapsSRVMemory, slotPair.second);
+			}			
+			
+		}
+
+		void Material::Draw(std::shared_ptr<GCommandList> cmdList) const
+		{
+			cmdList->SetGMemory(&textureMapsSRVMemory);
+			cmdList->SetRootDescriptorTable(4, &textureMapsSRVMemory);
 		}
 
 		void Material::Update()
@@ -147,17 +115,30 @@ namespace DX
 				matConstants.Opacity = Opacity;
 				matConstants.SpecularPower = SpecularPower;
 				matConstants.IndexOfRefraction = IndexOfRefraction;
-				matConstants.HasAmbientTexture = false;
-				matConstants.HasEmissiveTexture = false;
-				matConstants.HasDiffuseTexture  = diffuseMap != nullptr;
-				matConstants.HasSpecularTexture = false;
-				matConstants.HasSpecularPowerTexture = false;
-				matConstants.HasNormalTexture = normalMap != nullptr;
-				matConstants.HasBumpTexture = false;
-				matConstants.HasOpacityTexture = false;
 				matConstants.BumpIntensity = BumpIntensity;
 				matConstants.SpecularScale = SpecularScale;
 				matConstants.AlphaThreshold = AlphaThreshold;
+				
+				for (auto& [type, Index] : slots)
+				{
+					switch (type)
+					{
+					case BaseColor: matConstants.DiffuseMapIndex = Index;
+						break;
+					case NormalMap: matConstants.NormalMapIndex = Index;
+						break;
+					case HeightMap: matConstants.HeightMapIndex = Index;
+						break;
+					case MetallicMap: matConstants.MetallicMapIndex = Index;
+						break;
+					case RoughnessMap: matConstants.RounghessMapIndex = Index;
+						break;
+					case AOMap: matConstants.AOMapIndex = Index;
+						break;
+					default: assert("WTF? Is it Material?");
+					}
+				}	
+
 				NumFramesDirty--;
 			}
 		}
