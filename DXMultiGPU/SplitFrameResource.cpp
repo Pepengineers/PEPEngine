@@ -15,7 +15,7 @@ SplitFrameResource::SplitFrameResource(std::shared_ptr<DX::Graphics::GDevice>* d
 			std::make_shared<DX::Graphics::ConstantBuffer<DX::Common::SsaoConstants>>(
 				devices[i], 1, devices[i]->GetName() + L" SSAO Path Data"));
 		MaterialBuffers.push_back(
-			std::make_shared<DX::Graphics::UploadBuffer<DX::Common::MaterialConstants>>(
+			std::make_shared<DX::Graphics::UploadBuffer<DX::Common::MaterialData>>(
 				devices[i], materialCount, devices[i]->GetName() + L" Materials Data"));
 		RenderTargetViewMemory.push_back(devices[i]->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_RTV));
 	}

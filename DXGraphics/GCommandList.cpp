@@ -558,7 +558,7 @@ namespace DX
 		}
 
 		void GCommandList::SetRenderTargets(size_t RTCount, GMemory* rtvMemory, size_t rtvOffset, GMemory* dsvMemory,
-		                                    size_t dsvOffset) const
+		                                    size_t dsvOffset, BOOL isSingleHandle) const
 		{
 			auto* rtvPtr = (rtvMemory == nullptr || rtvMemory->IsNull())
 				               ? nullptr
@@ -568,7 +568,7 @@ namespace DX
 				               ? nullptr
 				               : &dsvMemory->GetCPUHandle(dsvOffset);
 
-			cmdList->OMSetRenderTargets(RTCount, rtvPtr, RTCount == 1, dsvPtr);
+			cmdList->OMSetRenderTargets(RTCount, rtvPtr, isSingleHandle, dsvPtr);
 		}
 
 		void GCommandList::ClearDepthStencil(GMemory* dsvMemory, size_t dsvOffset, D3D12_CLEAR_FLAGS flags,

@@ -8,7 +8,7 @@ FrameResource::FrameResource(std::shared_ptr<DX::Graphics::GDevice> primeDevice,
 		primeDevice, passCount, L"Forward Path Data");
 	SsaoConstantBuffer = std::make_shared<DX::Graphics::ConstantBuffer<DX::Common::SsaoConstants>>(
 		primeDevice, 1, L"SSAO Path Data");
-	MaterialBuffer = std::make_shared<DX::Graphics::UploadBuffer<DX::Common::MaterialConstants>>(
+	MaterialBuffer = std::make_shared<DX::Graphics::UploadBuffer<DX::Common::MaterialData>>(
 		primeDevice, materialCount, L"Materials Data");
 }
 

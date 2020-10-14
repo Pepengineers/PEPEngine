@@ -19,9 +19,10 @@ bool SampleApp::Initialize()
 	device = GDeviceFactory::GetDevice();
 
 	dsvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
-	rtvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 3);
+	rtvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, globalCountFrameResources);
+	defferedRTVMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_RTV,  4);
 	srvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, assetLoader.GetLoadTexturesCount());
-
+	defferedSRVMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 4);
 
 	if (!D3DApp::Initialize())
 	{
@@ -40,44 +41,21 @@ bool SampleApp::Initialize()
 
 
 	rootSignature = std::make_shared<GRootSignature>();
-
-	CD3DX12_DESCRIPTOR_RANGE texParam[4];
-	texParam[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, StandardShaderSlot::SkyMap - 3, 0); //SkyMap
-	texParam[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, StandardShaderSlot::ShadowMap - 3, 0); //ShadowMap
-	texParam[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, StandardShaderSlot::AmbientMap - 3, 0); //SsaoMap
-	texParam[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, assetLoader.GetLoadTexturesCount(),
-	                 StandardShaderSlot::TexturesMap - 3, 0);
-
+	
 
 	rootSignature->AddConstantBufferParameter(0);
 	rootSignature->AddConstantBufferParameter(1);
-	rootSignature->AddConstantBufferParameter(0, 1);
-	rootSignature->AddDescriptorParameter(&texParam[0], 1, D3D12_SHADER_VISIBILITY_PIXEL);
-	rootSignature->AddDescriptorParameter(&texParam[1], 1, D3D12_SHADER_VISIBILITY_PIXEL);
-	rootSignature->AddDescriptorParameter(&texParam[2], 1, D3D12_SHADER_VISIBILITY_PIXEL);
-	rootSignature->AddDescriptorParameter(&texParam[3], 1, D3D12_SHADER_VISIBILITY_PIXEL);
+	rootSignature->AddShaderResourceView(0, 1);
+	rootSignature->AddShaderResourceView(0, 2);
 
 	rootSignature->Initialize(device);
-
-
-	const D3D_SHADER_MACRO defines[] =
-	{
-		"FOG", "1",
-		nullptr, nullptr
-	};
-
-	const D3D_SHADER_MACRO alphaTestDefines[] =
-	{
-		"FOG", "1",
-		"ALPHA_TEST", "1",
-		nullptr, nullptr
-	};
+		
 
 	shaders[L"StandardVertex"] = std::move(
 		std::make_unique<GShader>(L"Shaders\\Default.hlsl", VertexShader, nullptr, "VS", "vs_5_1"));
 
 	shaders[L"OpaquePixel"] = std::move(
-		std::make_unique<GShader>(L"Shaders\\Default.hlsl", PixelShader, defines, "PS", "ps_5_1"));
+		std::make_unique<GShader>(L"Shaders\\Default.hlsl", PixelShader, nullptr, "PS", "ps_5_1"));
 
 	for (auto&& sh : shaders)
 	{
@@ -116,8 +94,11 @@ bool SampleApp::Initialize()
 	basePsoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 	basePsoDesc.SampleMask = UINT_MAX;
 	basePsoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	basePsoDesc.NumRenderTargets = 1;
+	basePsoDesc.NumRenderTargets = 4;
 	basePsoDesc.RTVFormats[0] = GetSRGBFormat(DXGI_FORMAT_R8G8B8A8_UNORM);
+	basePsoDesc.RTVFormats[1] = GetSRGBFormat(DXGI_FORMAT_R8G8B8A8_UNORM);
+	basePsoDesc.RTVFormats[2] = GetSRGBFormat(DXGI_FORMAT_R8G8B8A8_UNORM);
+	basePsoDesc.RTVFormats[3] = GetSRGBFormat(DXGI_FORMAT_R32G32B32A32_FLOAT);
 	basePsoDesc.SampleDesc.Count = isM4xMsaa ? 4 : 1;
 	basePsoDesc.SampleDesc.Quality = isM4xMsaa ? (m4xMsaaQuality - 1) : 0;
 	basePsoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -127,9 +108,7 @@ bool SampleApp::Initialize()
 	opaque->Initialize(device);
 
 	auto sun1 = std::make_unique<GameObject>("Directional Light");
-	auto light = std::make_shared<Light>(Directional);
-	light->Direction({0.57735f, -0.57735f, 0.57735f});
-	light->Strength({0.8f, 0.8f, 0.8f});
+	auto light = std::make_shared<Light>();
 	sun1->AddComponent(light);
 	gameObjects.push_back(std::move(sun1));
 
@@ -160,11 +139,7 @@ bool SampleApp::Initialize()
 	{
 		pair->InitMaterial(&srvMemory);
 	}
-
-	for (int i = 0; i < globalCountFrameResources; ++i)
-	{
-		frameResources.push_back(std::make_shared<FrameResource>(device, 1));
-	}
+		
 
 	for (auto&& item : gameObjects)
 	{
@@ -180,6 +155,11 @@ bool SampleApp::Initialize()
 			camera = std::unique_ptr<Camera>(cam.get());
 		}
 	}
+
+	for (int i = 0; i < globalCountFrameResources; ++i)
+	{
+		frameResources.push_back(std::make_shared<FrameResource>(device, 1, assetLoader.GetMaterials().size(), lights.size()));
+	}
 }
 
 
@@ -187,9 +167,10 @@ void SampleApp::Update(const GameTimer& gt)
 {
 	auto renderQueue = device->GetCommandQueue();
 
-	currentFrameResource = frameResources[MainWindow->GetCurrentBackBufferIndex()];
+	currentFrameResourceIndex = (currentFrameResourceIndex + 1) % globalCountFrameResources;
+	currentFrameResource = frameResources[currentFrameResourceIndex];
 
-	if (currentFrameResource->FenceValue != 0 && renderQueue->IsFinish(currentFrameResource->FenceValue))
+	if (currentFrameResource->FenceValue != 0 && !renderQueue->IsFinish(currentFrameResource->FenceValue))
 	{
 		renderQueue->WaitForFenceValue(currentFrameResource->FenceValue);
 	}
@@ -232,21 +213,24 @@ void SampleApp::Update(const GameTimer& gt)
 	mainPassCB.TotalTime = gt.TotalTime();
 	mainPassCB.DeltaTime = gt.DeltaTime();
 	mainPassCB.AmbientLight = Vector4{0.25f, 0.25f, 0.35f, 1.0f};
-
-	for (int i = 0; i < MaxLights; ++i)
-	{
-		if (i < lights.size())
-		{
-			mainPassCB.Lights[i] = lights[i]->GetData();
-		}
-		else
-		{
-			break;
-		}
-	}
-
+	
 	auto currentPassCB = currentFrameResource->PassConstantBuffer.get();
 	currentPassCB->CopyData(0, mainPassCB);
+
+	auto currentMaterialBuffer = currentFrameResource->MaterialsBuffer.get();
+	for (auto&& material : assetLoader.GetMaterials())
+	{
+		material->Update();
+		auto constantData = material->GetMaterialConstantData();
+		currentMaterialBuffer->CopyData(material->GetIndex(), constantData);
+	}
+
+	auto currentLightsBuffer = currentFrameResource->LightsBuffer.get();
+	for (int i = 0; i < lights.size(); ++i)
+	{
+		auto lightData = lights[i]->GetData();
+		currentLightsBuffer->CopyData(i, lightData);
+	}
 }
 
 void SampleApp::Draw(const GameTimer& gt)
@@ -256,29 +240,47 @@ void SampleApp::Draw(const GameTimer& gt)
 	auto renderQueue = device->GetCommandQueue();
 	auto cmdList = renderQueue->GetCommandList();
 
-	cmdList->SetGMemory(&srvMemory);
 	cmdList->SetViewports(&viewport, 1);
 	cmdList->SetScissorRects(&rect, 1);
 
 	cmdList->TransitionBarrier(MainWindow->GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+	for (auto && texture : defferedGBufferTextures)
+	{
+		cmdList->TransitionBarrier(texture, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	}
+	
 	cmdList->TransitionBarrier(depthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 	cmdList->FlushResourceBarriers();
 
+	cmdList->SetRenderTargets(defferedGBufferTextures.size(), &defferedRTVMemory, 0, &dsvMemory, 0, true);
+	
+	cmdList->ClearRenderTarget(&rtvMemory, currentFrameResourceIndex, DirectX::Colors::Yellow);
 
-	cmdList->SetRenderTargets(1, &rtvMemory, MainWindow->GetCurrentBackBufferIndex(), &dsvMemory);
-	cmdList->ClearRenderTarget(&rtvMemory, MainWindow->GetCurrentBackBufferIndex(), DirectX::Colors::Yellow);
+	for (int i = 0; i < defferedGBufferTextures.size(); ++i)
+	{
+		cmdList->ClearRenderTarget(&defferedRTVMemory, i, DirectX::Colors::Green);
+	}
+	
 	cmdList->ClearDepthStencil(&dsvMemory, 0);
 
 	cmdList->SetRootSignature(rootSignature.get());
 	cmdList->SetRootConstantBufferView(1, *currentFrameResource->PassConstantBuffer);
-	cmdList->SetPipelineState(*opaque.get());
+	cmdList->SetRootShaderResourceView(2, *currentFrameResource->MaterialsBuffer);
+	cmdList->SetRootShaderResourceView(3, *currentFrameResource->LightsBuffer);
+	
+	cmdList->SetPipelineState(*opaque.get());	
 	for (auto&& object : gameObjects)
 	{
 		object->Draw(cmdList);
 	}
 
+	cmdList->CopyResource(MainWindow->GetCurrentBackBuffer(), defferedGBufferTextures[0]);
 
 	cmdList->TransitionBarrier(MainWindow->GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT);
+	for (auto&& texture : defferedGBufferTextures)
+	{
+		cmdList->TransitionBarrier(texture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	}
 	cmdList->TransitionBarrier(depthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
 	cmdList->FlushResourceBarriers();
 
@@ -291,6 +293,8 @@ void SampleApp::OnResize()
 {
 	D3DApp::OnResize();
 
+	currentFrameResourceIndex = MainWnd()->GetCurrentBackBufferIndex() - 1;
+	
 	viewport.Height = static_cast<float>(MainWindow->GetClientHeight());
 	viewport.Width = static_cast<float>(MainWindow->GetClientWidth());
 	viewport.MinDepth = 0.0f;
@@ -298,19 +302,7 @@ void SampleApp::OnResize()
 	viewport.TopLeftX = 0;
 	viewport.TopLeftY = 0;
 	rect = {0, 0, MainWindow->GetClientWidth(), MainWindow->GetClientHeight()};
-
-
-	auto backBufferDesc = MainWindow->GetCurrentBackBuffer().GetD3D12ResourceDesc();
-
-	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
-	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-	rtvDesc.Format = GetSRGBFormat(backBufferDesc.Format);
-
-	for (int i = 0; i < globalCountFrameResources; ++i)
-	{
-		MainWindow->GetBackBuffer(i).CreateRenderTargetView(&rtvDesc, &rtvMemory, i);
-	}
-
+	
 	if (!depthBuffer.IsValid())
 	{
 		D3D12_RESOURCE_DESC depthStencilDesc;
@@ -338,14 +330,69 @@ void SampleApp::OnResize()
 		GTexture::Resize(depthBuffer, MainWindow->GetClientWidth(), MainWindow->GetClientHeight(), 1);
 	}
 
+	auto backBufferDesc = MainWindow->GetCurrentBackBuffer().GetD3D12ResourceDesc();	
+	
+	if (defferedGBufferTextures.size() < 1)
+	{
+		auto desc = backBufferDesc;	
+		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+
+		defferedGBufferTextures.push_back((GTexture(device, desc, L"Deffered LightAccumulation Map", TextureUsage::RenderTarget)));
+
+		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+
+		defferedGBufferTextures.push_back((GTexture(device, desc, L"Deffered Diffuse Map", TextureUsage::RenderTarget)));
+
+		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+
+		defferedGBufferTextures.push_back((GTexture(device, desc, L"Deffered Specular Map", TextureUsage::RenderTarget)));
+
+		desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+
+		defferedGBufferTextures.push_back((GTexture(device, desc, L"Deffered Normal Map", TextureUsage::RenderTarget)));
+	}
+	else
+	{
+		for (auto&& texture : defferedGBufferTextures)
+		{
+			GTexture::Resize(texture, MainWindow->GetClientWidth(), MainWindow->GetClientHeight(), 1);
+		}
+	}
+
+	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+	rtvDesc.Format = GetSRGBFormat(backBufferDesc.Format);
+
+	for (int i = 0; i < globalCountFrameResources; ++i)
+	{
+		MainWindow->GetBackBuffer(i).CreateRenderTargetView(&rtvDesc, &rtvMemory, i);
+	}
 
 	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
 	dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
 	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	dsvDesc.Texture2D.MipSlice = 0;
-
 	depthBuffer.CreateDepthStencilView(&dsvDesc, &dsvMemory);
+
+	
+	D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+	srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+	srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+	srvDesc.Texture2D.MostDetailedMip = 0;
+	srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
+
+	for (int i = 0; i < defferedGBufferTextures.size(); ++i)
+	{
+		auto desc = defferedGBufferTextures[i].GetD3D12ResourceDesc();
+		srvDesc.Texture2D.MipLevels = desc.MipLevels;
+		srvDesc.Format = desc.Format;
+		rtvDesc.Format = desc.Format;
+
+		defferedGBufferTextures[i].CreateShaderResourceView(&srvDesc, &defferedSRVMemory, i);
+		defferedGBufferTextures[i].CreateRenderTargetView(&rtvDesc, &defferedRTVMemory, i);
+	}
 }
 
 LRESULT SampleApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)

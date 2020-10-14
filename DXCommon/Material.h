@@ -26,7 +26,7 @@ namespace DX
 
 			PsoType::Type type = PsoType::Opaque;
 
-			MaterialConstants matConstants{};
+			MaterialData matConstants{};
 
 			UINT NumFramesDirty = globalCountFrameResources;
 
@@ -42,6 +42,27 @@ namespace DX
 
 		public:
 
+			Vector4  GlobalAmbient;
+			Vector4  AmbientColor;
+			Vector4  EmissiveColor;
+			Vector4  DiffuseColor;
+			Vector4  SpecularColor;
+			Vector4  Reflectance;
+			float   Opacity;
+			float   SpecularPower;
+			float   IndexOfRefraction;
+			bool    HasAmbientTexture;
+			bool    HasEmissiveTexture;
+			bool    HasDiffuseTexture;
+			bool    HasSpecularTexture;
+			bool    HasSpecularPowerTexture;
+			bool    HasNormalTexture;
+			bool    HasBumpTexture;
+			bool    HasOpacityTexture;
+			float   BumpIntensity;
+			float   SpecularScale;
+			float   AlphaThreshold;
+			
 			UINT GetMaterialIndex();
 
 			void SetMaterialIndex(UINT index);
@@ -54,7 +75,7 @@ namespace DX
 
 			UINT GetNormalMapDiffuseIndex() const;
 
-			MaterialConstants& GetMaterialConstantData();
+			MaterialData& GetMaterialConstantData();
 
 			UINT GetIndex() const;
 
@@ -75,11 +96,6 @@ namespace DX
 			void Update();
 
 			std::wstring& GetName();
-
-			Vector4 DiffuseAlbedo = DirectX::XMFLOAT4(DirectX::Colors::White);
-			Vector3 FresnelR0 = {0.01f, 0.01f, 0.01f};
-			float Roughness = .25f;
-			Matrix MatTransform = Matrix::Identity;
 		};
 	}
 }

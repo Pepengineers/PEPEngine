@@ -247,6 +247,8 @@ namespace DX
 		                                                        std::shared_ptr<GCommandList> commandList,
 		                                                        TextureUsage usage)
 		{
+			HRESULT hr = CoInitializeEx(nullptr, COINITBASE_MULTITHREADED);		
+
 			std::filesystem::path filePath(filepath);
 			if (!exists(filePath))
 			{

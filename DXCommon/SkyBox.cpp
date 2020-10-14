@@ -32,13 +32,13 @@ namespace DX
 		void SkyBox::Draw(std::shared_ptr<GCommandList> cmdList)
 		{
 			cmdList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(
-				StandardShaderSlot::SkyMap, gpuTextureHandle);
+				StandardForwardShaderSlot::SkyMap, gpuTextureHandle);
 
 			for (int i = 0; i < model->GetMeshesCount(); ++i)
 			{
 				const auto mesh = model->GetMesh(i);
 
-				cmdList->SetRootConstantBufferView(StandardShaderSlot::ObjectData,
+				cmdList->SetRootConstantBufferView(StandardForwardShaderSlot::ObjectData,
 				                                   *modelDataBuffer, i);
 				mesh->Draw(cmdList);
 			}

@@ -16,7 +16,7 @@ namespace DX
 			{
 				const auto mesh = model->GetMesh(i);
 
-				cmdList->SetRootConstantBufferView(StandardShaderSlot::ObjectData,
+				cmdList->SetRootConstantBufferView(StandardForwardShaderSlot::ObjectData,
 				                                   *modelDataBuffer, i);
 				mesh->Draw(cmdList);
 			}

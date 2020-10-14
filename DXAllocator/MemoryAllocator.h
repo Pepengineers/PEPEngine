@@ -7,7 +7,7 @@ namespace DX
 	{
 		class MemoryAllocator
 		{
-			static std::shared_ptr<LinearAllocationStrategy<>> allocatorStrategy;
+			inline static  std::shared_ptr<LinearAllocationStrategy<>> allocatorStrategy = std::make_shared<LinearAllocationStrategy<INIT_LINEAR_SIZE>>();
 
 		public:
 

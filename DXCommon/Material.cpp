@@ -40,7 +40,7 @@ namespace DX
 			return NormalMapIndex;
 		}
 
-		MaterialConstants& Material::GetMaterialConstantData()
+		MaterialData& Material::GetMaterialConstantData()
 		{
 			return matConstants;
 		}
@@ -138,13 +138,26 @@ namespace DX
 		{
 			if (NumFramesDirty > 0)
 			{
-				matConstants.DiffuseAlbedo = DiffuseAlbedo;
-				matConstants.FresnelR0 = FresnelR0;
-				matConstants.Roughness = Roughness;
-				matConstants.MaterialTransform = MatTransform.Transpose();
-				matConstants.DiffuseMapIndex = DiffuseMapIndex;
-				matConstants.NormalMapIndex = NormalMapIndex;
-
+				matConstants.GlobalAmbient = GlobalAmbient;
+				matConstants.AmbientColor = AmbientColor;
+				matConstants.EmissiveColor = EmissiveColor;
+				matConstants.DiffuseColor = DiffuseColor;
+				matConstants.SpecularColor = SpecularColor;
+				matConstants.Reflectance = Reflectance;
+				matConstants.Opacity = Opacity;
+				matConstants.SpecularPower = SpecularPower;
+				matConstants.IndexOfRefraction = IndexOfRefraction;
+				matConstants.HasAmbientTexture = false;
+				matConstants.HasEmissiveTexture = false;
+				matConstants.HasDiffuseTexture  = diffuseMap != nullptr;
+				matConstants.HasSpecularTexture = false;
+				matConstants.HasSpecularPowerTexture = false;
+				matConstants.HasNormalTexture = normalMap != nullptr;
+				matConstants.HasBumpTexture = false;
+				matConstants.HasOpacityTexture = false;
+				matConstants.BumpIntensity = BumpIntensity;
+				matConstants.SpecularScale = SpecularScale;
+				matConstants.AlphaThreshold = AlphaThreshold;
 				NumFramesDirty--;
 			}
 		}

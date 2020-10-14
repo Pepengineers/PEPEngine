@@ -15,7 +15,7 @@ public:
 
 	std::shared_ptr<DX::Graphics::ConstantBuffer<DX::Common::PassConstants>> PassConstantBuffer = nullptr;
 	std::shared_ptr<DX::Graphics::ConstantBuffer<DX::Common::SsaoConstants>> SsaoConstantBuffer = nullptr;
-	std::shared_ptr<DX::Graphics::UploadBuffer<DX::Common::MaterialConstants>> MaterialBuffer = nullptr;
+	std::shared_ptr<DX::Graphics::UploadBuffer<DX::Common::MaterialData>> MaterialBuffer = nullptr;
 
 	UINT64 FenceValue = 0;
 };

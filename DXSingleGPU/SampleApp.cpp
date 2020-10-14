@@ -373,13 +373,13 @@ namespace DX
 
 		//Main Path Data
 		cmdList->
-			SetRootConstantBufferView(StandardShaderSlot::CameraData, *currentFrameResource->PassConstantBuffer);
+			SetRootConstantBufferView(StandardForwardShaderSlot::CameraData, *currentFrameResource->PassConstantBuffer);
 
-		cmdList->SetRootDescriptorTable(StandardShaderSlot::ShadowMap, shadowMap->GetSrvMemory());
-		cmdList->SetRootDescriptorTable(StandardShaderSlot::AmbientMap, ssao->AmbientMapSrv(), 0);
+		cmdList->SetRootDescriptorTable(StandardForwardShaderSlot::ShadowMap, shadowMap->GetSrvMemory());
+		cmdList->SetRootDescriptorTable(StandardForwardShaderSlot::AmbientMap, ssao->AmbientMapSrv(), 0);
 
 		/*Bind all Diffuse Textures*/
-		cmdList->SetRootDescriptorTable(StandardShaderSlot::TexturesMap,
+		cmdList->SetRootDescriptorTable(StandardForwardShaderSlot::TexturesMap,
 		                                &srvHeap);
 
 
@@ -399,14 +399,14 @@ namespace DX
 		{
 		case 1:
 			{
-				cmdList->SetRootDescriptorTable(StandardShaderSlot::AmbientMap, shadowMap->GetSrvMemory());
+				cmdList->SetRootDescriptorTable(StandardForwardShaderSlot::AmbientMap, shadowMap->GetSrvMemory());
 				cmdList->SetPipelineState(*psos[PsoType::Debug]);
 				DrawGameObjects(cmdList, typedGameObjects[static_cast<int>(PsoType::Debug)]);
 				break;
 			}
 		case 2:
 			{
-				cmdList->SetRootDescriptorTable(StandardShaderSlot::AmbientMap, ssao->AmbientMapSrv(), 0);
+				cmdList->SetRootDescriptorTable(StandardForwardShaderSlot::AmbientMap, ssao->AmbientMapSrv(), 0);
 				cmdList->SetPipelineState(*psos[PsoType::Debug]);
 				DrawGameObjects(cmdList, typedGameObjects[static_cast<int>(PsoType::Debug)]);
 				break;
@@ -430,7 +430,7 @@ namespace DX
 
 		cmdList->SetRenderTargets(1, &renderTargetMemory, MainWindow->GetCurrentBackBufferIndex());
 
-		cmdList->SetRootDescriptorTable(StandardShaderSlot::AmbientMap, ssaa->GetSRV());
+		cmdList->SetRootDescriptorTable(StandardForwardShaderSlot::AmbientMap, ssaa->GetSRV());
 
 		cmdList->SetPipelineState(*psos[PsoType::Quad]);
 		DrawGameObjects(cmdList, typedGameObjects[static_cast<int>(PsoType::Quad)]);
@@ -452,9 +452,9 @@ namespace DX
 		cmdList->SetGMemory(&srvHeap);
 		cmdList->SetRootSignature(rootSignature.get());
 		/*Bind all materials*/
-		cmdList->SetRootShaderResourceView(StandardShaderSlot::MaterialData, *currentFrameResource->MaterialBuffer);
+		cmdList->SetRootShaderResourceView(StandardForwardShaderSlot::MaterialData, *currentFrameResource->MaterialBuffer);
 		/*Bind all Diffuse Textures*/
-		cmdList->SetRootDescriptorTable(StandardShaderSlot::TexturesMap, &srvHeap);
+		cmdList->SetRootDescriptorTable(StandardForwardShaderSlot::TexturesMap, &srvHeap);
 		commandQueue->EndPixEvent();
 
 
@@ -809,11 +809,11 @@ namespace DX
 		rootSignature = std::make_unique<GRootSignature>();
 
 		CD3DX12_DESCRIPTOR_RANGE texParam[4];
-		texParam[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, StandardShaderSlot::SkyMap - 3, 0); //SkyMap
-		texParam[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, StandardShaderSlot::ShadowMap - 3, 0); //ShadowMap
-		texParam[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, StandardShaderSlot::AmbientMap - 3, 0); //SsaoMap
+		texParam[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, StandardForwardShaderSlot::SkyMap - 3, 0); //SkyMap
+		texParam[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, StandardForwardShaderSlot::ShadowMap - 3, 0); //ShadowMap
+		texParam[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, StandardForwardShaderSlot::AmbientMap - 3, 0); //SsaoMap
 		texParam[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, loader.GetLoadTexturesCount(),
-		                 StandardShaderSlot::TexturesMap - 3, 0);
+		                 StandardForwardShaderSlot::TexturesMap - 3, 0);
 
 
 		rootSignature->AddConstantBufferParameter(0);
@@ -1431,7 +1431,7 @@ namespace DX
 		cmdList->SetRenderTargets(0, nullptr, false, shadowMap->GetDsvMemory());
 
 		//Shadow Path Data
-		cmdList->SetRootConstantBufferView(StandardShaderSlot::CameraData, *currentFrameResource->PassConstantBuffer,
+		cmdList->SetRootConstantBufferView(StandardForwardShaderSlot::CameraData, *currentFrameResource->PassConstantBuffer,
 		                                   1);
 
 		cmdList->SetPipelineState(*psos[PsoType::ShadowMapOpaque]);

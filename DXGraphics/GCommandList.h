@@ -108,7 +108,7 @@ namespace DX
 			                       D3D12_RECT* rects = nullptr, size_t rectCount = 0) const;
 
 			void SetRenderTargets(size_t RTCount = 0, GMemory* rtvMemory = nullptr, size_t rtvOffset = 0,
-			                      GMemory* dsvMemory = nullptr, size_t dsvOffset = 0) const;
+			                      GMemory* dsvMemory = nullptr, size_t dsvOffset = 0, BOOL isSingleHandle = true) const;
 
 			void ClearDepthStencil(GMemory* dsvMemory, size_t dsvOffset,
 			                       D3D12_CLEAR_FLAGS flags = D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL,

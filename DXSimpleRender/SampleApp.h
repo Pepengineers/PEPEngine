@@ -33,6 +33,7 @@ private:
 
 	std::unordered_map<std::wstring, std::shared_ptr<GModel>> models;
 
+	UINT currentFrameResourceIndex = 0;
 	std::vector<std::shared_ptr<FrameResource>> frameResources;
 	std::shared_ptr<FrameResource> currentFrameResource;
 
@@ -51,6 +52,11 @@ private:
 	GMemory dsvMemory;
 	GMemory rtvMemory;
 	GMemory srvMemory;
+	
+	GMemory defferedRTVMemory;
+	GMemory defferedSRVMemory;
+
+	std::vector<GTexture> defferedGBufferTextures;
 	std::shared_ptr<GRootSignature> rootSignature;
 	std::unordered_map<std::wstring, std::shared_ptr<GShader>> shaders;
 	std::vector<D3D12_INPUT_ELEMENT_DESC> defaultInputLayout;

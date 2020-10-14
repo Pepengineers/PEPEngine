@@ -33,9 +33,9 @@ public:
 	SsaoConstantBuffers = DX::Allocator::MemoryAllocator::CreateVector<std::shared_ptr<DX::Graphics::ConstantBuffer<
 		DX::Common::SsaoConstants>>>();
 
-	DX::Allocator::custom_vector<std::shared_ptr<DX::Graphics::UploadBuffer<DX::Common::MaterialConstants>>>
+	DX::Allocator::custom_vector<std::shared_ptr<DX::Graphics::UploadBuffer<DX::Common::MaterialData>>>
 	MaterialBuffers = DX::Allocator::MemoryAllocator::CreateVector<std::shared_ptr<DX::Graphics::UploadBuffer<
-		DX::Common::MaterialConstants>>>();
+		DX::Common::MaterialData>>>();
 
 
 	UINT64 FenceValue = 0;

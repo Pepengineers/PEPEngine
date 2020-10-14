@@ -13,7 +13,7 @@ struct VertexOut
 	float4 PosView : SV_POSITION;
 	float4 ShadowPosH : POSITION0;
 	float4 SsaoPosH : POSITION1;
-	float3 PosW : POSITION2;
+	float3 PositionWorld : POSITION2;
 	float3 NormalW : NORMAL;
 	float3 TangentW : TANGENT;
 	float2 TexC : TEXCOORD;
@@ -27,13 +27,13 @@ VertexOut VS(VertexIn vin)
 	MaterialData matData = materialData[objectBuffer.materialIndex];
 
 	float4 posW = mul(float4(vin.PosL, 1.0f), objectBuffer.World);
-	vout.PosW = posW.xyz;
-
-	vout.NormalW = mul(vin.NormalL, (float3x3)objectBuffer.World);
-
+	vout.PositionWorld = posW.xyz;
 	vout.PosView = mul(posW, worldBuffer.ViewProj);
-
+	
+	vout.NormalW = mul(vin.NormalL, (float3x3)objectBuffer.World);
 	vout.TangentW = mul(vin.TangentU, (float3x3)objectBuffer.World);
+
+
 
 	float4 texC = mul(float4(vin.TexC, 0.0f, 1.0f), objectBuffer.TexTransform);
 	vout.TexC = mul(texC, matData.MatTransform).xy;
@@ -72,7 +72,7 @@ float4 PS(VertexOut pin) : SV_Target
 	//bumpedNormalW = pin.NormalW;
 
 
-	float3 toEyeW = normalize(worldBuffer.EyePosW - pin.PosW);
+	float3 toEyeW = normalize(worldBuffer.EyePosW - pin.PositionWorld);
 
 	pin.SsaoPosH /= pin.SsaoPosH.w;
 	float ambientAccess = ssaoMap.Sample(gsamLinearClamp, pin.SsaoPosH.xy, 0.0f).r;
@@ -88,7 +88,7 @@ float4 PS(VertexOut pin) : SV_Target
 
 	const float shininess = (1.0f - roughness) * normalMapSample.a;
 	Material mat = {diffuseAlbedo, fresnelR0, shininess};
-	float4 directLight = ComputeLighting(worldBuffer.Lights, mat, pin.PosW,
+	float4 directLight = ComputeLighting(worldBuffer.Lights, mat, pin.PositionWorld,
 	                                     bumpedNormalW, toEyeW, shadowFactor);
 
 	float4 litColor = ambient + directLight;

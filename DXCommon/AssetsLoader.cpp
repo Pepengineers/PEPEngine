@@ -210,9 +210,7 @@ namespace DX
 
 				if (it == materialsMap.end())
 				{
-					material = std::make_shared<Material>(materialName);
-					material->FresnelR0 = Vector3::One * 0.05;
-					material->Roughness = 0.95;
+					material = std::make_shared<Material>(materialName);					
 
 					const auto modelDirectory = model->GetName().substr(0, model->GetName().find_last_of('\\'));
 

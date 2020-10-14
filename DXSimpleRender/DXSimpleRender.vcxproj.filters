@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{f5d94a24-9334-44bb-b9de-1a44a8ab6294}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -40,8 +43,14 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="DXSample.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
+    <FxCompile Include="Shaders\Common.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\Default.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\MipMapCS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>
