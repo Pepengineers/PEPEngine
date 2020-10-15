@@ -99,7 +99,7 @@ namespace DX
 		void Material::Draw(std::shared_ptr<GCommandList> cmdList) const
 		{
 			cmdList->SetGMemory(&textureMapsSRVMemory);
-			cmdList->SetRootDescriptorTable(4, &textureMapsSRVMemory);
+			cmdList->SetRootDescriptorTable(8, &textureMapsSRVMemory);
 		}
 
 		void Material::Update()

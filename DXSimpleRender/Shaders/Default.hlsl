@@ -2,71 +2,108 @@
 
 struct VertexIn
 {
-	float3 PosL : POSITION;
-	float3 NormalL : NORMAL;
-	float2 TexC : TEXCOORD;
-	float3 TangentU : TANGENT;
+	float3 PositionObjectSpace : POSITION;
+	float3 NormalObjectSpace : NORMAL;
+	float2 UV : TEXCOORD;
+	float3 TangentObjectSpace : TANGENT;
 };
 
-struct VertexOut
-{
-	float4 PosView : SV_POSITION;
-	float4 ShadowPosH : POSITION0;
-	float4 SsaoPosH : POSITION1;
-	float3 PosW : POSITION2;
-	float3 NormalW : NORMAL;
-	float3 TangentW : TANGENT;
+struct VertexOut {
+	float4 PositionClipSpace : SV_POSITION;
+	float4 ShadowPosClip : POSITION0;
+	float4 SsaoPosClip : POSITION1;
+	float3 PositionWorldSpace : POS_WORLD;
+	float3 PositionViewSpace : POS_VIEW;
+	float3 NormalWorldSpace : NORMAL_WORLD;
+	float3 NormalViewSpace : NORMAL_VIEW;
+	float3 TangentWorldSpace : TANGENT_WORLD;
+	float3 TangentViewSpace : TANGENT_VIEW;
+	float3 BinormalWorldSpace : BINORMAL_WORLD;
+	float3 BinormalViewSpace : BINORMAL_VIEW;
 	float2 UV : TEXCOORD;
 };
 
 
-VertexOut VS(VertexIn vin)
+VertexOut VS(VertexIn input)
 {
-	VertexOut vout = (VertexOut)0.0f;
-	
-	float4 posW = mul(float4(vin.PosL, 1.0f), ObjectBuffer.World);
-	vout.PosW = posW.xyz;
+	VertexOut output = (VertexOut)0.0f;
 
-	vout.NormalW = mul(vin.NormalL, (float3x3)ObjectBuffer.World);
-	vout.PosView = mul(posW, WorldBuffer.ViewProj);
-	vout.TangentW = mul(vin.TangentU, (float3x3)ObjectBuffer.World);
-	float4 texC = mul(float4(vin.TexC, 0.0f, 1.0f), ObjectBuffer.TexTransform);
-	vout.UV = texC.xy;
+	output.PositionWorldSpace = mul(float4(input.PositionObjectSpace, 1.0f),	ObjectBuffer.World).xyz;
+	output.PositionViewSpace = mul(float4(output.PositionWorldSpace, 1.0f),
+		WorldBuffer.View).xyz;
+	output.PositionClipSpace = mul(float4(output.PositionViewSpace, 1.0f),
+		WorldBuffer.Proj);
+	
+	float4 texC = mul(float4(input.UV, 0.0f, 1.0f), ObjectBuffer.TexTransform);
+	output.UV = texC.xy;
+	
+	output.NormalWorldSpace = mul(float4(input.NormalObjectSpace, 0.0f),
+		ObjectBuffer.World).xyz;
+	output.NormalViewSpace = mul(float4(output.NormalWorldSpace, 0.0f),
+		WorldBuffer.View).xyz;
+
+	output.TangentWorldSpace = mul(float4(input.TangentObjectSpace, 0.0f),
+		ObjectBuffer.World).xyz;
+	output.TangentViewSpace = mul(float4(output.TangentWorldSpace, 0.0f),
+		WorldBuffer.View).xyz;
+
+	output.BinormalWorldSpace = normalize(cross(output.NormalWorldSpace,
+		output.TangentWorldSpace));
+	output.BinormalViewSpace = normalize(cross(output.NormalViewSpace,
+		output.TangentViewSpace));	
 
 	// Generate projective tex-coords to project SSAO map onto scene.
-	vout.SsaoPosH = mul(posW, WorldBuffer.ViewProjTex);
+	output.SsaoPosClip = mul(output.PositionWorldSpace, WorldBuffer.ViewProjTex);
 
 	// Generate projective tex-coords to project shadow map onto scene.
-	vout.ShadowPosH = mul(posW, WorldBuffer.ShadowTransform);
+	output.ShadowPosClip = mul(output.PositionWorldSpace, WorldBuffer.ShadowTransform);
 
-	return vout;
+	return output;
 }
 
 struct PixelShaderOutput
 {
-	float4 LightAccumulation    : SV_Target0;   // Ambient + emissive (R8G8B8_????) Unused (A8_UNORM)
-	float4 Diffuse              : SV_Target1;   // Diffuse Albedo (R8G8B8_UNORM) Unused (A8_UNORM)
-	float4 Specular             : SV_Target2;   // Specular Color (R8G8B8_UNROM) Specular Power(A8_UNORM)
-	float4 NormalVS             : SV_Target3;   // View space normal (R32G32B32_FLOAT) Unused (A32_FLOAT)
+	float4 Normal_Roughness : SV_Target0;
+	float4 BaseColor_Metalness : SV_Target1;
 };
 
 
-PixelShaderOutput PS(VertexOut pin)
+PixelShaderOutput PS(VertexOut input)
 {
+	PixelShaderOutput output;
 	MaterialData material = Materials[ObjectBuffer.MaterialIndex];
 	
-	float4 baseColor = MaterialTexture[material.DiffuseMapIndex].Sample(gsamAnisotropicWrap, pin.UV);
+	float4 baseColor = MaterialTexture[material.DiffuseMapIndex].Sample(gsamAnisotropicWrap, input.UV);
+	clip(baseColor.a - 0.1f);
 
-	pin.NormalW = normalize(pin.NormalW);	
-	float4 NormalMapColor = MaterialTexture[material.NormalMapIndex].Sample(gsamAnisotropicWrap, pin.UV);
-
-	float3 bumpedNormalW = NormalSampleToWorldSpace(NormalMapColor.rgb, pin.NormalW, pin.TangentW);
-
+	input.NormalWorldSpace = normalize(input.NormalWorldSpace);
 	
-	PixelShaderOutput o;
-	o.LightAccumulation = float4(1.0, 1.0, 0.0, 1.0);
-	o.Diffuse = baseColor;
-	o.Specular = float4(1.0,1.0,0.0,1.0);
-	o.NormalVS = float4(bumpedNormalW, 0.0);
-	return o;
+	float4 NormalMapColor = MaterialTexture[material.NormalMapIndex].Sample(gsamAnisotropicWrap, input.UV);
+	
+	// Normal (encoded in view space)
+	const float3 normalObjectSpace = normalize(NormalMapColor.xyz * 2.0f - 1.0f);
+	const float3x3 tbnWorldSpace = float3x3(normalize(input.TangentWorldSpace),
+		normalize(input.BinormalWorldSpace),
+		normalize(input.NormalWorldSpace));
+	const float3 normalWorldSpace = normalize(mul(normalObjectSpace, tbnWorldSpace));
+	const float3x3 tbnViewSpace = float3x3(normalize(input.TangentViewSpace),
+		normalize(input.BinormalViewSpace),
+		normalize(input.NormalViewSpace));
+	
+	output.Normal_Roughness.xy = Encode(normalize(mul(normalObjectSpace,
+		tbnViewSpace)));
+
+	// Base color and metalness
+	const float metalness = MaterialTexture[material.MetallicMapIndex].Sample(gsamAnisotropicWrap,
+		input.UV).r;
+	
+	baseColor.a = metalness;
+
+	output.BaseColor_Metalness = baseColor;
+	
+	// Roughness
+	output.Normal_Roughness.z = MaterialTexture[material.RoughnessMapIndex].Sample(gsamAnisotropicWrap,
+		input.UV).r;
+		
+	return output;
 }

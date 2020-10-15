@@ -4,6 +4,7 @@
 #include "CameraController.h"
 #include "GameObject.h"
 #include "GDeviceFactory.h"
+#include "GModel.h"
 #include "GraphicPSO.h"
 #include "ModelRenderer.h"
 #include "Transform.h"
@@ -19,8 +20,8 @@ bool SampleApp::Initialize()
 	device = GDeviceFactory::GetDevice();
 	dsvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 	rtvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, globalCountFrameResources);
-	defferedRTVMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_RTV,  4);
-	defferedSRVMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 4);
+	defferedRTVMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, GBufferMapsCount);
+	defferedSRVMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, GBufferMapsCount + 1);
 
 	if (!D3DApp::Initialize())
 	{
@@ -34,6 +35,35 @@ bool SampleApp::Initialize()
 	auto atlas = assetLoader.CreateModelFromFile(cmdList, "Data\\Objects\\Atlas\\Atlas.obj");
 	models[L"atlas"] = std::move(atlas);
 
+	auto quad = assetLoader.GenerateQuad(cmdList);
+	models[L"quad"] = std::move(quad);
+
+	auto seamlessTex = GTexture::LoadTextureFromFile(L"Data\\Textures\\seamless_grass.jpg", cmdList);
+	seamlessTex->SetName(L"seamless");
+	assetLoader.AddTexture(seamlessTex);
+
+
+	std::vector<std::wstring> texNormalNames =
+	{
+		L"bricksNormalMap",
+		L"tileNormalMap",
+		L"defaultNormalMap"
+	};
+
+	std::vector<std::wstring> texNormalFilenames =
+	{
+		L"Data\\Textures\\bricks2_nmap.dds",
+		L"Data\\Textures\\tile_nmap.dds",
+		L"Data\\Textures\\default_nmap.dds"
+	};
+
+	for (int i = 0; i < texNormalNames.size(); ++i)
+	{
+		auto texture = GTexture::LoadTextureFromFile(texNormalFilenames[i], cmdList, TextureUsage::Normalmap);
+		texture->SetName(texNormalNames[i]);
+		assetLoader.AddTexture(texture);
+	}
+	
 	copyQueue->ExecuteCommandList(cmdList);
 	copyQueue->Flush();
 
@@ -63,6 +93,7 @@ bool SampleApp::Initialize()
 		computeList->TransitionBarrier(texture->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON);
 	computeList->FlushResourceBarriers();
 	computeQueue->WaitForFenceValue(computeQueue->ExecuteCommandList(computeList));
+
 	
 	
 	
@@ -75,10 +106,18 @@ bool SampleApp::Initialize()
 	rootSignature->AddShaderResourceView(0, 1);
 	rootSignature->AddShaderResourceView(1, 1);
 
-	CD3DX12_DESCRIPTOR_RANGE texParam[1];
-	texParam[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, MaxMaterialTexturesMaps, 0, 0); //Material Maps
+	CD3DX12_DESCRIPTOR_RANGE texParam[5];
+	texParam[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 2);
+	texParam[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 2);
+	texParam[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 2);
+	texParam[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 3, 2);
+	texParam[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, MaxMaterialTexturesMaps, 0, 0); //Material Maps
 
 	rootSignature->AddDescriptorParameter(&texParam[0], 1, D3D12_SHADER_VISIBILITY_PIXEL);
+	rootSignature->AddDescriptorParameter(&texParam[1], 1, D3D12_SHADER_VISIBILITY_PIXEL);
+	rootSignature->AddDescriptorParameter(&texParam[2], 1, D3D12_SHADER_VISIBILITY_PIXEL);
+	rootSignature->AddDescriptorParameter(&texParam[3], 1, D3D12_SHADER_VISIBILITY_PIXEL);
+	rootSignature->AddDescriptorParameter(&texParam[4], 1, D3D12_SHADER_VISIBILITY_PIXEL);
 	
 	rootSignature->Initialize(device);
 		
@@ -89,6 +128,12 @@ bool SampleApp::Initialize()
 	shaders[L"OpaquePixel"] = std::move(
 		std::make_unique<GShader>(L"Shaders\\Default.hlsl", PixelShader, nullptr, "PS", "ps_5_1"));
 
+	shaders[L"quadVS"] = std::move(
+		std::make_unique<GShader>(L"Shaders\\Quad.hlsl", VertexShader, nullptr, "VS", "vs_5_1"));
+	shaders[L"quadPS"] = std::move(
+		std::make_unique<GShader>(L"Shaders\\Quad.hlsl", PixelShader, nullptr, "PS", "ps_5_1"));
+
+	
 	for (auto&& sh : shaders)
 	{
 		sh.second->LoadAndCompile();
@@ -126,25 +171,59 @@ bool SampleApp::Initialize()
 	basePsoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 	basePsoDesc.SampleMask = UINT_MAX;
 	basePsoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-	basePsoDesc.NumRenderTargets = 4;
-	basePsoDesc.RTVFormats[0] = GetSRGBFormat(DXGI_FORMAT_R8G8B8A8_UNORM);
+	basePsoDesc.NumRenderTargets = GBufferMapsCount;
+	basePsoDesc.RTVFormats[0] = GetSRGBFormat(DXGI_FORMAT_R16G16B16A16_FLOAT);
 	basePsoDesc.RTVFormats[1] = GetSRGBFormat(DXGI_FORMAT_R8G8B8A8_UNORM);
-	basePsoDesc.RTVFormats[2] = GetSRGBFormat(DXGI_FORMAT_R8G8B8A8_UNORM);
-	basePsoDesc.RTVFormats[3] = GetSRGBFormat(DXGI_FORMAT_R32G32B32A32_FLOAT);
 	basePsoDesc.SampleDesc.Count = isM4xMsaa ? 4 : 1;
 	basePsoDesc.SampleDesc.Quality = isM4xMsaa ? (m4xMsaaQuality - 1) : 0;
 	basePsoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
-	opaque = std::make_shared<GraphicPSO>();
-	opaque->SetPsoDesc(basePsoDesc);
-	opaque->Initialize(device);
+	deferredGBufferPSO = std::make_shared<GraphicPSO>();
+	deferredGBufferPSO->SetPsoDesc(basePsoDesc);
+	deferredGBufferPSO->Initialize(device);
 
+	basePsoDesc.NumRenderTargets = 1;
+	basePsoDesc.RTVFormats[0] = GetSRGBFormat(DXGI_FORMAT_R8G8B8A8_UNORM);
+	basePsoDesc.RTVFormats[1] = GetSRGBFormat(DXGI_FORMAT_UNKNOWN);
+	quadPso = std::make_unique<GraphicPSO>(RenderMode::Quad);
+	quadPso->SetPsoDesc(basePsoDesc);
+	quadPso->SetShader(shaders[L"quadVS"].get());
+	quadPso->SetShader(shaders[L"quadPS"].get());
+	quadPso->SetSampleCount(1);
+	quadPso->SetSampleQuality(0);
+	quadPso->SetDSVFormat(DXGI_FORMAT_UNKNOWN);
+	auto depthStencilDesc = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+	depthStencilDesc.DepthEnable = false;
+	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+	quadPso->SetDepthStencilState(depthStencilDesc);
+	quadPso->Initialize(device);
+
+	
+	
+
+	auto seamless = std::make_shared<Material>(L"seamless", RenderMode::Opaque);
+	auto tex = assetLoader.GetTextureIndex(L"seamless");
+	seamless->SetMaterialMap(Material::DiffuseMap, assetLoader.GetTexture(tex));
+	tex = assetLoader.GetTextureIndex(L"defaultNormalMap");
+	seamless->SetMaterialMap(Material::NormalMap , assetLoader.GetTexture(tex));
+	assetLoader.AddMaterial(seamless);
+
+	
+	
 	auto sun1 = std::make_unique<GameObject>("Directional Light");
 	auto light = std::make_shared<Light>();
 	sun1->AddComponent(light);
 	gameObjects.push_back(std::move(sun1));
 
+	auto quadRitem = std::make_unique<GameObject>("Quad");
+	auto renderer = std::make_shared<ModelRenderer>(GDeviceFactory::GetDevice(), models[L"quad"]);
+	models[L"quad"]->SetMeshMaterial(0, assetLoader.GetMaterial(assetLoader.GetMaterialIndex(L"seamless")));
+	quadRitem->AddComponent(renderer);
+	typedGO[RenderMode::Debug].push_back(quadRitem.get());
+	typedGO[RenderMode::Quad].push_back(quadRitem.get());
+	gameObjects.push_back(std::move(quadRitem));
 
+	
 	auto cameraGO = std::make_unique<GameObject>("MainCamera");
 	cameraGO->GetTransform()->SetEulerRotate(Vector3(-30, 270, 0));
 	cameraGO->AddComponent(std::make_shared<Camera>(AspectRatio()));
@@ -160,6 +239,7 @@ bool SampleApp::Initialize()
 			rModel->AddComponent(renderer);
 			rModel->GetTransform()->SetPosition(
 				Vector3::Right * -30 * j + Vector3::Forward * 10 * i);
+			typedGO[RenderMode::Opaque].push_back(rModel.get());
 			gameObjects.push_back(std::move(rModel));
 		}
 	}
@@ -281,8 +361,7 @@ void SampleApp::Draw(const GameTimer& gt)
 	cmdList->TransitionBarrier(depthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 	cmdList->FlushResourceBarriers();
 
-	cmdList->SetRenderTargets(defferedGBufferTextures.size(), &defferedRTVMemory, 0, &dsvMemory, 0, true);	
-	cmdList->ClearRenderTarget(&rtvMemory, currentFrameResourceIndex, DirectX::Colors::Black);
+	cmdList->SetRenderTargets(defferedGBufferTextures.size(), &defferedRTVMemory, 0, &dsvMemory, 0, true);		
 	for (int i = 0; i < defferedGBufferTextures.size(); ++i)
 		cmdList->ClearRenderTarget(&defferedRTVMemory, i, DirectX::Colors::Black);
 	cmdList->ClearDepthStencil(&dsvMemory, 0);
@@ -293,16 +372,30 @@ void SampleApp::Draw(const GameTimer& gt)
 	cmdList->SetRootShaderResourceView(2, *currentFrameResource->MaterialsBuffer);
 	cmdList->SetRootShaderResourceView(3, *currentFrameResource->LightsBuffer);
 
-	cmdList->SetPipelineState(*opaque.get());	
-	for (auto&& object : gameObjects)
+	cmdList->SetPipelineState(*deferredGBufferPSO.get());
+	cmdList->SetGMemory(&defferedSRVMemory);
+	cmdList->SetRootDescriptorTable(4, &defferedSRVMemory, 0);
+	cmdList->SetRootDescriptorTable(5, &defferedSRVMemory, 1);
+	cmdList->SetRootDescriptorTable(7, &defferedSRVMemory, GBufferMapsCount);
+	
+	
+	for (auto&& object : typedGO[RenderMode::Opaque])
 		object->Draw(cmdList);
 
-	cmdList->CopyResource(MainWindow->GetCurrentBackBuffer(), defferedGBufferTextures[1]);
-
-	
-	cmdList->TransitionBarrier(MainWindow->GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT);
 	for (auto&& texture : defferedGBufferTextures)
 		cmdList->TransitionBarrier(texture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	cmdList->FlushResourceBarriers();
+
+
+	cmdList->SetRenderTargets(1, &rtvMemory, currentFrameResourceIndex);
+	cmdList->ClearRenderTarget(&rtvMemory, currentFrameResourceIndex, DirectX::Colors::Black);	
+	cmdList->SetPipelineState(*quadPso.get());
+	for (auto&& object : typedGO[RenderMode::Quad])
+		object->Draw(cmdList);
+	
+
+	
+	cmdList->TransitionBarrier(MainWindow->GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT);	
 	cmdList->TransitionBarrier(depthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
 	cmdList->FlushResourceBarriers();
 
@@ -354,25 +447,17 @@ void SampleApp::OnResize()
 
 	auto backBufferDesc = MainWindow->GetCurrentBackBuffer().GetD3D12ResourceDesc();	
 	
-	if (defferedGBufferTextures.size() < 1)
+	if (defferedGBufferTextures.size() < GBufferMapsCount)
 	{
 		auto desc = backBufferDesc;	
-		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		desc.Format = NormalMapFormat;
 		desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
 
-		defferedGBufferTextures.push_back((GTexture(device, desc, L"Deffered LightAccumulation Map", TextureUsage::RenderTarget)));
+		defferedGBufferTextures.push_back((GTexture(device, desc, L"Normal Roughness GMap", TextureUsage::RenderTarget)));
 
-		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		desc.Format = BackBufferFormat;
 
-		defferedGBufferTextures.push_back((GTexture(device, desc, L"Deffered Diffuse Map", TextureUsage::RenderTarget)));
-
-		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-
-		defferedGBufferTextures.push_back((GTexture(device, desc, L"Deffered Specular Map", TextureUsage::RenderTarget)));
-
-		desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-
-		defferedGBufferTextures.push_back((GTexture(device, desc, L"Deffered Normal Map", TextureUsage::RenderTarget)));
+		defferedGBufferTextures.push_back((GTexture(device, desc, L"BaseColor Metalnes GMAP", TextureUsage::RenderTarget)));		
 	}
 	else
 	{
@@ -415,6 +500,10 @@ void SampleApp::OnResize()
 		defferedGBufferTextures[i].CreateShaderResourceView(&srvDesc, &defferedSRVMemory, i);
 		defferedGBufferTextures[i].CreateRenderTargetView(&rtvDesc, &defferedRTVMemory, i);
 	}
+
+	srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
+	depthBuffer.CreateShaderResourceView(&srvDesc, &defferedSRVMemory, GBufferMapsCount);
+	
 }
 
 LRESULT SampleApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)

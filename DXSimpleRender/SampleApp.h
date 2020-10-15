@@ -4,6 +4,7 @@
 #include "FrameResource.h"
 #include "Light.h"
 #include "GMemory.h"
+#include "GraphicPSO.h"
 
 using namespace DX;
 using namespace Common;
@@ -38,6 +39,9 @@ private:
 	std::shared_ptr<FrameResource> currentFrameResource;
 
 	std::vector<std::shared_ptr<GameObject>> gameObjects;
+	std::vector<GameObject*> typedGO[RenderMode::Count];
+
+	
 	std::vector<Light*> lights;
 	std::unique_ptr<Camera> camera = nullptr;
 
@@ -59,5 +63,6 @@ private:
 	std::shared_ptr<GRootSignature> rootSignature;
 	std::unordered_map<std::wstring, std::shared_ptr<GShader>> shaders;
 	std::vector<D3D12_INPUT_ELEMENT_DESC> defaultInputLayout;
-	std::shared_ptr<GraphicPSO> opaque;
+	std::shared_ptr<GraphicPSO> deferredGBufferPSO;
+	std::shared_ptr<GraphicPSO> quadPso;
 };
