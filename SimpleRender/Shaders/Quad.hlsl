@@ -36,55 +36,43 @@ VertexOut VS(VertexIn input)
 
 float4 PS(VertexOut input) : SV_Target
 {
-   const int3 fragmentPositionScreenSpace = int3(input.PositionNDC.xy, 0);
-
-   // Ambient accessibility (1.0f - ambient occlussion factor)
-const float ambientAccessibility = 1.0f;// AmbientMap.Load(fragmentPositionScreenSpace);
-
-   const float4 normal_roughness = Normal_RoughnessTexture.Load(fragmentPositionScreenSpace);
-
-   // Compute fragment position in view space
-   const float fragmentZNDC = DepthTexture.Load(fragmentPositionScreenSpace);
-   const float3 rayViewSpace = normalize(input.CameraToFragmentVectorViewSpace);
-   const float3 fragmentPositionViewSpace = ViewRayToViewPosition(rayViewSpace,
-       fragmentZNDC,
-       WorldBuffer.Proj);
-
-   const float3 fragmentPositionWorldSpace = mul(float4(fragmentPositionViewSpace, 1.0f),
-       WorldBuffer.InvView).xyz;
-
-   const float2 encodedNormal = normal_roughness.xy;
-   const float3 normalViewSpace = normalize(Decode(encodedNormal));
-   const float3 normalWorldSpace = normalize(mul(float4(normalViewSpace, 0.0f),
-       WorldBuffer.InvView).xyz);
-
-   const float4 baseColor_metalness = BaseColor_MetalnessTexture.Load(fragmentPositionScreenSpace);
-   const float3 baseColor = baseColor_metalness.xyz;
-   const float metalness = baseColor_metalness.w;
-
-   // As we are working at view space, we do not need camera position to 
-   // compute vector from geometry position to camera.
-   const float3 fragmentPositionToCameraViewSpace = normalize(-fragmentPositionViewSpace);
-
-   const float3 indirectDiffuseColor = DiffuseIBL(baseColor,
-       metalness,
-       gsamAnisotropicWrap,
-       normalWorldSpace);
-
-   const float3 indirectSpecularColor = SpecularIBL(baseColor,
-       metalness,
-       normal_roughness.z,
-       gsamAnisotropicWrap,
-       fragmentPositionToCameraViewSpace,
-       fragmentPositionWorldSpace,
-       WorldBuffer.EyePosW,
-       normalWorldSpace,
-       normalViewSpace);
-
-   const float3 color = indirectDiffuseColor + indirectSpecularColor;
-
-
-	return float4(color * ambientAccessibility, 1.0f);
+    const int3 fragmentPositionScreenSpace = int3(input.PositionNDC.rg, 0);
 	
+    const float4 position = PositionTexture.Load(fragmentPositionScreenSpace);
+    const float4 normal = NormalMap.Load(fragmentPositionScreenSpace);
+    const float4 diffuse = BaseColorMap.Load(fragmentPositionScreenSpace);
+
+    float4 resultColor;
+	
+    for (int i = 0; i < NUM_LIGHTS; ++i)
+    {
+        float3 L = Lights[i].PositionWorld - position;
+        float dist = length(L);
+
+        if (dist > 12.0f)
+        {
+           continue;
+        }
+
+        L /= dist;
+
+        float att = max(0.0f, 1.0f - (dist / 20.0f));
+
+        float lightAmount = saturate(dot(normal, L));
+        float3 color = lightAmount * Lights[i].Color * att;
+
+	//Specular calc
+        float3 V = WorldBuffer.EyePosW - position;
+        float3 H = normalize(L + V);
+        float specular = pow(saturate(dot(normal, H)), 10) * att;
+
+        float3 finalDiffuse = color * diffuse;
+        float3 finalSpecular = specular * diffuse * att;
+
+        float4 totalColor = float4((finalDiffuse + finalSpecular), 1.0f);
+        resultColor += totalColor;
+    }
+
+    return resultColor;	
 }
 

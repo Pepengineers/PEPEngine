@@ -16,7 +16,7 @@ namespace PEPEngine
 			{
 				model->meshesMaterials[i]->Draw(cmdList);
 
-				cmdList->SetRootConstantBufferView(StandardForwardShaderSlot::ObjectData,
+				cmdList->SetRootConstantBufferView(DefferedPassRSSlots::ObjectDataBuffer,
 					*modelDataBuffer, i);
 				
 				const auto mesh = model->GetMesh(i);				

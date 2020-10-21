@@ -3,7 +3,7 @@
 #include "d3dApp.h"
 #include "FrameResource.h"
 #include "Light.h"
-#include "GMemory.h"
+#include "GDescriptor.h"
 #include "GraphicPSO.h"
 
 namespace SimpleRender
@@ -55,11 +55,11 @@ namespace SimpleRender
 		GTexture depthBuffer;
 
 
-		GMemory dsvMemory;
-		GMemory rtvMemory;
+		GDescriptor dsvMemory;
+		GDescriptor rtvMemory;
 
-		GMemory defferedRTVMemory;
-		GMemory defferedSRVMemory;
+		GDescriptor defferedRTVMemory;
+		GDescriptor defferedSRVMemory;
 
 		std::vector<GTexture> defferedGBufferTextures;
 		std::shared_ptr<GRootSignature> rootSignature;
@@ -67,5 +67,6 @@ namespace SimpleRender
 		std::vector<D3D12_INPUT_ELEMENT_DESC> defaultInputLayout;
 		std::shared_ptr<GraphicPSO> deferredGBufferPSO;
 		std::shared_ptr<GraphicPSO> quadPso;
+		std::shared_ptr<GraphicPSO> debugPso;
 	};
 }

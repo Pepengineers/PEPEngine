@@ -19,15 +19,6 @@ namespace PEPEngine
 			return mesh->topology;
 		}
 
-		D3D12_VERTEX_BUFFER_VIEW* GMesh::GetVertexView()
-		{
-			return &vertexView.value();
-		}
-
-		D3D12_INDEX_BUFFER_VIEW* GMesh::GetIndexView()
-		{
-			return &indexView.value();
-		}
 
 		GMesh::GMesh(std::shared_ptr<NativeMesh> meshData, std::shared_ptr<GCommandList>& cmdList) : mesh(meshData)
 		{
@@ -39,28 +30,19 @@ namespace PEPEngine
 				cmdList, mesh->GetVertexes().data(), mesh->GetVertexSize(), mesh->GetVertexes().size(),
 				mesh->GetName() + L" Vertexes")));
 
-			vertexView = Lazy<D3D12_VERTEX_BUFFER_VIEW>([this]
-			{
-				return vertexBuffer->VertexBufferView();
-			});
-
-			indexView = Lazy<D3D12_INDEX_BUFFER_VIEW>([this]
-			{
-				return indexBuffer->IndexBufferView();
-			});
+			
 		}
 
 
 		GMesh::GMesh(const GMesh& copy) : mesh(copy.mesh),
-		                                  vertexBuffer(copy.vertexBuffer), indexBuffer(copy.indexBuffer),
-		                                  vertexView(copy.vertexView), indexView((copy.indexView))
+		                                  vertexBuffer(copy.vertexBuffer), indexBuffer(copy.indexBuffer)
 		{
 		}
 
-		void GMesh::Draw(std::shared_ptr<GCommandList> cmdList)
+		void GMesh::Draw(std::shared_ptr<GCommandList> cmdList) const
 		{
-			cmdList->SetVBuffer(0, 1, GetVertexView());
-			cmdList->SetIBuffer(GetIndexView());
+			cmdList->SetVBuffer(0, 1, vertexBuffer->VertexBufferView());
+			cmdList->SetIBuffer(indexBuffer->IndexBufferView());
 			cmdList->SetPrimitiveTopology(mesh->topology);
 			cmdList->DrawIndexed(mesh->GetIndexCount());
 		}

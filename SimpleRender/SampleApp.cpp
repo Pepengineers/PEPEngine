@@ -4,6 +4,7 @@
 #include "GDeviceFactory.h"
 #include "GModel.h"
 #include "GraphicPSO.h"
+#include "MathHelper.h"
 #include "ModelRenderer.h"
 #include "Transform.h"
 #include "Window.h"
@@ -24,6 +25,7 @@ namespace SimpleRender
 		dsvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 		rtvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, globalCountFrameResources);
 		defferedRTVMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, GBufferMapsCount);
+		//+1 для SRV Depth Map
 		defferedSRVMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, GBufferMapsCount + 1);
 
 		if (!D3DApp::Initialize())
@@ -41,6 +43,9 @@ namespace SimpleRender
 		auto quad = assetLoader.GenerateQuad(cmdList);
 		models[L"quad"] = std::move(quad);
 
+		auto cube = assetLoader.GenerateSphere(cmdList);
+		models[L"cube"] = std::move(cube);
+		
 		auto seamlessTex = GTexture::LoadTextureFromFile(L"Data\\Textures\\seamless_grass.jpg", cmdList);
 		seamlessTex->SetName(L"seamless");
 		assetLoader.AddTexture(seamlessTex);
@@ -103,24 +108,25 @@ namespace SimpleRender
 
 		rootSignature = std::make_shared<GRootSignature>();
 
-
-		rootSignature->AddConstantBufferParameter(0);
-		rootSignature->AddConstantBufferParameter(1);
-		rootSignature->AddShaderResourceView(0, 1);
-		rootSignature->AddShaderResourceView(1, 1);
-
-		CD3DX12_DESCRIPTOR_RANGE texParam[5];
+		CD3DX12_DESCRIPTOR_RANGE texParam[6];
 		texParam[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0, 2);
 		texParam[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1, 2);
 		texParam[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 2);
 		texParam[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 3, 2);
-		texParam[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, MaxMaterialTexturesMaps, 0, 0); //Material Maps
+		texParam[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 4, 2);
+		texParam[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, MaxMaterialTexturesMaps, 0, 0); //Material Maps
+		
+		rootSignature->AddConstantBufferParameter(0); // ObjectData
+		rootSignature->AddDescriptorParameter(&texParam[5], 1, D3D12_SHADER_VISIBILITY_PIXEL); //MaterialsTexture
+		rootSignature->AddConstantBufferParameter(1); // WorldData
+		rootSignature->AddShaderResourceView(0, 1); // MaterialData
+		rootSignature->AddShaderResourceView(1, 1); // LightData		
 
-		rootSignature->AddDescriptorParameter(&texParam[0], 1, D3D12_SHADER_VISIBILITY_PIXEL);
-		rootSignature->AddDescriptorParameter(&texParam[1], 1, D3D12_SHADER_VISIBILITY_PIXEL);
-		rootSignature->AddDescriptorParameter(&texParam[2], 1, D3D12_SHADER_VISIBILITY_PIXEL);
-		rootSignature->AddDescriptorParameter(&texParam[3], 1, D3D12_SHADER_VISIBILITY_PIXEL);
-		rootSignature->AddDescriptorParameter(&texParam[4], 1, D3D12_SHADER_VISIBILITY_PIXEL);
+		rootSignature->AddDescriptorParameter(&texParam[0], 1, D3D12_SHADER_VISIBILITY_PIXEL); //NormalRoughness
+		rootSignature->AddDescriptorParameter(&texParam[1], 1, D3D12_SHADER_VISIBILITY_PIXEL); //BaseColorMetalness
+		rootSignature->AddDescriptorParameter(&texParam[2], 1, D3D12_SHADER_VISIBILITY_PIXEL); //Position
+		rootSignature->AddDescriptorParameter(&texParam[3], 1, D3D12_SHADER_VISIBILITY_PIXEL); //Ambient
+		rootSignature->AddDescriptorParameter(&texParam[4], 1, D3D12_SHADER_VISIBILITY_PIXEL); //Depth
 
 		rootSignature->Initialize(device);
 
@@ -131,6 +137,9 @@ namespace SimpleRender
 		shaders[L"OpaquePixel"] = std::move(
 			std::make_unique<GShader>(L"Shaders\\Default.hlsl", PixelShader, nullptr, "PS", "ps_5_1"));
 
+		shaders[L"Debug"] = std::move(
+			std::make_unique<GShader>(L"Shaders\\Default.hlsl", PixelShader, nullptr, "PSDebug", "ps_5_1"));
+		
 		shaders[L"quadVS"] = std::move(
 			std::make_unique<GShader>(L"Shaders\\Quad.hlsl", VertexShader, nullptr, "VS", "vs_5_1"));
 		shaders[L"quadPS"] = std::move(
@@ -175,8 +184,9 @@ namespace SimpleRender
 		basePsoDesc.SampleMask = UINT_MAX;
 		basePsoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 		basePsoDesc.NumRenderTargets = GBufferMapsCount;
-		basePsoDesc.RTVFormats[0] = GetSRGBFormat(DXGI_FORMAT_R16G16B16A16_FLOAT);
-		basePsoDesc.RTVFormats[1] = GetSRGBFormat(DXGI_FORMAT_R8G8B8A8_UNORM);
+		basePsoDesc.RTVFormats[0] = GetSRGBFormat(NormalMapFormat);
+		basePsoDesc.RTVFormats[1] = GetSRGBFormat(BaseColorMapFormat);
+		basePsoDesc.RTVFormats[2] = GetSRGBFormat(PositionMapFormat);
 		basePsoDesc.SampleDesc.Count = isM4xMsaa ? 4 : 1;
 		basePsoDesc.SampleDesc.Quality = isM4xMsaa ? (m4xMsaaQuality - 1) : 0;
 		basePsoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
@@ -188,6 +198,7 @@ namespace SimpleRender
 		basePsoDesc.NumRenderTargets = 1;
 		basePsoDesc.RTVFormats[0] = GetSRGBFormat(DXGI_FORMAT_R8G8B8A8_UNORM);
 		basePsoDesc.RTVFormats[1] = GetSRGBFormat(DXGI_FORMAT_UNKNOWN);
+		basePsoDesc.RTVFormats[2] = GetSRGBFormat(DXGI_FORMAT_UNKNOWN);
 		quadPso = std::make_unique<GraphicPSO>(RenderMode::Quad);
 		quadPso->SetPsoDesc(basePsoDesc);
 		quadPso->SetShader(shaders[L"quadVS"].get());
@@ -202,7 +213,15 @@ namespace SimpleRender
 		quadPso->Initialize(device);
 
 
+		debugPso = std::make_shared<GraphicPSO>();
+		debugPso->SetPsoDesc(quadPso->GetPsoDescription());
+		debugPso->SetShader(shaders[L"StandardVertex"].get());
+		debugPso->SetShader(shaders[L"Debug"].get());
+		debugPso->Initialize(device);
 
+		
+		
+		
 
 		auto seamless = std::make_shared<Material>(L"seamless", RenderMode::Opaque);
 		auto tex = assetLoader.GetTextureIndex(L"seamless");
@@ -211,18 +230,12 @@ namespace SimpleRender
 		seamless->SetMaterialMap(Material::NormalMap, assetLoader.GetTexture(tex));
 		assetLoader.AddMaterial(seamless);
 
-
-
-		auto sun1 = std::make_unique<GameObject>("Directional Light");
-		auto light = std::make_shared<Light>();
-		sun1->AddComponent(light);
-		gameObjects.push_back(std::move(sun1));
+				
 
 		auto quadRitem = std::make_unique<GameObject>("Quad");
 		auto renderer = std::make_shared<ModelRenderer>(GDeviceFactory::GetDevice(), models[L"quad"]);
 		models[L"quad"]->SetMeshMaterial(0, assetLoader.GetMaterial(assetLoader.GetMaterialIndex(L"seamless")));
 		quadRitem->AddComponent(renderer);
-		typedGO[RenderMode::Debug].push_back(quadRitem.get());
 		typedGO[RenderMode::Quad].push_back(quadRitem.get());
 		gameObjects.push_back(std::move(quadRitem));
 
@@ -243,6 +256,24 @@ namespace SimpleRender
 				rModel->GetTransform()->SetPosition(
 					Vector3::Right * -30 * j + Vector3::Forward * 10 * i);
 				typedGO[RenderMode::Opaque].push_back(rModel.get());
+
+
+				
+				auto pos = rModel->GetTransform()->GetWorldPosition() + (Vector3::Up * MathHelper::RandF() * 75);
+				
+				auto sun1 = std::make_unique<GameObject>("Directional Light");
+				sun1->GetTransform()->SetPosition(pos);
+				auto light = std::make_shared<Light>();
+				light->Color = Vector4(MathHelper::RandF(), MathHelper::RandF(), MathHelper::RandF(), 1);  
+				sun1->AddComponent(light);
+				
+				renderer = std::make_shared<ModelRenderer>(GDeviceFactory::GetDevice(), models[L"cube"]);
+				models[L"cube"]->SetMeshMaterial(0, assetLoader.GetMaterial(assetLoader.GetMaterialIndex(L"seamless")));
+				sun1->AddComponent(renderer);
+				typedGO[RenderMode::Debug].push_back(sun1.get());
+				
+				gameObjects.push_back(std::move(sun1));
+
 				gameObjects.push_back(std::move(rModel));
 			}
 		}
@@ -281,7 +312,6 @@ namespace SimpleRender
 	{
 		auto renderQueue = device->GetCommandQueue();
 
-		currentFrameResourceIndex = (currentFrameResourceIndex + 1) % globalCountFrameResources;
 		currentFrameResource = frameResources[currentFrameResourceIndex];
 
 		if (currentFrameResource->FenceValue != 0 && !renderQueue->IsFinish(currentFrameResource->FenceValue))
@@ -357,8 +387,7 @@ namespace SimpleRender
 		cmdList->SetViewports(&viewport, 1);
 		cmdList->SetScissorRects(&rect, 1);
 
-
-		cmdList->TransitionBarrier(MainWindow->GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+				
 		for (auto&& texture : defferedGBufferTextures)
 			cmdList->TransitionBarrier(texture, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		cmdList->TransitionBarrier(depthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
@@ -371,47 +400,64 @@ namespace SimpleRender
 
 
 		cmdList->SetRootSignature(rootSignature.get());
-		cmdList->SetRootConstantBufferView(1, *currentFrameResource->PassConstantBuffer);
-		cmdList->SetRootShaderResourceView(2, *currentFrameResource->MaterialsBuffer);
-		cmdList->SetRootShaderResourceView(3, *currentFrameResource->LightsBuffer);
+		cmdList->SetRootConstantBufferView(DefferedPassRSSlots::WorldDataBuffer, *currentFrameResource->PassConstantBuffer);
+		cmdList->SetRootShaderResourceView(DefferedPassRSSlots::MaterialsBuffer, *currentFrameResource->MaterialsBuffer);
+		cmdList->SetRootShaderResourceView(DefferedPassRSSlots::LightBuffer, *currentFrameResource->LightsBuffer);
 
 		cmdList->SetPipelineState(*deferredGBufferPSO.get());
-		cmdList->SetGMemory(&defferedSRVMemory);
-		cmdList->SetRootDescriptorTable(4, &defferedSRVMemory, 0);
-		cmdList->SetRootDescriptorTable(5, &defferedSRVMemory, 1);
-		cmdList->SetRootDescriptorTable(7, &defferedSRVMemory, GBufferMapsCount);
-
-
+		cmdList->SetDescriptorsHeap(&defferedSRVMemory);
+		cmdList->SetRootDescriptorTable(DefferedPassRSSlots::NormalMap, &defferedSRVMemory, 0);
+		cmdList->SetRootDescriptorTable(DefferedPassRSSlots::BaseColorMap, &defferedSRVMemory, 1);
+		cmdList->SetRootDescriptorTable(DefferedPassRSSlots::PostionMap, &defferedSRVMemory, 2);
+		cmdList->SetRootDescriptorTable(DefferedPassRSSlots::DepthTexture, &defferedSRVMemory, GBufferMapsCount);
+		
 		for (auto&& object : typedGO[RenderMode::Opaque])
 			object->Draw(cmdList);
 
 		for (auto&& texture : defferedGBufferTextures)
 			cmdList->TransitionBarrier(texture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		cmdList->TransitionBarrier(MainWindow->GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 		cmdList->FlushResourceBarriers();
 
-
+		cmdList->SetRenderTargets(0, nullptr,0, &dsvMemory, 0);
+		
 		cmdList->SetRenderTargets(1, &rtvMemory, currentFrameResourceIndex);
 		cmdList->ClearRenderTarget(&rtvMemory, currentFrameResourceIndex, DirectX::Colors::Black);
+		
 		cmdList->SetPipelineState(*quadPso.get());
 		for (auto&& object : typedGO[RenderMode::Quad])
 			object->Draw(cmdList);
 
+
+		cmdList->SetPipelineState(*debugPso.get());
+
+		for (int i = 0; i < typedGO[RenderMode::Debug].size(); ++i)
+		{
+			auto object = typedGO[RenderMode::Debug][i];
+			object->Draw(cmdList);
+		}
+		
+		
+		
 
 
 		cmdList->TransitionBarrier(MainWindow->GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT);
 		cmdList->TransitionBarrier(depthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
 		cmdList->FlushResourceBarriers();
 
+
+		
+		
 		currentFrameResource->FenceValue = renderQueue->ExecuteCommandList(cmdList);
 
-		MainWindow->Present();
+		currentFrameResourceIndex =  MainWindow->Present();
 	}
 
 	void SampleApp::OnResize()
 	{
 		D3DApp::OnResize();
 
-		currentFrameResourceIndex = MainWnd()->GetCurrentBackBufferIndex() - 1;
+		currentFrameResourceIndex = MainWnd()->GetCurrentBackBufferIndex();
 
 		viewport.Height = static_cast<float>(MainWindow->GetClientHeight());
 		viewport.Width = static_cast<float>(MainWindow->GetClientWidth());
@@ -458,9 +504,14 @@ namespace SimpleRender
 
 			defferedGBufferTextures.push_back((GTexture(device, desc, L"Normal Roughness GMap", TextureUsage::RenderTarget)));
 
-			desc.Format = BackBufferFormat;
+			desc.Format = BaseColorMapFormat;
 
 			defferedGBufferTextures.push_back((GTexture(device, desc, L"BaseColor Metalnes GMAP", TextureUsage::RenderTarget)));
+
+			desc.Format = PositionMapFormat;
+
+			defferedGBufferTextures.push_back((GTexture(device, desc, L"Position GMAP", TextureUsage::RenderTarget)));
+			
 		}
 		else
 		{
@@ -625,6 +676,48 @@ namespace SimpleRender
 						keyboard.OnKeyPressed(keycode);
 					}
 				}
+
+				Vector3 addPos = Vector3::Zero;
+				const float speed = 50;
+				
+				if(keyboard.KeyIsPressed(VK_LEFT) && keycode == VK_LEFT)
+				{
+					addPos += Vector3::Left * 15 * timer.DeltaTime();
+				}
+
+				if (keyboard.KeyIsPressed(VK_RIGHT) && keycode == VK_RIGHT)
+				{
+					addPos += Vector3::Right * 15 * timer.DeltaTime();
+				}
+
+				if (keyboard.KeyIsPressed(VK_UP) && keycode == VK_UP)
+				{
+					addPos += Vector3::Up * 15 * timer.DeltaTime();
+				}
+
+				if (keyboard.KeyIsPressed(VK_DOWN) && keycode == VK_DOWN)
+				{
+					addPos += Vector3::Down * 15 * timer.DeltaTime();
+				}
+
+				if (keyboard.KeyIsPressed(VK_F2) && keycode == VK_F2)
+				{
+					addPos += Vector3::Forward * 15 * timer.DeltaTime();
+				}
+
+				if (keyboard.KeyIsPressed(VK_F3) && keycode == VK_F3)
+				{
+					addPos += Vector3::Backward * 15 * timer.DeltaTime();
+				}
+
+				
+
+				
+				for (auto&& object : typedGO[RenderMode::Debug])
+				{
+					object->GetTransform()->AdjustPosition(addPos * speed);
+				}
+				
 			}
 		}
 

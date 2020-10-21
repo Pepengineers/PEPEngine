@@ -1,7 +1,7 @@
 #pragma once
 
 #include "d3dUtil.h"
-#include "GMemory.h"
+#include "GDescriptor.h"
 #include "GTexture.h"
 
 namespace PEPEngine
@@ -26,12 +26,12 @@ namespace PEPEngine
 			UINT Height() const;
 			GTexture& GetTexture();
 
-			GMemory* GetSrvMemory()
+			GDescriptor* GetSrvMemory()
 			{
 				return &srvMemory;
 			}
 
-			GMemory* GetDsvMemory()
+			GDescriptor* GetDsvMemory()
 			{
 				return &dsvMemory;
 			}
@@ -57,9 +57,9 @@ namespace PEPEngine
 			UINT mHeight = 0;
 			DXGI_FORMAT mFormat = DXGI_FORMAT_R24G8_TYPELESS;
 
-			GMemory srvMemory;
+			GDescriptor srvMemory;
 
-			GMemory dsvMemory;
+			GDescriptor dsvMemory;
 
 			GTexture shadowMap;
 		};

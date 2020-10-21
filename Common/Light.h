@@ -24,7 +24,6 @@ namespace PEPEngine
 
 		public:
 			LightType type;
-			Vector4   PositionWorld;
 			Vector4   DirectionWorld;
 			Vector4   PositionView;
 			Vector4   DirectionView;
@@ -35,8 +34,19 @@ namespace PEPEngine
 			bool    Enabled;
 			bool    Selected;
 
+			Light()
+				:  DirectionWorld(0, 0, -1, 0)
+				, PositionView(0, 0, 0, 1)
+				, DirectionView(0, 0, 1, 0)
+				, Color(1, 1, 1, 1)
+				, SpotlightAngle(45.0f)
+				, Range(15)
+				, Intensity(1.0f)
+				, Enabled(true)
+				, Selected(false)
+				, type(LightType::Point) {  }
 			
-			LightData GetData() const;			
+			LightData& GetData();			
 		};
 	}
 }

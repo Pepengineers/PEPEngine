@@ -10,14 +10,32 @@ namespace PEPEngine
 		using namespace DirectX::SimpleMath;
 
 		static const UINT MaxMaterialTexturesMaps = 6;
-		static const UINT GBufferMapsCount = 2;
+		static const UINT GBufferMapsCount = 3;
 		
+		static const DXGI_FORMAT BaseColorMapFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
+		static const DXGI_FORMAT PositionMapFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
 		static const DXGI_FORMAT BackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		static const DXGI_FORMAT DepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 		static const DXGI_FORMAT AmbientMapFormat = DXGI_FORMAT_R16_UNORM;
-		static const DXGI_FORMAT NormalMapFormat = DXGI_FORMAT_R16G16B16A16_FLOAT;
+		static const DXGI_FORMAT NormalMapFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
 		static const DXGI_FORMAT DepthMapFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
+		enum DefferedPassRSSlots : UINT
+		{
+			ObjectDataBuffer = 0,
+			MaterialTextures,
+			WorldDataBuffer,
+			MaterialsBuffer,
+			LightBuffer,
+			NormalMap,
+			BaseColorMap,
+			PostionMap,
+			DepthTexture,
+			AmbientMap,
+			SkyMap,
+			ShadowMap
+		};
+		
 
 		
 		struct Vertex
@@ -63,7 +81,7 @@ namespace PEPEngine
 			Directional,
 		};
 
-		struct LightData
+		struct alignas(sizeof(Vector4)) LightData
 		{
 			Vector4   PositionWorld;
 			Vector4   DirectionWorld;
@@ -154,21 +172,6 @@ namespace PEPEngine
 			float RounghessMapIndex = -1;
 			float AOMapIndex = -1;			
 		};
-
-		class StandardForwardShaderSlot
-		{
-		public:
-			enum Register
-			{
-				ObjectData,
-				CameraData,
-				MaterialData,
-				SkyMap,
-				ShadowMap,
-				AmbientMap,
-				TexturesMap,
-				Count
-			};
-		};
+				
 	}
 }

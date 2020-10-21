@@ -2,7 +2,7 @@
 #include "SkyBox.h"
 #include "GameObject.h"
 #include "GCommandList.h"
-#include "GMemory.h"
+#include "GDescriptor.h"
 #include "GMesh.h"
 #include "GModel.h"
 #include "Transform.h"
@@ -13,7 +13,7 @@ namespace PEPEngine
 	{
 		SkyBox::SkyBox(const std::shared_ptr<GDevice>& device, const std::shared_ptr<GModel>& model,
 		               GTexture& skyMapTexture,
-		               GMemory* srvMemory, UINT offset) : ModelRenderer(device, model)
+		               GDescriptor* srvMemory, UINT offset) : ModelRenderer(device, model)
 		{
 			gpuTextureHandle = srvMemory->GetGPUHandle(offset);
 			cpuTextureHandle = srvMemory->GetCPUHandle(offset);
@@ -32,13 +32,13 @@ namespace PEPEngine
 		void SkyBox::PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList)
 		{
 			cmdList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(
-				StandardForwardShaderSlot::SkyMap, gpuTextureHandle);
+				DefferedPassRSSlots::SkyMap, gpuTextureHandle);
 
 			for (int i = 0; i < model->GetMeshesCount(); ++i)
 			{
 				const auto mesh = model->GetMesh(i);
 
-				cmdList->SetRootConstantBufferView(StandardForwardShaderSlot::ObjectData,
+				cmdList->SetRootConstantBufferView(DefferedPassRSSlots::ObjectDataBuffer,
 				                                   *modelDataBuffer, i);
 				mesh->Draw(cmdList);
 			}

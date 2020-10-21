@@ -63,8 +63,9 @@ VertexOut VS(VertexIn input)
 
 struct PixelShaderOutput
 {
-	float4 Normal_Roughness : SV_Target0;
-	float4 BaseColor_Metalness : SV_Target1;
+	float4 Normal : SV_Target0;
+	float4 BaseColor : SV_Target1;
+	float4 PositionBuffer : SV_Target2;
 };
 
 
@@ -76,34 +77,55 @@ PixelShaderOutput PS(VertexOut input)
 	float4 baseColor = MaterialTexture[material.DiffuseMapIndex].Sample(gsamAnisotropicWrap, input.UV);
 	clip(baseColor.a - 0.1f);
 
-	input.NormalWorldSpace = normalize(input.NormalWorldSpace);
+    float4 normalColor = MaterialTexture[material.NormalMapIndex].Sample(gsamAnisotropicWrap, input.UV);
+    float3 bumpedNormalW = NormalSampleToWorldSpace(normalColor.rgb, input.NormalWorldSpace, input.TangentWorldSpace);
 	
-	float4 NormalMapColor = MaterialTexture[material.NormalMapIndex].Sample(gsamAnisotropicWrap, input.UV);
-	
-	// Normal (encoded in view space)
-	const float3 normalObjectSpace = normalize(NormalMapColor.xyz * 2.0f - 1.0f);
-	const float3x3 tbnWorldSpace = float3x3(normalize(input.TangentWorldSpace),
-		normalize(input.BinormalWorldSpace),
-		normalize(input.NormalWorldSpace));
-	const float3 normalWorldSpace = normalize(mul(normalObjectSpace, tbnWorldSpace));
-	const float3x3 tbnViewSpace = float3x3(normalize(input.TangentViewSpace),
-		normalize(input.BinormalViewSpace),
-		normalize(input.NormalViewSpace));
-	
-	output.Normal_Roughness.xy = Encode(normalize(mul(normalObjectSpace,
-		tbnViewSpace)));
+    output.BaseColor = baseColor;	
+    output.Normal = float4(bumpedNormalW, 0);
+    output.PositionBuffer = float4(input.PositionWorldSpace, 0);
 
-	// Base color and metalness
-	const float metalness = MaterialTexture[material.MetallicMapIndex].Sample(gsamAnisotropicWrap,
-		input.UV).r;
+    return output;
 	
-	baseColor.a = metalness;
+	//float4 NormalMapColor = MaterialTexture[material.NormalMapIndex].Sample(gsamAnisotropicWrap, input.UV);
+	
+	//// Normal (encoded in view space)
+	//const float3 normalObjectSpace = normalize(NormalMapColor.xyz * 2.0f - 1.0f);
+	//const float3x3 tbnWorldSpace = float3x3(normalize(input.TangentWorldSpace),
+	//	normalize(input.BinormalWorldSpace),
+	//	normalize(input.NormalWorldSpace));
+	//const float3 normalWorldSpace = normalize(mul(normalObjectSpace, tbnWorldSpace));
+	//const float3x3 tbnViewSpace = float3x3(normalize(input.TangentViewSpace),
+	//	normalize(input.BinormalViewSpace),
+	//	normalize(input.NormalViewSpace));
+	
+	//output.Normal_Roughness.xy = Encode(normalize(mul(normalObjectSpace,
+	//	tbnViewSpace)));
 
-	output.BaseColor_Metalness = baseColor;
+	//// Base color and metalness
+	//const float metalness = MaterialTexture[material.MetallicMapIndex].Sample(gsamAnisotropicWrap,
+	//	input.UV).r;
 	
-	// Roughness
-	output.Normal_Roughness.z = MaterialTexture[material.RoughnessMapIndex].Sample(gsamAnisotropicWrap,
-		input.UV).r;
-		
-	return output;
+	//baseColor.a = metalness;
+
+	//output.BaseColor_Metalness = baseColor;
+	
+	//// Roughness
+	//output.Normal_Roughness.z = MaterialTexture[material.RoughnessMapIndex].Sample(gsamAnisotropicWrap,
+	//	input.UV).r;
+
+ //   output.PositionBuffer = float4(input.PositionWorldSpace, 1);
+	
+	//return output;
+}
+
+
+float4 PSDebug(VertexOut input) : SV_Target
+{
+    MaterialData material = Materials[ObjectBuffer.MaterialIndex];
+
+    float4 baseColor = MaterialTexture[material.DiffuseMapIndex].Sample(gsamAnisotropicWrap, input.UV);
+    clip(baseColor.a - 0.1f);
+
+
+    return baseColor;
 }

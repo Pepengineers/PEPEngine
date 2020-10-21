@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Material.h"
 #include "d3dApp.h"
-#include "GMemory.h"
+#include "GDescriptor.h"
 #include "GraphicPSO.h"
 
 namespace PEPEngine
@@ -98,8 +98,8 @@ namespace PEPEngine
 
 		void Material::Draw(std::shared_ptr<GCommandList> cmdList) const
 		{
-			cmdList->SetGMemory(&textureMapsSRVMemory);
-			cmdList->SetRootDescriptorTable(8, &textureMapsSRVMemory);
+			cmdList->SetDescriptorsHeap(&textureMapsSRVMemory);
+			cmdList->SetRootDescriptorTable(DefferedPassRSSlots::MaterialTextures, &textureMapsSRVMemory);
 		}
 
 		void Material::Update()

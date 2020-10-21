@@ -3,7 +3,7 @@
 #include <DirectXColors.h>
 #include "d3dUtil.h"
 #include "d3dx12.h"
-#include "GMemory.h"
+#include "GDescriptor.h"
 #include "GraphicPSO.h"
 #include "ShaderBuffersData.h"
 #include "GTexture.h"
@@ -51,7 +51,7 @@ namespace PEPEngine
 						
 			std::unordered_map<MaterialTypes, UINT> slots;
 
-			GMemory textureMapsSRVMemory;
+			GDescriptor textureMapsSRVMemory;
 			
 		public:
 						

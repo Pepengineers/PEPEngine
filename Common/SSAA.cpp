@@ -27,17 +27,17 @@ namespace PEPEngine
 			return depthMap;
 		}
 
-		GMemory* SSAA::GetRTV()
+		GDescriptor* SSAA::GetRTV()
 		{
 			return &rtvMemory;
 		}
 
-		GMemory* SSAA::GetSRV()
+		GDescriptor* SSAA::GetSRV()
 		{
 			return &srvMemory;
 		}
 
-		GMemory* SSAA::GetDSV()
+		GDescriptor* SSAA::GetDSV()
 		{
 			return &dsvMemory;
 		}

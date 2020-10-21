@@ -9,6 +9,11 @@ namespace PEPEngine
 	{
 		void Light::Update()
 		{
+			if(gameObject->GetTransform()->IsDirty())
+			{
+				NumFramesDirty = globalCountFrameResources;
+			}
+			
 			if (NumFramesDirty > 0)
 			{
 				auto pos = gameObject->GetTransform()->GetWorldPosition();
@@ -32,7 +37,7 @@ namespace PEPEngine
 		{
 		}
 
-		LightData Light::GetData() const
+		LightData& Light::GetData()
 		{
 			return lightData;
 		}	
