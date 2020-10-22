@@ -165,12 +165,12 @@ namespace PEPEngine
 			float   BumpIntensity;
 			float   SpecularScale;
 			float   AlphaThreshold;
-			float DiffuseMapIndex = -1;
-			float NormalMapIndex = -1;
-			float HeightMapIndex = -1;
-			float MetallicMapIndex = -1;
-			float RounghessMapIndex = -1;
-			float AOMapIndex = -1;			
+			int DiffuseMapIndex = -1;
+			int NormalMapIndex = -1;
+			int HeightMapIndex = -1;
+			int MetallicMapIndex = -1;
+			int RounghessMapIndex = -1;
+			int AOMapIndex = -1;
 		};
 				
 	}
