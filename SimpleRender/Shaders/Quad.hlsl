@@ -44,7 +44,7 @@ float4 PS(VertexOut input) : SV_Target
 
     float4 resultColor;
 	
-    for (int i = 0; i < NUM_LIGHTS; ++i)
+    for (int i = 0; i < WorldBuffer.LightsCount; ++i)
     {
         float3 L = Lights[i].PositionWorld - position;
         float dist = length(L);
@@ -62,7 +62,7 @@ float4 PS(VertexOut input) : SV_Target
         float3 color = lightAmount * Lights[i].Color * att;
 
 	//Specular calc
-        float3 V = WorldBuffer.EyePosW - position;
+        float3 V = WorldBuffer.CameraWorldPosition - position;
         float3 H = normalize(L + V);
         float specular = pow(saturate(dot(normal, H)), 10) * att;
 

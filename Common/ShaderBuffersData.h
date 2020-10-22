@@ -108,7 +108,7 @@ namespace PEPEngine
 			Matrix ViewProjTex = Matrix::Identity;
 			Matrix ShadowTransform = Matrix::Identity;
 			Vector3 EyePosW = Vector3{0.0f, 0.0f, 0.0f};
-			float debugMap = 0.0f;
+			UINT LightCount = 0;
 			Vector2 RenderTargetSize = Vector2{0.0f, 0.0f};
 			Vector2 InvRenderTargetSize = Vector2{0.0f, 0.0f};
 			float NearZ = 0.0f;

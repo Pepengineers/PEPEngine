@@ -356,8 +356,9 @@ namespace SimpleRender
 		mainPassCB.FarZ = 1000.0f;
 		mainPassCB.TotalTime = gt.TotalTime();
 		mainPassCB.DeltaTime = gt.DeltaTime();
+		mainPassCB.LightCount = lights.size();
 		mainPassCB.AmbientLight = Vector4{ 0.25f, 0.25f, 0.35f, 1.0f };
-
+		
 		auto currentPassCB = currentFrameResource->PassConstantBuffer.get();
 		currentPassCB->CopyData(0, mainPassCB);
 

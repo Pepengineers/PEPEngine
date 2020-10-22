@@ -28,8 +28,8 @@ struct WorldData
 	float4x4 InvViewProj;
 	float4x4 ViewProjTex;
 	float4x4 ShadowTransform;
-	float3 EyePosW;
-	float debugMap;
+	float3 CameraWorldPosition;
+    uint LightsCount;
 	float2 RenderTargetSize;
 	float2 InvRenderTargetSize;
 	float NearZ;
@@ -37,7 +37,6 @@ struct WorldData
 	float TotalTime;
 	float DeltaTime;
 	float4 AmbientLight;
-
 	float4 gFogColor;
 	float gFogStart;
 	float gFogRange;
