@@ -23,7 +23,7 @@ namespace PEPEngine
 			Matrix projection = Matrix::Identity;
 
 		public:
-			LightType type;
+			//LightType type;
 			Vector4   DirectionWorld;
 			Vector4   PositionView;
 			Vector4   DirectionView;
@@ -31,6 +31,7 @@ namespace PEPEngine
 			float    SpotlightAngle;
 			float    Range;
 			float    Intensity;
+			float type;
 			bool    Enabled;
 			bool    Selected;
 
@@ -40,11 +41,13 @@ namespace PEPEngine
 				, DirectionView(0, 0, 1, 0)
 				, Color(1, 1, 1, 1)
 				, SpotlightAngle(45.0f)
-				, Range(15)
+				, Range(5)
 				, Intensity(1.0f)
+			    , type(Spot)
 				, Enabled(true)
-				, Selected(false)
-				, type(LightType::Point) {  }
+				, Selected(false) { }
+				//, type(LightType::Point)
+			
 			
 			LightData& GetData();			
 		};

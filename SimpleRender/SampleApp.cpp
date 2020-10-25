@@ -241,7 +241,9 @@ namespace SimpleRender
 
 
 		auto cameraGO = std::make_unique<GameObject>("MainCamera");
-		cameraGO->GetTransform()->SetEulerRotate(Vector3(-30, 270, 0));
+		cameraGO->GetTransform()->SetEulerRotate(Vector3(-30, 120, 0));
+		cameraGO->GetTransform()->SetPosition(Vector3(30, 20, -130));
+		
 		cameraGO->AddComponent(std::make_shared<Camera>(AspectRatio()));
 		cameraGO->AddComponent(std::make_shared<CameraController>());
 		gameObjects.push_back(std::move(cameraGO));
@@ -259,12 +261,21 @@ namespace SimpleRender
 
 
 				
-				auto pos = rModel->GetTransform()->GetWorldPosition() + (Vector3::Up * MathHelper::RandF() * 75);
+				auto pos = rModel->GetTransform()->GetWorldPosition() + (Vector3::Up * 1 * 10);
 				
 				auto sun1 = std::make_unique<GameObject>("Directional Light");
 				sun1->GetTransform()->SetPosition(pos);
 				auto light = std::make_shared<Light>();
-				light->Color = Vector4(MathHelper::RandF(), MathHelper::RandF(), MathHelper::RandF(), 1);  
+				light->Color = Vector4(MathHelper::RandF(), MathHelper::RandF(), MathHelper::RandF(), 1);
+				//light->Color = Vector4(1,0,0, 1);
+				light->Intensity = 1;
+			      (i+j)%2 ==1  ? light->type = Spot : light->type = Point;
+				
+				if (i==2 && j==2)
+				{
+					light->Intensity = 0.5;
+					light->type = Directional;
+				}
 				sun1->AddComponent(light);
 				
 				renderer = std::make_shared<ModelRenderer>(GDeviceFactory::GetDevice(), models[L"cube"]);

@@ -79,9 +79,10 @@ struct LightData
 	float SpotlightAngle;
 	float Range;
 	float Intensity;
+    float Type;
 	bool Enabled;
 	bool Selected;
-	uint Type;
+	//uint Type;
 	float2 Padding;
 };
 

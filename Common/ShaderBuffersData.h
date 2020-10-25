@@ -91,9 +91,10 @@ namespace PEPEngine
 			float    SpotlightAngle;
 			float    Range;
 			float    Intensity;
+			float Type;
 			bool    Enabled;
 			bool    Selected;
-			UINT    Type;
+			//UINT    Type;
 			Vector2  Padding;
 		};
 

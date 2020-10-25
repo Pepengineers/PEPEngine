@@ -13,6 +13,7 @@ struct VertexOut
 	float2 UV : TEXCOORD;
 };
 
+
 VertexOut VS(VertexIn input)
 {
 	VertexOut output;
@@ -42,36 +43,33 @@ float4 PS(VertexOut input) : SV_Target
     const float4 normal = NormalMap.Load(fragmentPositionScreenSpace);
     const float4 diffuse = BaseColorMap.Load(fragmentPositionScreenSpace);
 
-    float4 resultColor;
+    float4 resultColor = diffuse * 0.1; //ambient
+	
 	
     for (int i = 0; i < WorldBuffer.LightsCount; ++i)
-    {
-        float3 L = Lights[i].PositionWorld - position;
-        float dist = length(L);
+    {    // Skip lights that are not enabled.
+        if (!Lights[i].Enabled)
+            continue;
+    	
+        if (Lights[i].Type != DIRECTIONAL_LIGHT && length(Lights[i].PositionWorld - position) > Lights[i].Range)
+            continue;
+        float4 V = normalize(float4(WorldBuffer.CameraWorldPosition,0.0) - position);	
+        LightingResult result = (LightingResult)0;
+        MaterialData mat_data = (MaterialData)0;
+        mat_data.SpecularPower = 15;
 
-        if (dist > 12.0f)
-        {
-           continue;
-        }
+    	if(Lights[i].Type == POINT_LIGHT)
+            result = DoPointLight(Lights[i], mat_data, V, position, normal);
+         if (Lights[i].Type == SPOT_LIGHT)
+            result = DoSpotLight(Lights[i], mat_data, V, position, normal);
+         if (Lights[i].Type == DIRECTIONAL_LIGHT)
+            result = DoDirectionalLight(Lights[i], mat_data, V, position, normal);
 
-        L /= dist;
-
-        float att = max(0.0f, 1.0f - (dist / 20.0f));
-
-        float lightAmount = saturate(dot(normal, L));
-        float3 color = lightAmount * Lights[i].Color * att;
-
-	//Specular calc
-        float3 V = WorldBuffer.CameraWorldPosition - position;
-        float3 H = normalize(L + V);
-        float specular = pow(saturate(dot(normal, H)), 10) * att;
-
-        float3 finalDiffuse = color * diffuse;
-        float3 finalSpecular = specular * diffuse * att;
-
-        float4 totalColor = float4((finalDiffuse + finalSpecular), 1.0f);
+        float4 totalColor = saturate(result.Diffuse) + saturate(result.Specular);
         resultColor += totalColor;
+       
     }
+
 
     return resultColor;	
 }
