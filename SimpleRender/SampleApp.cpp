@@ -1,4 +1,6 @@
 #include "SampleApp.h"
+
+#include "AIComponent.h"
 #include "CameraController.h"
 #include "GameObject.h"
 #include "GDeviceFactory.h"
@@ -17,6 +19,7 @@ namespace SimpleRender
 
 	SampleApp::SampleApp(HINSTANCE hInstance) : D3DApp(hInstance), assetLoader(AssetsLoader(GDeviceFactory::GetDevice()))
 	{
+	 
 	}
 
 	bool SampleApp::Initialize()
@@ -258,6 +261,10 @@ namespace SimpleRender
 				rModel->GetTransform()->SetPosition(
 					Vector3::Right * -30 * j + Vector3::Forward * 10 * i);
 				typedGO[RenderMode::Opaque].push_back(rModel.get());
+
+
+				auto ai = std::make_shared<AIComponent>();
+				rModel->AddComponent(ai);
 
 
 				
