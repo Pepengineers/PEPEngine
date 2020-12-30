@@ -19,6 +19,12 @@
     <Filter Include="Render">
       <UniqueIdentifier>{1f94ad1f-b6f1-4fca-bd64-29a5268fb38e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="GOAP">
+      <UniqueIdentifier>{cbf7c1bf-ac2c-42d1-a0fd-b0561a8e197f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GOAP\Actions">
+      <UniqueIdentifier>{35b4e233-1518-4f4e-9d65-1686956afd28}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -105,6 +111,27 @@
     <ClInclude Include="Window.h">
       <Filter>Render</Filter>
     </ClInclude>
+    <ClInclude Include="goap\Planner.h">
+      <Filter>GOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="goap\Action.h">
+      <Filter>GOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="goap\WorldState.h">
+      <Filter>GOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="goap\Node.h">
+      <Filter>GOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="AIComponent.h">
+      <Filter>Components</Filter>
+    </ClInclude>
+    <ClInclude Include="DoActionA.h">
+      <Filter>GOAP\Actions</Filter>
+    </ClInclude>
+    <ClInclude Include="DoActionB.h">
+      <Filter>GOAP\Actions</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -181,6 +208,27 @@
     </ClCompile>
     <ClCompile Include="Transform.cpp">
       <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="goap\Action.cpp">
+      <Filter>GOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="goap\Node.cpp">
+      <Filter>GOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="goap\Planner.cpp">
+      <Filter>GOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="goap\WorldState.cpp">
+      <Filter>GOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="AIComponent.cpp">
+      <Filter>Components</Filter>
+    </ClCompile>
+    <ClCompile Include="DoActionA.cpp">
+      <Filter>GOAP\Actions</Filter>
+    </ClCompile>
+    <ClCompile Include="DoActionB.cpp">
+      <Filter>GOAP\Actions</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
