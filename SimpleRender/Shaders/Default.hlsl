@@ -75,7 +75,7 @@ PixelShaderOutput PS(VertexOut input)
 	MaterialData material = Materials[ObjectBuffer.MaterialIndex];
 	
 	float4 baseColor = MaterialTexture[material.DiffuseMapIndex].Sample(gsamAnisotropicWrap, input.UV);
-	clip(baseColor.a - 0.1f);
+	clip(baseColor.a - material.AlphaThreshold);
 
     float4 normalColor = MaterialTexture[material.NormalMapIndex].Sample(gsamAnisotropicWrap, input.UV);
     float3 bumpedNormalW = NormalSampleToWorldSpace(normalColor.rgb, input.NormalWorldSpace, input.TangentWorldSpace);

@@ -15,10 +15,8 @@ namespace PEPEngine
 			}
 			
 			if (NumFramesDirty > 0)
-			{
-				auto pos = gameObject->GetTransform()->GetWorldPosition();
-				
-				lightData.PositionWorld = Vector4(pos.x, pos.y, pos.z, 1);
+			{				
+				lightData.PositionWorld = gameObject->GetTransform()->GetWorldPosition();
 				lightData.DirectionWorld = DirectionWorld;
 				lightData.PositionView = PositionView;
 				lightData.DirectionView = DirectionView;
@@ -28,7 +26,7 @@ namespace PEPEngine
 				lightData.Intensity = Intensity;
 				lightData.Enabled = Enabled;
 				lightData.Selected = Selected;
-				lightData.Type = type;
+				lightData.Type = Type;
 				NumFramesDirty--;
 			}
 		}

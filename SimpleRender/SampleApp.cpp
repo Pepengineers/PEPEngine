@@ -269,12 +269,12 @@ namespace SimpleRender
 				light->Color = Vector4(MathHelper::RandF(), MathHelper::RandF(), MathHelper::RandF(), 1);
 				//light->Color = Vector4(1,0,0, 1);
 				light->Intensity = 1;
-			      (i+j)%2 ==1  ? light->type = Spot : light->type = Point;
+			      (i+j)%2 ==1  ? light->Type = Spot : light->Type = Point;
 				
 				if (i==2 && j==2)
 				{
 					light->Intensity = 0.5;
-					light->type = Directional;
+					light->Type = Directional;
 				}
 				sun1->AddComponent(light);
 				
@@ -412,16 +412,16 @@ namespace SimpleRender
 
 
 		cmdList->SetRootSignature(rootSignature.get());
-		cmdList->SetRootConstantBufferView(DefferedPassRSSlots::WorldDataBuffer, *currentFrameResource->PassConstantBuffer);
-		cmdList->SetRootShaderResourceView(DefferedPassRSSlots::MaterialsBuffer, *currentFrameResource->MaterialsBuffer);
-		cmdList->SetRootShaderResourceView(DefferedPassRSSlots::LightBuffer, *currentFrameResource->LightsBuffer);
+		cmdList->SetRootConstantBufferView(DeferredPassRSSlots::WorldDataBuffer, *currentFrameResource->PassConstantBuffer);
+		cmdList->SetRootShaderResourceView(DeferredPassRSSlots::MaterialsBuffer, *currentFrameResource->MaterialsBuffer);
+		cmdList->SetRootShaderResourceView(DeferredPassRSSlots::LightBuffer, *currentFrameResource->LightsBuffer);
 
 		cmdList->SetPipelineState(*deferredGBufferPSO.get());
 		cmdList->SetDescriptorsHeap(&defferedSRVMemory);
-		cmdList->SetRootDescriptorTable(DefferedPassRSSlots::NormalMap, &defferedSRVMemory, 0);
-		cmdList->SetRootDescriptorTable(DefferedPassRSSlots::BaseColorMap, &defferedSRVMemory, 1);
-		cmdList->SetRootDescriptorTable(DefferedPassRSSlots::PostionMap, &defferedSRVMemory, 2);
-		cmdList->SetRootDescriptorTable(DefferedPassRSSlots::DepthTexture, &defferedSRVMemory, GBufferMapsCount);
+		cmdList->SetRootDescriptorTable(DeferredPassRSSlots::NormalMap, &defferedSRVMemory, 0);
+		cmdList->SetRootDescriptorTable(DeferredPassRSSlots::BaseColorMap, &defferedSRVMemory, 1);
+		cmdList->SetRootDescriptorTable(DeferredPassRSSlots::PostionMap, &defferedSRVMemory, 2);
+		cmdList->SetRootDescriptorTable(DeferredPassRSSlots::DepthTexture, &defferedSRVMemory, GBufferMapsCount);
 		
 		for (auto&& object : typedGO[RenderMode::Opaque])
 			object->Draw(cmdList);

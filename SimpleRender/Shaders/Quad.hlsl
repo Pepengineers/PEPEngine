@@ -42,28 +42,47 @@ float4 PS(VertexOut input) : SV_Target
     const float4 position = PositionTexture.Load(fragmentPositionScreenSpace);
     const float4 normal = NormalMap.Load(fragmentPositionScreenSpace);
     const float4 diffuse = BaseColorMap.Load(fragmentPositionScreenSpace);
-
+	
+    float4 viewDir = normalize(float4(WorldBuffer.CameraWorldPosition, 0.0) - position);
     float4 resultColor = diffuse * 0.1; //ambient
 	
-	
+	[loop]
     for (int i = 0; i < WorldBuffer.LightsCount; ++i)
     {    // Skip lights that are not enabled.
         if (!Lights[i].Enabled)
             continue;
-    	
-        if (Lights[i].Type != DIRECTIONAL_LIGHT && length(Lights[i].PositionWorld - position) > Lights[i].Range)
-            continue;
-        float4 V = normalize(float4(WorldBuffer.CameraWorldPosition,0.0) - position);	
-        LightingResult result = (LightingResult)0;
-        MaterialData mat_data = (MaterialData)0;
-        mat_data.SpecularPower = 15;
 
-    	if(Lights[i].Type == POINT_LIGHT)
-            result = DoPointLight(Lights[i], mat_data, V, position, normal);
-         if (Lights[i].Type == SPOT_LIGHT)
-            result = DoSpotLight(Lights[i], mat_data, V, position, normal);
-         if (Lights[i].Type == DIRECTIONAL_LIGHT)
-            result = DoDirectionalLight(Lights[i], mat_data, V, position, normal);
+        if (Lights[i].Type != DIRECTIONAL_LIGHT)
+        {
+            if (length(Lights[i].PositionWorld - position) > Lights[i].Range)
+            {
+                continue;
+            }
+        }
+
+        LightingResult result = (LightingResult)0;
+        MaterialData material = (MaterialData)0;
+        material.SpecularPower = 15;
+
+
+        switch (Lights[i].Type)
+        {
+        case POINT_LIGHT:
+	        {
+		        result = DoPointLight(Lights[i], material, viewDir, position, normal);
+		        break;
+	        }
+        case SPOT_LIGHT:
+	        {
+		        result = DoSpotLight(Lights[i], material, viewDir, position, normal);
+		        break;
+	        }
+        case DIRECTIONAL_LIGHT:
+	        {
+		        result = DoDirectionalLight(Lights[i], material, viewDir, position, normal);
+		        break;
+	        }
+        }    	
 
         float4 totalColor = saturate(result.Diffuse) + saturate(result.Specular);
         resultColor += totalColor;

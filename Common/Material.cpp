@@ -99,7 +99,7 @@ namespace PEPEngine
 		void Material::Draw(std::shared_ptr<GCommandList> cmdList) const
 		{
 			cmdList->SetDescriptorsHeap(&textureMapsSRVMemory);
-			cmdList->SetRootDescriptorTable(DefferedPassRSSlots::MaterialTextures, &textureMapsSRVMemory);
+			cmdList->SetRootDescriptorTable(DeferredPassRSSlots::MaterialTextures, &textureMapsSRVMemory);
 		}
 
 		void Material::Update()

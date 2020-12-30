@@ -59,30 +59,29 @@ struct MaterialData
 	float BumpIntensity;
 	float SpecularScale;
 	float AlphaThreshold;
-	float DiffuseMapIndex;
-	float NormalMapIndex;
-	float HeightMapIndex;
-	float MetallicMapIndex;
-	float RoughnessMapIndex;
-	float AOMapIndex;
+    int DiffuseMapIndex;
+    int NormalMapIndex;
+    int HeightMapIndex;
+    int MetallicMapIndex;
+    int RoughnessMapIndex;
+    int AOMapIndex;
 };
 
 StructuredBuffer<MaterialData> Materials : register(t0, space1);
 
 struct LightData
-{
-	float4 PositionWorld;
-	float4 DirectionWorld;
-	float4 PositionView;
-	float4 DirectionView;
-	float4 Color;
+{	
+    float4 Color;
+	float3 PositionWorld;
+	float3 DirectionWorld;
+	float3 PositionView;
+	float3 DirectionView;
 	float SpotlightAngle;
 	float Range;
-	float Intensity;
-    float Type;
+	float Intensity;	
+    int Type;
 	bool Enabled;
 	bool Selected;
-	//uint Type;
 	float2 Padding;
 };
 
@@ -747,7 +746,7 @@ LightingResult DoPointLight(LightData light, MaterialData mat, float4 V, float4 
 {
     LightingResult result;
 
-    float4 L = light.PositionWorld - P;
+    float4 L = float4(light.PositionWorld, 1) - P;
     float distance = length(L);
     L = L / distance;
 
@@ -763,7 +762,7 @@ LightingResult DoDirectionalLight(LightData light, MaterialData mat, float4 V, f
 {
     LightingResult result;
 
-    float4 L = normalize(-light.DirectionView);
+    float4 L = normalize(float4(-light.DirectionView, 1));
 
     result.Diffuse = DoDiffuse(light, L, N) * light.Intensity;
     result.Specular = DoSpecular(light, mat, V, L, N) * light.Intensity;
@@ -775,7 +774,7 @@ LightingResult DoSpotLight(LightData light, MaterialData mat, float4 V, float4 P
 {
     LightingResult result;
 
-    float4 L = light.PositionWorld - P;
+    float4 L = float4(light.PositionWorld, 1) - P;
     float distance = length(L);
     L = L / distance;
 

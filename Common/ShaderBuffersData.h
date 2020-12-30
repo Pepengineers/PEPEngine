@@ -20,7 +20,7 @@ namespace PEPEngine
 		static const DXGI_FORMAT NormalMapFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
 		static const DXGI_FORMAT DepthMapFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
-		enum DefferedPassRSSlots : UINT
+		enum DeferredPassRSSlots : UINT
 		{
 			ObjectDataBuffer = 0,
 			MaterialTextures,
@@ -74,7 +74,7 @@ namespace PEPEngine
 			Vector3 TangentU;
 		};
 
-		enum LightType : UINT
+		enum LightType : INT
 		{		
 			Point = 0,
 			Spot,
@@ -83,18 +83,17 @@ namespace PEPEngine
 
 		struct alignas(sizeof(Vector4)) LightData
 		{
-			Vector4   PositionWorld;
-			Vector4   DirectionWorld;
-			Vector4   PositionView;
-			Vector4   DirectionView;
-			Vector4   Color;			
+			Vector4   Color;
+			Vector3   PositionWorld;
+			Vector3   DirectionWorld;
+			Vector3   PositionView;
+			Vector3   DirectionView;		
 			float    SpotlightAngle;
 			float    Range;
 			float    Intensity;
-			float Type;
+			LightType Type;
 			bool    Enabled;
 			bool    Selected;
-			//UINT    Type;
 			Vector2  Padding;
 		};
 
@@ -165,7 +164,7 @@ namespace PEPEngine
 			float   IndexOfRefraction;			
 			float   BumpIntensity;
 			float   SpecularScale;
-			float   AlphaThreshold;
+			float   AlphaThreshold = 0.1f;
 			int DiffuseMapIndex = -1;
 			int NormalMapIndex = -1;
 			int HeightMapIndex = -1;

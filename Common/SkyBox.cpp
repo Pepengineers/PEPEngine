@@ -32,13 +32,13 @@ namespace PEPEngine
 		void SkyBox::PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList)
 		{
 			cmdList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(
-				DefferedPassRSSlots::SkyMap, gpuTextureHandle);
+				DeferredPassRSSlots::SkyMap, gpuTextureHandle);
 
 			for (int i = 0; i < model->GetMeshesCount(); ++i)
 			{
 				const auto mesh = model->GetMesh(i);
 
-				cmdList->SetRootConstantBufferView(DefferedPassRSSlots::ObjectDataBuffer,
+				cmdList->SetRootConstantBufferView(DeferredPassRSSlots::ObjectDataBuffer,
 				                                   *modelDataBuffer, i);
 				mesh->Draw(cmdList);
 			}
