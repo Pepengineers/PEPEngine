@@ -17,8 +17,7 @@ namespace PEPEngine
 		using namespace Utils;
 		using namespace Graphics;
 
-		
-		
+
 		class Material
 		{
 		public:
@@ -32,13 +31,13 @@ namespace PEPEngine
 				RoughnessMap = MetallicMap + 1,
 				AOMap = RoughnessMap + 1
 			};
-			
+
 		private:
-			
+
 			static UINT materialIndexGlobal;
 
 			UINT materialIndex = -1;
-			
+
 			std::wstring Name;
 
 			RenderMode::Mode type = RenderMode::Opaque;
@@ -48,30 +47,29 @@ namespace PEPEngine
 			UINT NumFramesDirty = globalCountFrameResources;
 
 			std::vector<std::shared_ptr<GTexture>> materialMaps;
-						
+
 			std::unordered_map<MaterialTypes, UINT> slots;
 
 			GDescriptor textureMapsSRVMemory;
-			
+
 		public:
-						
-			Vector4  GlobalAmbient;
-			Vector4  AmbientColor;
-			Vector4  EmissiveColor;
-			Vector4  DiffuseColor;
-			Vector4  SpecularColor;
-			Vector4  Reflectance;
-			float   Opacity;
-			float   SpecularPower;
-			float   IndexOfRefraction;		
-			float   BumpIntensity;
-			float   SpecularScale;
-			float   AlphaThreshold;
-			
+
+			Vector4 AmbientColor;
+			Vector4 EmissiveColor;
+			Vector4 DiffuseColor;
+			Vector4 SpecularColor;
+			Vector4 Reflectance;
+			float Opacity;
+			float SpecularPower;
+			float IndexOfRefraction;
+			float BumpIntensity;
+			float SpecularScale;
+			float AlphaThreshold;
+
 			UINT GetMaterialIndex() const;
 
 			void SetMaterialIndex(UINT index);
-			
+
 			MaterialData& GetMaterialConstantData();
 
 
@@ -81,7 +79,7 @@ namespace PEPEngine
 
 			void SetMaterialMap(MaterialTypes type, std::shared_ptr<GTexture> texture);
 
-			void SetRenderMode(RenderMode::Mode pso);			
+			void SetRenderMode(RenderMode::Mode pso);
 
 			Material(std::wstring name, RenderMode::Mode pso = RenderMode::Opaque);
 

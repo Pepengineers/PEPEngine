@@ -1,4 +1,5 @@
 #pragma once
+#include <d3d12.h>
 #include <SimpleMath.h>
 
 #define MaxLights 16
@@ -10,34 +11,31 @@ namespace PEPEngine
 		using namespace DirectX::SimpleMath;
 
 		static const UINT MaxMaterialTexturesMaps = 6;
-		static const UINT GBufferMapsCount = 3;
-		
-		static const DXGI_FORMAT BaseColorMapFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-		static const DXGI_FORMAT PositionMapFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
+
+
 		static const DXGI_FORMAT BackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
 		static const DXGI_FORMAT DepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 		static const DXGI_FORMAT AmbientMapFormat = DXGI_FORMAT_R16_UNORM;
-		static const DXGI_FORMAT NormalMapFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
-		static const DXGI_FORMAT DepthMapFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 
-		enum DeferredPassRSSlots : UINT
+
+		enum DeferredPassSlots : UINT
 		{
 			ObjectDataBuffer = 0,
 			MaterialTextures,
+			CameraDataBuffer,
 			WorldDataBuffer,
 			MaterialsBuffer,
 			LightBuffer,
 			NormalMap,
 			BaseColorMap,
-			PostionMap,
-			DepthTexture,
+			PositionMap,
+			DepthMap,
 			AmbientMap,
 			SkyMap,
 			ShadowMap
 		};
-		
 
-		
+
 		struct Vertex
 		{
 			Vertex()
@@ -75,7 +73,7 @@ namespace PEPEngine
 		};
 
 		enum LightType : INT
-		{		
+		{
 			Point = 0,
 			Spot,
 			Directional,
@@ -83,21 +81,21 @@ namespace PEPEngine
 
 		struct alignas(sizeof(Vector4)) LightData
 		{
-			Vector4   Color;
-			Vector3   PositionWorld;
-			Vector3   DirectionWorld;
-			Vector3   PositionView;
-			Vector3   DirectionView;		
-			float    SpotlightAngle;
-			float    Range;
-			float    Intensity;
+			Vector4 Color;
+			Vector3 PositionWorld;
+			Vector3 DirectionWorld;
+			Vector3 PositionView;
+			Vector3 DirectionView;
+			float SpotlightAngle;
+			float Range;
+			float Intensity;
 			LightType Type;
-			bool    Enabled;
-			bool    Selected;
-			Vector2  Padding;
+			bool Enabled;
+			bool Selected;
+			Vector2 Padding;
 		};
 
-		struct PassConstants
+		struct CameraConstants
 		{
 			Matrix View = Matrix::Identity;
 			Matrix InvView = Matrix::Identity;
@@ -107,19 +105,22 @@ namespace PEPEngine
 			Matrix InvViewProj = Matrix::Identity;
 			Matrix ViewProjTex = Matrix::Identity;
 			Matrix ShadowTransform = Matrix::Identity;
-			Vector3 EyePosW = Vector3{0.0f, 0.0f, 0.0f};
-			UINT LightCount = 0;
+
 			Vector2 RenderTargetSize = Vector2{0.0f, 0.0f};
 			Vector2 InvRenderTargetSize = Vector2{0.0f, 0.0f};
+
+			Vector3 EyePosW = Vector3{0.0f, 0.0f, 0.0f};
+			float padding;
+
 			float NearZ = 0.0f;
 			float FarZ = 0.0f;
-			float TotalTime = 0.0f;
-			float DeltaTime = 0.0f;
-			Vector4 AmbientLight = Vector4{0.0f, 0.0f, 0.0f, 1.0f};
-			Vector4 FogColor = Vector4{0.7f, 0.7f, 0.7f, 1.0f};
-			float gFogStart = 5.0f;
-			float gFogRange = 150.0f;
-			Vector2 cbPerObjectPad2;
+		};
+
+		struct WorldData
+		{
+			UINT LightsCount;
+			float TotalTime;
+			float DeltaTime;
 		};
 
 		struct ObjectConstants
@@ -153,18 +154,17 @@ namespace PEPEngine
 
 		struct alignas(sizeof(Vector4)) MaterialData
 		{
-			Vector4  GlobalAmbient;
-			Vector4  AmbientColor;
-			Vector4  EmissiveColor;
-			Vector4  DiffuseColor;
-			Vector4  SpecularColor;
-			Vector4  Reflectance;
-			float   Opacity;
-			float   SpecularPower;
-			float   IndexOfRefraction;			
-			float   BumpIntensity;
-			float   SpecularScale;
-			float   AlphaThreshold = 0.1f;
+			Vector4 AmbientColor;
+			Vector4 EmissiveColor;
+			Vector4 DiffuseColor;
+			Vector4 SpecularColor;
+			Vector4 Reflectance;
+			float Opacity;
+			float SpecularPower;
+			float IndexOfRefraction;
+			float BumpIntensity;
+			float SpecularScale;
+			float AlphaThreshold = 0.1f;
 			int DiffuseMapIndex = -1;
 			int NormalMapIndex = -1;
 			int HeightMapIndex = -1;
@@ -172,6 +172,26 @@ namespace PEPEngine
 			int RounghessMapIndex = -1;
 			int AOMapIndex = -1;
 		};
-				
+
+
+		inline static D3D12_INPUT_ELEMENT_DESC VertexInputLayout[] =
+		{
+			{
+				"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
+				D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
+			},
+			{
+				"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
+				D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
+			},
+			{
+				"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
+				D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
+			},
+			{
+				"TANGENT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
+				D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
+			},
+		};
 	}
 }

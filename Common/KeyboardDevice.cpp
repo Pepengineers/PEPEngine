@@ -1,130 +1,127 @@
 #include "pch.h"
 #include "KeyboardDevice.h"
 
-namespace PEPEngine
+namespace PEPEngine::Common
 {
-	namespace Common
+	KeyboardEvent::KeyboardEvent() :
+		type(Invalid),
+		key(0u)
 	{
-		KeyboardEvent::KeyboardEvent() :
-			type(Invalid),
-			key(0u)
-		{
-		}
+	}
 
-		KeyboardEvent::KeyboardEvent(const EventType type, const unsigned char key) :
-			type(type),
-			key(key)
-		{
-		}
+	KeyboardEvent::KeyboardEvent(const EventType type, const unsigned char key) :
+		type(type),
+		key(key)
+	{
+	}
 
-		bool KeyboardEvent::IsPress() const
-		{
-			return this->type == Press;
-		}
+	bool KeyboardEvent::IsPress() const
+	{
+		return this->type == Press;
+	}
 
-		bool KeyboardEvent::IsRelease() const
-		{
-			return this->type == Release;
-		}
+	bool KeyboardEvent::IsRelease() const
+	{
+		return this->type == Release;
+	}
 
-		bool KeyboardEvent::IsValid() const
-		{
-			return this->type != Invalid;
-		}
+	bool KeyboardEvent::IsValid() const
+	{
+		return this->type != Invalid;
+	}
 
-		unsigned char KeyboardEvent::GetKeyCode() const
-		{
-			return this->key;
-		}
+	unsigned char KeyboardEvent::GetKeyCode() const
+	{
+		return this->key;
+	}
 
-		KeyboardDevice::KeyboardDevice()
-		{
-			for (int i = 0; i < 256; i++)
-				this->keyStates[i] = false; //Initialize all key states to off (false)
-		}
+	KeyboardDevice::KeyboardDevice()
+	{
+		for (int i = 0; i < 256; i++)
+			this->keyStates[i] = false; //Initialize all key states to off (false)
+	}
 
-		bool KeyboardDevice::KeyIsPressed(const unsigned char keycode)
-		{
-			return this->keyStates[keycode];
-		}
+	bool KeyboardDevice::KeyIsPressed(const unsigned char keycode)
+	{
+		return this->keyStates[keycode];
+	}
 
-		bool KeyboardDevice::KeyBufferIsEmpty()
-		{
-			return this->keyBuffer.empty();
-		}
+	bool KeyboardDevice::KeyBufferIsEmpty()
+	{
+		return this->keyBuffer.empty();
+	}
 
-		bool KeyboardDevice::CharBufferIsEmpty()
-		{
-			return this->charBuffer.empty();
-		}
+	bool KeyboardDevice::CharBufferIsEmpty()
+	{
+		return this->charBuffer.empty();
+	}
 
-		KeyboardEvent KeyboardDevice::ReadKey()
+	KeyboardEvent KeyboardDevice::ReadKey()
+	{
+		if (this->keyBuffer.empty()) //If no keys to be read?
 		{
-			if (this->keyBuffer.empty()) //If no keys to be read?
-			{
-				return KeyboardEvent(); //return empty keyboard event
-			}
-			KeyboardEvent e = this->keyBuffer.front(); //Get first Keyboard Event from queue
-			this->keyBuffer.pop(); //Remove first item from queue
-			return e; //Returns keyboard event
+			return KeyboardEvent(); //return empty keyboard event
 		}
+		KeyboardEvent e = this->keyBuffer.front(); //Get first Keyboard Event from queue
+		this->keyBuffer.pop(); //Remove first item from queue
+		return e; //Returns keyboard event
+	}
 
-		unsigned char KeyboardDevice::ReadChar()
+	unsigned char KeyboardDevice::ReadChar()
+	{
+		if (this->charBuffer.empty()) //If no keys to be read?
 		{
-			if (this->charBuffer.empty()) //If no keys to be read?
-			{
-				return 0u; //return 0 (NULL char)
-			}
-			unsigned char e = this->charBuffer.front(); //Get first char from queue
-			this->charBuffer.pop(); //Remove first char from queue
-			return e; //Returns char
+			return 0u; //return 0 (NULL char)
 		}
+		unsigned char e = this->charBuffer.front(); //Get first char from queue
+		this->charBuffer.pop(); //Remove first char from queue
+		return e; //Returns char
+	}
 
-		void KeyboardDevice::OnKeyPressed(const unsigned char key)
-		{
-			this->keyStates[key] = true;
-			this->keyBuffer.push(KeyboardEvent(KeyboardEvent::EventType::Press, key));
-		}
+	void KeyboardDevice::OnKeyPressed(const unsigned char key)
+	{
+		this->keyStates[key] = true;
+		this->keyBuffer.push(KeyboardEvent(KeyboardEvent::EventType::Press, key));
+	}
 
-		void KeyboardDevice::OnKeyReleased(const unsigned char key)
-		{
-			this->keyStates[key] = false;
-			this->keyBuffer.push(KeyboardEvent(KeyboardEvent::EventType::Release, key));
-		}
+	void KeyboardDevice::OnKeyReleased(const unsigned char key)
+	{
+		this->keyStates[key] = false;
+		this->keyBuffer.push(KeyboardEvent(KeyboardEvent::EventType::Release, key));
+	}
 
-		void KeyboardDevice::OnChar(const unsigned char key)
-		{
-			this->charBuffer.push(key);
-		}
+	void KeyboardDevice::OnChar(const unsigned char key)
+	{
+		this->charBuffer.push(key);
+	}
 
-		void KeyboardDevice::EnableAutoRepeatKeys()
-		{
-			this->autoRepeatKeys = true;
-		}
+	void KeyboardDevice::EnableAutoRepeatKeys()
+	{
+		this->autoRepeatKeys = true;
+	}
 
-		void KeyboardDevice::DisableAutoRepeatKeys()
-		{
-			this->autoRepeatKeys = false;
-		}
+	void KeyboardDevice::DisableAutoRepeatKeys()
+	{
+		this->autoRepeatKeys = false;
+	}
 
-		void KeyboardDevice::EnableAutoRepeatChars()
-		{
-			this->autoRepeatChars = true;
-		}
+	void KeyboardDevice::EnableAutoRepeatChars()
+	{
+		this->autoRepeatChars = true;
+	}
 
-		void KeyboardDevice::DisableAutoRepeatChars()
-		{
-			this->autoRepeatChars = false;
-		}
+	void KeyboardDevice::DisableAutoRepeatChars()
+	{
+		this->autoRepeatChars = false;
+	}
 
-		bool KeyboardDevice::IsKeysAutoRepeat()
-		{
-			return this->autoRepeatKeys;
-		}
+	bool KeyboardDevice::IsKeysAutoRepeat()
+	{
+		return this->autoRepeatKeys;
+	}
 
-		bool KeyboardDevice::IsCharsAutoRepeat()
-		{
-			return this->autoRepeatChars;
-		}
+	bool KeyboardDevice::IsCharsAutoRepeat()
+	{
+		return this->autoRepeatChars;
 	}
 }

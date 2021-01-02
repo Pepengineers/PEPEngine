@@ -13,15 +13,18 @@ namespace SimpleRender
 
 	struct FrameResource
 	{
-		FrameResource(std::shared_ptr<GDevice> device, UINT passCount, UINT materials, UINT lights);
+		FrameResource(std::shared_ptr<GDevice> device, UINT materials, UINT lights);
 		FrameResource(const FrameResource& rhs) = delete;
 		FrameResource& operator=(const FrameResource& rhs) = delete;
 
-		~FrameResource() {};
+		~FrameResource()
+		{
+		};
 
 		UINT64 FenceValue = 0;
 
-		std::shared_ptr<ConstantUploadBuffer<PassConstants>> PassConstantBuffer = nullptr;
+		std::shared_ptr<ConstantUploadBuffer<WorldData>> WorldBuffer = nullptr;
+
 		std::shared_ptr<StructuredUploadBuffer<MaterialData>> MaterialsBuffer = nullptr;
 		std::shared_ptr<StructuredUploadBuffer<LightData>> LightsBuffer = nullptr;
 	};

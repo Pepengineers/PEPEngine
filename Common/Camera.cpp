@@ -1,67 +1,145 @@
 #include "pch.h"
 #include "Camera.h"
+
+#include "d3dApp.h"
 #include "GameObject.h"
+#include "GDeviceFactory.h"
+#include "GTexture.h"
 #include "Transform.h"
+#include "Window.h"
 
-namespace PEPEngine
+namespace PEPEngine::Common
 {
-	namespace Common
+	// Transform NDC space [-1,+1]^2 to texture space [0,1]^2
+	static const Matrix T(
+		0.5f, 0.0f, 0.0f, 0.0f,
+		0.0f, -0.5f, 0.0f, 0.0f,
+		0.0f, 0.0f, 1.0f, 0.0f,
+		0.5f, 0.5f, 0.0f, 1.0f);
+
+	void Camera::Update()
 	{
-		void Camera::Update()
-		{
-			auto transform = gameObject->GetTransform();
+		auto transform = gameObject->GetTransform();
 
+		if (transform->IsDirty())
+		{
+			NumFramesDirty = globalCountFrameResources;
+		}
+
+		if (NumFramesDirty > 0)
+		{
 			focusPosition = transform->GetForwardVector() + transform->GetWorldPosition();
-
 			view = XMMatrixLookAtLH(transform->GetWorldPosition(), focusPosition, transform->GetUpVector());
+			CreateProjection();
 
-			if (NumFramesDirty > 0)
-			{
-				CreateProjection();
-				NumFramesDirty--;
-			}
+			auto viewProj = (view * projection);
+			auto invView = view.Invert();
+			auto invProj = projection.Invert();
+			auto invViewProj = viewProj.Invert();
+
+			Matrix viewProjTex = XMMatrixMultiply(viewProj, T);
+			cameraData.View = view.Transpose();
+			cameraData.InvView = invView.Transpose();
+			cameraData.Proj = projection.Transpose();
+			cameraData.InvProj = invProj.Transpose();
+			cameraData.ViewProj = viewProj.Transpose();
+			cameraData.InvViewProj = invViewProj.Transpose();
+			cameraData.ViewProjTex = viewProjTex.Transpose();
+			cameraData.EyePosW = transform->GetWorldPosition();
+			cameraData.RenderTargetSize = Vector2(static_cast<float>(viewport.Width),
+			                                      static_cast<float>(viewport.Height));
+			cameraData.InvRenderTargetSize = Vector2(1.0f / cameraData.RenderTargetSize.x,
+			                                         1.0f / cameraData.RenderTargetSize.y);
+
+
+			cameraData.NearZ = nearZ;
+			cameraData.FarZ = farZ;
+
+			CameraConstantBuffer->CopyData(0, cameraData);
+
+			NumFramesDirty--;
 		}
+	}
 
-		void Camera::CreateProjection()
+	void Camera::CreateProjection()
+	{
+		const float fovRadians = DirectX::XMConvertToRadians(fov);
+		projection = DirectX::XMMatrixPerspectiveFovLH(fovRadians, aspectRatio, nearZ, farZ);
+	}
+
+
+	ConstantUploadBuffer<CameraConstants>& Camera::GetCameraDataBuffer() const
+	{
+		return *CameraConstantBuffer.get();
+	}
+
+	void Camera::SetRenderTarget(GTexture* target)
+	{
+		renderTarget = target;
+		NumFramesDirty = globalCountFrameResources;
+
+		if (renderTarget != nullptr)
 		{
-			const float fovRadians = DirectX::XMConvertToRadians(fov);
-			projection = DirectX::XMMatrixPerspectiveFovLH(fovRadians, aspectRatio, nearZ, farZ);
+			viewport.Height = static_cast<float>(renderTarget->GetD3D12ResourceDesc().Height);
+			viewport.Width = static_cast<float>(renderTarget->GetD3D12ResourceDesc().Width);
+		}
+		else
+		{
+			const auto* const window = D3DApp::GetApp().GetMainWindow();
+			viewport.Height = static_cast<float>(window->GetClientHeight());
+			viewport.Width = static_cast<float>(window->GetClientWidth());			
 		}
 
-		const Vector3& Camera::GetFocusPosition() const
-		{
-			return focusPosition;
-		}
+		viewport.MinDepth = 0.0f;
+		viewport.MaxDepth = 1.0f;
+		viewport.TopLeftX = 0;
+		viewport.TopLeftY = 0;
+		
+		rect = { 0, 0,  static_cast<LONG>(viewport.Width), static_cast<LONG>(viewport.Height) };
+	}
 
-		Camera::Camera(float aspect) : aspectRatio(aspect)
-		{
-		}
+	const GTexture* Camera::GetRenderTarget() const
+	{
+		return renderTarget;
+	}
 
-		void Camera::SetAspectRatio(float aspect)
-		{
-			aspectRatio = aspect;
-			NumFramesDirty = globalCountFrameResources;
-		}
+	const Vector3& Camera::GetFocusPosition() const
+	{
+		return focusPosition;
+	}
 
-		void Camera::SetFov(float fov)
-		{
-			this->fov = fov;
-			NumFramesDirty = globalCountFrameResources;
-		}
+	Camera::Camera(float aspect) : Component(), aspectRatio(aspect)
+	{
+		mainCamera = this;
+		CameraConstantBuffer = std::make_shared<ConstantUploadBuffer<CameraConstants>>(
+			GDeviceFactory::GetDevice(), 1, L"Camera Data Buffer");
+		SetRenderTarget(nullptr);
+	}
 
-		float Camera::GetFov() const
-		{
-			return fov;
-		}
+	void Camera::SetAspectRatio(float aspect)
+	{
+		aspectRatio = aspect;
+		SetRenderTarget(renderTarget);
+	}
 
-		const Matrix& Camera::GetViewMatrix() const
-		{
-			return this->view;
-		}
+	void Camera::SetFov(float fov)
+	{
+		this->fov = fov;
+		SetRenderTarget(renderTarget);
+	}
 
-		const Matrix& Camera::GetProjectionMatrix() const
-		{
-			return this->projection;
-		}
+	float Camera::GetFov() const
+	{
+		return fov;
+	}
+
+	const Matrix& Camera::GetViewMatrix() const
+	{
+		return this->view;
+	}
+
+	const Matrix& Camera::GetProjectionMatrix() const
+	{
+		return this->projection;
 	}
 }

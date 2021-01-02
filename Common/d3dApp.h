@@ -54,6 +54,8 @@ namespace PEPEngine
 
 		public:
 
+			const Window* GetMainWindow() const;
+
 			KeyboardDevice* GetKeyboard();
 
 			Mousepad* GetMouse();

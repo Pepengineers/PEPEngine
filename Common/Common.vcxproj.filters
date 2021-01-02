@@ -25,6 +25,9 @@
     <Filter Include="GOAP\Actions">
       <UniqueIdentifier>{35b4e233-1518-4f4e-9d65-1686956afd28}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Render\Pass">
+      <UniqueIdentifier>{8b37aebf-99c7-4b15-abfa-dae63a5169c3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -132,6 +135,12 @@
     <ClInclude Include="DoActionB.h">
       <Filter>GOAP\Actions</Filter>
     </ClInclude>
+    <ClInclude Include="RenderPass.h">
+      <Filter>Render\Pass</Filter>
+    </ClInclude>
+    <ClInclude Include="GPass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -229,6 +238,12 @@
     </ClCompile>
     <ClCompile Include="DoActionB.cpp">
       <Filter>GOAP\Actions</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderPass.cpp">
+      <Filter>Render\Pass</Filter>
+    </ClCompile>
+    <ClCompile Include="GPass.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

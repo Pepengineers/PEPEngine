@@ -10,13 +10,14 @@ namespace PEPEngine
 	{
 		using namespace Allocator;
 		using namespace Graphics;
-	
+
 
 		class GameObject;
 
 		class Component
 		{
 		public:
+			virtual ~Component() = default;
 
 			GameObject* gameObject = nullptr;
 

@@ -88,7 +88,7 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)\Core\Utils;$(SolutionDir)Assimp\include;$(SolutionDir)\Core\Graphics;$(SolutionDir)\Core\Allocator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -111,7 +111,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)\Core\Utils;$(SolutionDir)Assimp\include;$(SolutionDir)\Core\Graphics;$(SolutionDir)\Core\Allocator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -134,7 +134,7 @@
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -157,7 +157,7 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NOMINMAX;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)\Core\Utils;$(SolutionDir)Assimp\include;$(SolutionDir)\Core\Graphics;$(SolutionDir)\Core\Allocator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -191,6 +191,7 @@
     <ClInclude Include="goap\Node.h" />
     <ClInclude Include="goap\Planner.h" />
     <ClInclude Include="goap\WorldState.h" />
+    <ClInclude Include="GPass.h" />
     <ClInclude Include="KeyboardDevice.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="Material.h" />
@@ -202,6 +203,7 @@
     <ClInclude Include="ObjectMover.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Renderer.h" />
+    <ClInclude Include="RenderPass.h" />
     <ClInclude Include="Rotater.h" />
     <ClInclude Include="ShaderBuffersData.h" />
     <ClInclude Include="ShaderFactory.h" />
@@ -227,6 +229,7 @@
     <ClCompile Include="goap\Node.cpp" />
     <ClCompile Include="goap\Planner.cpp" />
     <ClCompile Include="goap\WorldState.cpp" />
+    <ClCompile Include="GPass.cpp" />
     <ClCompile Include="KeyboardDevice.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="Material.cpp" />
@@ -242,6 +245,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="RenderPass.cpp" />
     <ClCompile Include="Rotater.cpp" />
     <ClCompile Include="ShaderFactory.cpp" />
     <ClCompile Include="ShadowMap.cpp" />

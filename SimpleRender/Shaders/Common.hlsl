@@ -2,7 +2,6 @@
 #define POINT_LIGHT 0
 #define SPOT_LIGHT 1
 #define DIRECTIONAL_LIGHT 2
-#define NUM_LIGHTS 36 // should be defined by the application.
 
 struct ObjectData
 {
@@ -18,7 +17,7 @@ ConstantBuffer<ObjectData> ObjectBuffer : register(b0);
 
 Texture2D MaterialTexture[] : register(t0);
 
-struct WorldData
+struct CameraData
 {
 	float4x4 View;
 	float4x4 InvView;
@@ -28,26 +27,29 @@ struct WorldData
 	float4x4 InvViewProj;
 	float4x4 ViewProjTex;
 	float4x4 ShadowTransform;
-	float3 CameraWorldPosition;
-    uint LightsCount;
 	float2 RenderTargetSize;
 	float2 InvRenderTargetSize;
+	float3 CameraWorldPosition;
+	float padding;
+
 	float NearZ;
 	float FarZ;
-	float TotalTime;
-	float DeltaTime;
-	float4 AmbientLight;
-	float4 gFogColor;
-	float gFogStart;
-	float gFogRange;
-	float2 cbPerObjectPad2;
 };
 
-ConstantBuffer<WorldData> WorldBuffer : register(b1);
+ConstantBuffer<CameraData> CameraBuffer : register(b1);
+
+struct WorldData
+{
+	uint LightsCount;
+	float TotalTime;
+	float DeltaTime;
+};
+
+ConstantBuffer<WorldData> WorldBuffer : register(b2);
+
 
 struct MaterialData
 {
-	float4 GlobalAmbient;
 	float4 AmbientColor;
 	float4 EmissiveColor;
 	float4 DiffuseColor;
@@ -59,27 +61,27 @@ struct MaterialData
 	float BumpIntensity;
 	float SpecularScale;
 	float AlphaThreshold;
-    int DiffuseMapIndex;
-    int NormalMapIndex;
-    int HeightMapIndex;
-    int MetallicMapIndex;
-    int RoughnessMapIndex;
-    int AOMapIndex;
+	int DiffuseMapIndex;
+	int NormalMapIndex;
+	int HeightMapIndex;
+	int MetallicMapIndex;
+	int RoughnessMapIndex;
+	int AOMapIndex;
 };
 
 StructuredBuffer<MaterialData> Materials : register(t0, space1);
 
 struct LightData
-{	
-    float4 Color;
+{
+	float4 Color;
 	float3 PositionWorld;
 	float3 DirectionWorld;
 	float3 PositionView;
 	float3 DirectionView;
 	float SpotlightAngle;
 	float Range;
-	float Intensity;	
-    int Type;
+	float Intensity;
+	int Type;
 	bool Enabled;
 	bool Selected;
 	float2 Padding;
@@ -127,7 +129,7 @@ float3 NormalSampleToWorldSpace(float3 normalMapSample, float3 unitNormalW, floa
 //
 
 float NdcZToScreenSpaceZ(const float depthNDC,
-                   const float4x4 projection)
+                         const float4x4 projection)
 {
 	// depthNDC = A + B / depthV, where A = projection[2, 2] and B = projection[3,2].
 	const float depthV = projection._m32 / (depthNDC - projection._m22);
@@ -136,10 +138,10 @@ float NdcZToScreenSpaceZ(const float depthNDC,
 }
 
 int2 NdcToScreenSpace(const float2 ndcPoint,
-                 const float screenTopLeftX,
-                 const float screenTopLeftY,
-                 const float screenWidth,
-                 const float screenHeight)
+                      const float screenTopLeftX,
+                      const float screenTopLeftY,
+                      const float screenWidth,
+                      const float screenHeight)
 {
 	const int2 viewportPoint =
 		int2(
@@ -151,8 +153,8 @@ int2 NdcToScreenSpace(const float2 ndcPoint,
 }
 
 float3 ViewRayToViewPosition(const float3 normalizedViewRayV,
-                      const float depthNDC,
-                      const float4x4 projection)
+                             const float depthNDC,
+                             const float4x4 projection)
 {
 	const float depthV = NdcZToScreenSpaceZ(depthNDC,
 	                                        projection);
@@ -198,26 +200,25 @@ float3 Decode(float2 encN)
 // Convert clip space coordinates to view space
 float4 ClipToView(float4 clip)
 {
-    // View space position.
-    float4 view = mul(WorldBuffer.InvProj, clip);
-    // Perspecitive projection.
-    view = view / view.w;
+	// View space position.
+	float4 view = mul(CameraBuffer.InvProj, clip);
+	// Perspecitive projection.
+	view = view / view.w;
 
-    return view;
+	return view;
 }
 
 // Convert screen space coordinates to view space.
 float4 ScreenToView(float4 screen)
 {
-    // Convert to normalized texture coordinates
-    float2 texCoord = screen.xy / WorldBuffer.RenderTargetSize;
+	// Convert to normalized texture coordinates
+	float2 texCoord = screen.xy / CameraBuffer.RenderTargetSize;
 
-    // Convert to clip space
-    float4 clip = float4(float2(texCoord.x, 1.0f - texCoord.y) * 2.0f - 1.0f, screen.z, screen.w);
+	// Convert to clip space
+	float4 clip = float4(float2(texCoord.x, 1.0f - texCoord.y) * 2.0f - 1.0f, screen.z, screen.w);
 
-    return ClipToView(clip);
+	return ClipToView(clip);
 }
-
 
 
 //
@@ -287,25 +288,25 @@ float4 ScreenToView(float4 screen)
 // f90 is the reflectance at 90 degrees
 float3
 F_Schlick(const float3 f0,
-    const float f90,
-    const float dotLH)
+          const float f90,
+          const float dotLH)
 {
-    return f0 + (f90 - f0) * pow(1.0f - dotLH, 5.0f);
+	return f0 + (f90 - f0) * pow(1.0f - dotLH, 5.0f);
 }
 
 float
 Fd_Disney(const float dotVN,
-    const float dotLN,
-    const float dotLH,
-    float linearRoughness)
+          const float dotLN,
+          const float dotLH,
+          float linearRoughness)
 {
-    float energyBias = lerp(0.0f, 0.5f, linearRoughness);
-    float energyFactor = lerp(1.0, 1.0 / 1.51, linearRoughness);
-    float fd90 = energyBias + 2.0 * dotLH * dotLH * linearRoughness;
-    float f0 = 1.0f;
-    float lightScatter = F_Schlick(f0, fd90, dotLN).x;
-    float viewScatter = F_Schlick(f0, fd90, dotVN).x;
-    return lightScatter * viewScatter * energyFactor;
+	float energyBias = lerp(0.0f, 0.5f, linearRoughness);
+	float energyFactor = lerp(1.0, 1.0 / 1.51, linearRoughness);
+	float fd90 = energyBias + 2.0 * dotLH * dotLH * linearRoughness;
+	float f0 = 1.0f;
+	float lightScatter = F_Schlick(f0, fd90, dotLN).x;
+	float viewScatter = F_Schlick(f0, fd90, dotVN).x;
+	return lightScatter * viewScatter * energyFactor;
 }
 
 //
@@ -335,11 +336,11 @@ Fd_Disney(const float dotVN,
 // m is roughness
 float
 D_TR(const float m,
-    const float dotNH)
+     const float dotNH)
 {
-    const float m2 = m * m;
-    const float denom = dotNH * dotNH * (m2 - 1.0f) + 1.0f;
-    return m2 / (PI * denom * denom);
+	const float m2 = m * m;
+	const float denom = dotNH * dotNH * (m2 - 1.0f) + 1.0f;
+	return m2 / (PI * denom * denom);
 }
 
 //
@@ -367,34 +368,34 @@ D_TR(const float m,
 
 float
 V_SmithGGXCorrelated(float dotNL,
-    float dotNV,
-    float alphaG)
+                     float dotNV,
+                     float alphaG)
 {
-    // Original formulation of G_SmithGGX Correlated
-    // lambda_v = (-1 + sqrt ( alphaG2 * (1 - dotNL2 ) / dotNL2 + 1)) * 0.5 f;
-    // lambda_l = (-1 + sqrt ( alphaG2 * (1 - dotNV2 ) / dotNV2 + 1)) * 0.5 f;
-    // G_SmithGGXCorrelated = 1 / (1 + lambda_v + lambda_l );
-    // V_SmithGGXCorrelated = G_SmithGGXCorrelated / (4.0 f * dotNL * dotNV );
+	// Original formulation of G_SmithGGX Correlated
+	// lambda_v = (-1 + sqrt ( alphaG2 * (1 - dotNL2 ) / dotNL2 + 1)) * 0.5 f;
+	// lambda_l = (-1 + sqrt ( alphaG2 * (1 - dotNV2 ) / dotNV2 + 1)) * 0.5 f;
+	// G_SmithGGXCorrelated = 1 / (1 + lambda_v + lambda_l );
+	// V_SmithGGXCorrelated = G_SmithGGXCorrelated / (4.0 f * dotNL * dotNV );
 
-    // This is the optimized version
-    float alphaG2 = alphaG * alphaG;
-    // Caution : the " dotNL *" and " dotNV *" are explicitely inversed , this is not a mistake .
-    float Lambda_GGXV = dotNL * sqrt((-dotNV * alphaG2 + dotNV) * dotNV + alphaG2);
-    float Lambda_GGXL = dotNV * sqrt((-dotNL * alphaG2 + dotNL) * dotNL + alphaG2);
+	// This is the optimized version
+	float alphaG2 = alphaG * alphaG;
+	// Caution : the " dotNL *" and " dotNV *" are explicitely inversed , this is not a mistake .
+	float Lambda_GGXV = dotNL * sqrt((-dotNV * alphaG2 + dotNV) * dotNV + alphaG2);
+	float Lambda_GGXL = dotNV * sqrt((-dotNL * alphaG2 + dotNL) * dotNL + alphaG2);
 
-    return 0.5f / (Lambda_GGXV + Lambda_GGXL);
+	return 0.5f / (Lambda_GGXV + Lambda_GGXL);
 }
 
 float
 G_SmithGGX(const float dotNL,
-    const float dotNV,
-    float alpha)
+           const float dotNV,
+           float alpha)
 {
-    const float alphaSqr = alpha * alpha;
-    const float G_V = dotNV + sqrt((dotNV - dotNV * alphaSqr) * dotNV + alphaSqr);
-    const float G_L = dotNL + sqrt((dotNL - dotNL * alphaSqr) * dotNL + alphaSqr);
+	const float alphaSqr = alpha * alpha;
+	const float G_V = dotNV + sqrt((dotNV - dotNV * alphaSqr) * dotNV + alphaSqr);
+	const float G_L = dotNL + sqrt((dotNL - dotNL * alphaSqr) * dotNL + alphaSqr);
 
-    return rcp(G_V * G_L);
+	return rcp(G_V * G_L);
 }
 
 //
@@ -405,23 +406,23 @@ G_SmithGGX(const float dotNL,
 float3
 Fd_Lambert(const float3 diffuseColor)
 {
-    return diffuseColor / PI;
+	return diffuseColor / PI;
 }
 
 float
 Fr_DisneyDiffuse(const float dotNV,
-    const float dotNL,
-    const float dotLH,
-    const float linearRoughness)
+                 const float dotNL,
+                 const float dotLH,
+                 const float linearRoughness)
 {
-    const float energyBias = lerp(0, 0.5, linearRoughness);
-    const float energyFactor = lerp(1.0, 1.0 / 1.51, linearRoughness);
-    const float fd90 = energyBias + 2.0 * dotLH * dotLH * linearRoughness;
-    const float3 f0 = float3 (1.0f, 1.0f, 1.0f);
-    const float lightScatter = F_Schlick(f0, fd90, dotNL).r;
-    const float viewScatter = F_Schlick(f0, fd90, dotNV).r;
+	const float energyBias = lerp(0, 0.5, linearRoughness);
+	const float energyFactor = lerp(1.0, 1.0 / 1.51, linearRoughness);
+	const float fd90 = energyBias + 2.0 * dotLH * dotLH * linearRoughness;
+	const float3 f0 = float3(1.0f, 1.0f, 1.0f);
+	const float lightScatter = F_Schlick(f0, fd90, dotNL).r;
+	const float viewScatter = F_Schlick(f0, fd90, dotNV).r;
 
-    return lightScatter * viewScatter * energyFactor;
+	return lightScatter * viewScatter * energyFactor;
 }
 
 //
@@ -430,51 +431,51 @@ Fr_DisneyDiffuse(const float dotNV,
 
 float3
 DiffuseIBL(const float3 baseColor,
-    const float metalness,
-    SamplerState textureSampler,
-    const float3 normalWorldSpace)
+           const float metalness,
+           SamplerState textureSampler,
+           const float3 normalWorldSpace)
 {
-    //// When we sample a cube map, we need to use data in world space, not view space.
-    //const float3 diffuseReflection = diffuseIBLCubeMap.SampleLevel(textureSampler,
-    //    normalWorldSpace,
-    //    0).rgb;
-    //const float3 diffuseColor = (1.0f - metalness) * baseColor;
+	//// When we sample a cube map, we need to use data in world space, not view space.
+	//const float3 diffuseReflection = diffuseIBLCubeMap.SampleLevel(textureSampler,
+	//    normalWorldSpace,
+	//    0).rgb;
+	//const float3 diffuseColor = (1.0f - metalness) * baseColor;
 
-    //return diffuseColor * diffuseReflection;
-    return (1.0f - metalness) * baseColor;
+	//return diffuseColor * diffuseReflection;
+	return (1.0f - metalness) * baseColor;
 }
 
 float3
 SpecularIBL(const float3 baseColor,
-    const float metalness,
-    const float roughness,
-    SamplerState textureSampler,
-    const float3 viewVectorViewSpace,
-    const float3 positionWorldSpace,
-    const float3 eyePositionWorldSpace,
-    const float3 normalWorldSpace,
-    const float3 normalViewSpace)
+            const float metalness,
+            const float roughness,
+            SamplerState textureSampler,
+            const float3 viewVectorViewSpace,
+            const float3 positionWorldSpace,
+            const float3 eyePositionWorldSpace,
+            const float3 normalWorldSpace,
+            const float3 normalViewSpace)
 {
-    // Compute incident vector. 
-    // When we sample a cube map, we need to use data in world space, not view space.
-    const float3 incidentVectorWorldSpace = positionWorldSpace - eyePositionWorldSpace;
-    const float3 reflectionVectorWorldSpace = reflect(incidentVectorWorldSpace,
-        normalWorldSpace);
+	// Compute incident vector. 
+	// When we sample a cube map, we need to use data in world space, not view space.
+	const float3 incidentVectorWorldSpace = positionWorldSpace - eyePositionWorldSpace;
+	const float3 reflectionVectorWorldSpace = reflect(incidentVectorWorldSpace,
+	                                                  normalWorldSpace);
 
-    // Our cube map has 10 mip map levels
-    const int mipmap = roughness * 10.0f;
-   /* const float3 specularReflection = specularIBLCubeMap.SampleLevel(textureSampler,
-        reflectionVectorWorldSpace,
-        mipmap).rgb;*/
+	// Our cube map has 10 mip map levels
+	const int mipmap = roughness * 10.0f;
+	/* const float3 specularReflection = specularIBLCubeMap.SampleLevel(textureSampler,
+	     reflectionVectorWorldSpace,
+	     mipmap).rgb;*/
 
-    // Specular reflection color
-    const float3 dielectricColor = float3(0.04f, 0.04f, 0.04f);
-    const float3 f0 = lerp(dielectricColor, baseColor, metalness);
-    const float3 F = F_Schlick(f0,
-        1.0f,
-        dot(viewVectorViewSpace, normalViewSpace));
+	// Specular reflection color
+	const float3 dielectricColor = float3(0.04f, 0.04f, 0.04f);
+	const float3 f0 = lerp(dielectricColor, baseColor, metalness);
+	const float3 F = F_Schlick(f0,
+	                           1.0f,
+	                           dot(viewVectorViewSpace, normalViewSpace));
 
-    return F;// *specularReflection;
+	return F; // *specularReflection;
 }
 
 //
@@ -483,73 +484,73 @@ SpecularIBL(const float3 baseColor,
 
 float3
 DiffuseBrdf(const float3 baseColor,
-    const float metalness)
+            const float metalness)
 {
-    const float3 diffuseColor = (1.0f - metalness) * baseColor;
-    return Fd_Lambert(diffuseColor);
+	const float3 diffuseColor = (1.0f - metalness) * baseColor;
+	return Fd_Lambert(diffuseColor);
 }
 
 float3
 SpecularBrdf(const float3 N,
-    const float3 V,
-    const float3 L,
-    const float3 baseColor,
-    const float roughness,
-    const float metalness)
+             const float3 V,
+             const float3 L,
+             const float3 baseColor,
+             const float roughness,
+             const float metalness)
 {
-    // Disney's reparametrization of roughness
-    const float alpha = roughness * roughness;
+	// Disney's reparametrization of roughness
+	const float alpha = roughness * roughness;
 
-    const float3 H = normalize(V + L);
-    const float dotNL = abs(dot(N, V)) + 1e-5f;
-    const float dotNV = abs(dot(N, V)) + 1e-5f; // avoid artifacts
-    const float dotNH = saturate(dot(N, H));
-    const float dotLH = saturate(dot(L, H));
+	const float3 H = normalize(V + L);
+	const float dotNL = abs(dot(N, V)) + 1e-5f;
+	const float dotNV = abs(dot(N, V)) + 1e-5f; // avoid artifacts
+	const float dotNH = saturate(dot(N, H));
+	const float dotLH = saturate(dot(L, H));
 
-    //
-    // Specular term: (D * F * G) / (4 * dotNL * dotNV)
-    //
+	//
+	// Specular term: (D * F * G) / (4 * dotNL * dotNV)
+	//
 
-    const float D = D_TR(roughness, dotNH);
+	const float D = D_TR(roughness, dotNH);
 
-    const float3 f0 = (1.0f - metalness) * float3(F0_NON_METALS,
-        F0_NON_METALS,
-        F0_NON_METALS) + baseColor * metalness;
-    const float3 F = F_Schlick(f0, 1.0f, dotLH);
+	const float3 f0 = (1.0f - metalness) * float3(F0_NON_METALS,
+	                                              F0_NON_METALS,
+	                                              F0_NON_METALS) + baseColor * metalness;
+	const float3 F = F_Schlick(f0, 1.0f, dotLH);
 
-    // G / (4 * dotNL * dotNV)
+	// G / (4 * dotNL * dotNV)
 #ifdef V_SMITH
     const float G_Correlated = V_SmithGGXCorrelated(dotNV,
         dotNL,
         alpha);
 #else
-    const float G_Correlated = G_SmithGGX(dotNL,
-        dotNV,
-        alpha);
+	const float G_Correlated = G_SmithGGX(dotNL,
+	                                      dotNV,
+	                                      alpha);
 #endif
 
-    return D * F * G_Correlated;
+	return D * F * G_Correlated;
 }
 
 
 struct Plane
 {
-    float3 N; // Plane normal.
-    float d; // Distance to origin.
+	float3 N; // Plane normal.
+	float d; // Distance to origin.
 };
 
 struct Sphere
 {
-    float3 c; // Center point.
-    float r; // Radius.
+	float3 c; // Center point.
+	float r; // Radius.
 };
 
 struct Cone
 {
-    float3 T; // Cone tip.
-    float h; // Height of the cone.
-    float3 d; // Direction of the cone.
-    float r; // bottom radius of the cone.
+	float3 T; // Cone tip.
+	float h; // Height of the cone.
+	float3 d; // Direction of the cone.
+	float r; // bottom radius of the cone.
 };
 
 // Four planes of a view frustum (in view space).
@@ -562,7 +563,7 @@ struct Cone
 // light culling compute shader.
 struct Frustum
 {
-    Plane planes[4]; // left, right, top, bottom frustum planes.
+	Plane planes[4]; // left, right, top, bottom frustum planes.
 };
 
 
@@ -571,260 +572,218 @@ struct Frustum
 // coordinate system to determine the direction of the plane normal.
 Plane ComputePlane(float3 p0, float3 p1, float3 p2)
 {
-    Plane plane;
+	Plane plane;
 
-    float3 v0 = p1 - p0;
-    float3 v2 = p2 - p0;
+	float3 v0 = p1 - p0;
+	float3 v2 = p2 - p0;
 
-    plane.N = normalize(cross(v0, v2));
+	plane.N = normalize(cross(v0, v2));
 
-    // Compute the distance to the origin using p0.
-    plane.d = dot(plane.N, p0);
+	// Compute the distance to the origin using p0.
+	plane.d = dot(plane.N, p0);
 
-    return plane;
+	return plane;
 }
 
 // Check to see if a sphere is fully behind (inside the negative halfspace of) a plane.
 // Source: Real-time collision detection, Christer Ericson (2005)
 bool SphereInsidePlane(Sphere sphere, Plane plane)
 {
-    return dot(plane.N, sphere.c) - plane.d < -sphere.r;
+	return dot(plane.N, sphere.c) - plane.d < -sphere.r;
 }
 
 // Check to see if a point is fully behind (inside the negative halfspace of) a plane.
 bool PointInsidePlane(float3 p, Plane plane)
 {
-    return dot(plane.N, p) - plane.d < 0;
+	return dot(plane.N, p) - plane.d < 0;
 }
 
 // Check to see if a cone if fully behind (inside the negative halfspace of) a plane.
 // Source: Real-time collision detection, Christer Ericson (2005)
 bool ConeInsidePlane(Cone cone, Plane plane)
 {
-    // Compute the farthest point on the end of the cone to the positive space of the plane.
-    float3 m = cross(cross(plane.N, cone.d), cone.d);
-    float3 Q = cone.T + cone.d * cone.h - m * cone.r;
+	// Compute the farthest point on the end of the cone to the positive space of the plane.
+	float3 m = cross(cross(plane.N, cone.d), cone.d);
+	float3 Q = cone.T + cone.d * cone.h - m * cone.r;
 
-    // The cone is in the negative halfspace of the plane if both
-    // the tip of the cone and the farthest point on the end of the cone to the 
-    // positive halfspace of the plane are both inside the negative halfspace 
-    // of the plane.
-    return PointInsidePlane(cone.T, plane) && PointInsidePlane(Q, plane);
+	// The cone is in the negative halfspace of the plane if both
+	// the tip of the cone and the farthest point on the end of the cone to the 
+	// positive halfspace of the plane are both inside the negative halfspace 
+	// of the plane.
+	return PointInsidePlane(cone.T, plane) && PointInsidePlane(Q, plane);
 }
 
 // Check to see of a light is partially contained within the frustum.
 bool SphereInsideFrustum(Sphere sphere, Frustum frustum, float zNear, float zFar)
 {
-    bool result = true;
+	bool result = true;
 
-    // First check depth
-    // Note: Here, the view vector points in the -Z axis so the 
-    // far depth value will be approaching -infinity.
-    if (sphere.c.z - sphere.r > zNear || sphere.c.z + sphere.r < zFar)
-    {
-        result = false;
-    }
+	// First check depth
+	// Note: Here, the view vector points in the -Z axis so the 
+	// far depth value will be approaching -infinity.
+	if (sphere.c.z - sphere.r > zNear || sphere.c.z + sphere.r < zFar)
+	{
+		result = false;
+	}
 
-    // Then check frustum planes
-    for (int i = 0; i < 4 && result; i++)
-    {
-        if (SphereInsidePlane(sphere, frustum.planes[i]))
-        {
-            result = false;
-        }
-    }
+	// Then check frustum planes
+	for (int i = 0; i < 4 && result; i++)
+	{
+		if (SphereInsidePlane(sphere, frustum.planes[i]))
+		{
+			result = false;
+		}
+	}
 
-    return result;
+	return result;
 }
 
 bool ConeInsideFrustum(Cone cone, Frustum frustum, float zNear, float zFar)
 {
-    bool result = true;
+	bool result = true;
 
-    Plane nearPlane = { float3(0, 0, -1), -zNear };
-    Plane farPlane = { float3(0, 0, 1), zFar };
+	Plane nearPlane = {float3(0, 0, -1), -zNear};
+	Plane farPlane = {float3(0, 0, 1), zFar};
 
-    // First check the near and far clipping planes.
-    if (ConeInsidePlane(cone, nearPlane) || ConeInsidePlane(cone, farPlane))
-    {
-        result = false;
-    }
+	// First check the near and far clipping planes.
+	if (ConeInsidePlane(cone, nearPlane) || ConeInsidePlane(cone, farPlane))
+	{
+		result = false;
+	}
 
-    // Then check frustum planes
-    for (int i = 0; i < 4 && result; i++)
-    {
-        if (ConeInsidePlane(cone, frustum.planes[i]))
-        {
-            result = false;
-        }
-    }
+	// Then check frustum planes
+	for (int i = 0; i < 4 && result; i++)
+	{
+		if (ConeInsidePlane(cone, frustum.planes[i]))
+		{
+			result = false;
+		}
+	}
 
-    return result;
+	return result;
 }
 
 float3 ExpandNormal(float3 n)
 {
-    return n * 2.0f - 1.0f;
+	return n * 2.0f - 1.0f;
 }
 
 // This lighting result is returned by the 
 // lighting functions for each light type.
 struct LightingResult
 {
-    float4 Diffuse;
-    float4 Specular;
+	float4 Diffuse;
+	float4 Specular;
 };
 
 float4 DoNormalMapping(float3x3 TBN, Texture2D tex, sampler s, float2 uv)
 {
-    float3 normal = tex.Sample(s, uv).xyz;
-    normal = ExpandNormal(normal);
+	float3 normal = tex.Sample(s, uv).xyz;
+	normal = ExpandNormal(normal);
 
-    // Transform normal from tangent space to view space.
-    normal = mul(normal, TBN);
-    return normalize(float4(normal, 0));
+	// Transform normal from tangent space to view space.
+	normal = mul(normal, TBN);
+	return normalize(float4(normal, 0));
 }
 
 float4 DoBumpMapping(float3x3 TBN, Texture2D tex, sampler s, float2 uv, float bumpScale)
 {
-    // Sample the heightmap at the current texture coordinate.
-    float height_00 = tex.Sample(s, uv).r * bumpScale;
-    // Sample the heightmap in the U texture coordinate direction.
-    float height_10 = tex.Sample(s, uv, int2(1, 0)).r * bumpScale;
-    // Sample the heightmap in the V texture coordinate direction.
-    float height_01 = tex.Sample(s, uv, int2(0, 1)).r * bumpScale;
+	// Sample the heightmap at the current texture coordinate.
+	float height_00 = tex.Sample(s, uv).r * bumpScale;
+	// Sample the heightmap in the U texture coordinate direction.
+	float height_10 = tex.Sample(s, uv, int2(1, 0)).r * bumpScale;
+	// Sample the heightmap in the V texture coordinate direction.
+	float height_01 = tex.Sample(s, uv, int2(0, 1)).r * bumpScale;
 
-    float3 p_00 = { 0, 0, height_00 };
-    float3 p_10 = { 1, 0, height_10 };
-    float3 p_01 = { 0, 1, height_01 };
+	float3 p_00 = {0, 0, height_00};
+	float3 p_10 = {1, 0, height_10};
+	float3 p_01 = {0, 1, height_01};
 
-    // normal = tangent x bitangent
-    float3 normal = cross(normalize(p_10 - p_00), normalize(p_01 - p_00));
+	// normal = tangent x bitangent
+	float3 normal = cross(normalize(p_10 - p_00), normalize(p_01 - p_00));
 
-    // Transform normal from tangent space to view space.
-    normal = mul(normal, TBN);
+	// Transform normal from tangent space to view space.
+	normal = mul(normal, TBN);
 
-    return float4(normal, 0);
+	return float4(normal, 0);
 }
 
 float4 DoDiffuse(LightData light, float4 L, float4 N)
 {
-    float NdotL = max(dot(N, L), 0);
-    return light.Color * NdotL;
+	float NdotL = max(dot(N, L), 0);
+	return light.Color * NdotL;
 }
 
 float4 DoSpecular(LightData light, MaterialData material, float4 V, float4 L, float4 N)
 {
-    float4 R = normalize(reflect(-L, N));
-    float RdotV = max(dot(R, V), 0);
+	float4 R = normalize(reflect(-L, N));
+	float RdotV = max(dot(R, V), 0);
 
-    return light.Color * pow(RdotV, material.SpecularPower);
+	return light.Color * pow(RdotV, material.SpecularPower);
 }
 
 // Compute the attenuation based on the range of the light.
 float DoAttenuation(LightData light, float d)
 {
-    return 1.0f - smoothstep(light.Range * 0.75f, light.Range, d);
+	return 1.0f - smoothstep(light.Range * 0.75f, light.Range, d);
 }
 
 float DoSpotCone(LightData light, float4 L)
 {
-    // If the cosine angle of the light's direction 
-    // vector and the vector from the light source to the point being 
-    // shaded is less than minCos, then the spotlight contribution will be 0.
-    float minCos = cos(radians(light.SpotlightAngle));
-    // If the cosine angle of the light's direction vector
-    // and the vector from the light source to the point being shaded
-    // is greater than maxCos, then the spotlight contribution will be 1.
-    float maxCos = lerp(minCos, 1, 0.5f);
-    float cosAngle = dot(light.DirectionView, -L);
-    // Blend between the maxixmum and minimum cosine angles.
-    return smoothstep(minCos, maxCos, cosAngle);
+	// If the cosine angle of the light's direction 
+	// vector and the vector from the light source to the point being 
+	// shaded is less than minCos, then the spotlight contribution will be 0.
+	float minCos = cos(radians(light.SpotlightAngle));
+	// If the cosine angle of the light's direction vector
+	// and the vector from the light source to the point being shaded
+	// is greater than maxCos, then the spotlight contribution will be 1.
+	float maxCos = lerp(minCos, 1, 0.5f);
+	float cosAngle = dot(light.DirectionView, -L);
+	// Blend between the maxixmum and minimum cosine angles.
+	return smoothstep(minCos, maxCos, cosAngle);
 }
 
 LightingResult DoPointLight(LightData light, MaterialData mat, float4 V, float4 P, float4 N)
 {
-    LightingResult result;
+	LightingResult result;
 
-    float4 L = float4(light.PositionWorld, 1) - P;
-    float distance = length(L);
-    L = L / distance;
+	float4 L = float4(light.PositionWorld, 1) - P;
+	float distance = length(L);
+	L = L / distance;
 
-    float attenuation = DoAttenuation(light, distance);
+	float attenuation = DoAttenuation(light, distance);
 
-    result.Diffuse = DoDiffuse(light, L, N) * attenuation * light.Intensity;
-    result.Specular = DoSpecular(light, mat, V, L, N) * attenuation * light.Intensity;
+	result.Diffuse = DoDiffuse(light, L, N) * attenuation * light.Intensity;
+	result.Specular = DoSpecular(light, mat, V, L, N) * attenuation * light.Intensity;
 
-    return result;
+	return result;
 }
 
 LightingResult DoDirectionalLight(LightData light, MaterialData mat, float4 V, float4 P, float4 N)
 {
-    LightingResult result;
+	LightingResult result;
 
-    float4 L = normalize(float4(-light.DirectionView, 1));
+	float4 L = normalize(float4(-light.DirectionView, 1));
 
-    result.Diffuse = DoDiffuse(light, L, N) * light.Intensity;
-    result.Specular = DoSpecular(light, mat, V, L, N) * light.Intensity;
+	result.Diffuse = DoDiffuse(light, L, N) * light.Intensity;
+	result.Specular = DoSpecular(light, mat, V, L, N) * light.Intensity;
 
-    return result;
+	return result;
 }
 
 LightingResult DoSpotLight(LightData light, MaterialData mat, float4 V, float4 P, float4 N)
 {
-    LightingResult result;
+	LightingResult result;
 
-    float4 L = float4(light.PositionWorld, 1) - P;
-    float distance = length(L);
-    L = L / distance;
+	float4 L = float4(light.PositionWorld, 1) - P;
+	float distance = length(L);
+	L = L / distance;
 
-    float attenuation = DoAttenuation(light, distance);
-    float spotIntensity = DoSpotCone(light, L);
+	float attenuation = DoAttenuation(light, distance);
+	float spotIntensity = DoSpotCone(light, L);
 
-    result.Diffuse = DoDiffuse(light, L, N) * attenuation * spotIntensity * light.Intensity;
-    result.Specular = DoSpecular(light, mat, V, L, N) * attenuation * spotIntensity * light.Intensity;
+	result.Diffuse = DoDiffuse(light, L, N) * attenuation * spotIntensity * light.Intensity;
+	result.Specular = DoSpecular(light, mat, V, L, N) * attenuation * spotIntensity * light.Intensity;
 
-    return result;
-}
-
-LightingResult DoLighting(StructuredBuffer<LightData> lights, MaterialData mat, float4 eyePos, float4 P, float4 N)
-{
-    float4 V = normalize(eyePos - P);
-
-    LightingResult totalResult = (LightingResult) 0;
-
-    for (int i = 0; i < NUM_LIGHTS; ++i)
-    {
-        LightingResult result = (LightingResult) 0;
-
-        // Skip lights that are not enabled.
-        if (!lights[i].Enabled)
-            continue;
-        // Skip point and spot lights that are out of range of the point being shaded.
-        if (lights[i].Type != DIRECTIONAL_LIGHT && length(lights[i].PositionWorld - P) > lights[i].Range)
-            continue;
-
-        switch (lights[i].Type)
-        {
-            case DIRECTIONAL_LIGHT:
-        {
-                    result = DoDirectionalLight(lights[i], mat, V, P, N);
-                }
-                break;
-            case POINT_LIGHT:
-        {
-                    result = DoPointLight(lights[i], mat, V, P, N);
-                }
-                break;
-            case SPOT_LIGHT:
-        {
-                    result = DoSpotLight(lights[i], mat, V, P, N);
-                }
-                break;
-        }
-        totalResult.Diffuse += result.Diffuse;
-        totalResult.Specular += result.Specular;
-    }
-
-    return totalResult;
+	return result;
 }

@@ -5,80 +5,77 @@
 #include "ModelRenderer.h"
 #include "Transform.h"
 
-namespace PEPEngine
+namespace PEPEngine::Common
 {
-	namespace Common
+	using namespace Allocator;
+	using namespace Graphics;
+	using namespace Utils;
+
+	GameObject::GameObject() : GameObject("Game Object")
 	{
-		using namespace Allocator;
-		using namespace Graphics;
-		using namespace Utils;
+	};
 
-		GameObject::GameObject() : GameObject("Game Object")
-		{
-		};
+	GameObject::GameObject(std::string name)
+		: GameObject(std::move(name), Vector3::Zero,
+		             Vector3::One, Quaternion::Identity)
+	{
+	}
 
-		GameObject::GameObject(std::string name)
-			: GameObject(std::move(name), Vector3::Zero,
-			             Vector3::One, Quaternion::Identity)
+	GameObject::
+	GameObject(std::string name, Vector3 position, Vector3 scale, Quaternion rotate) : name(
+		std::move(name))
+	{
+		transform = std::make_shared<Transform>(position, rotate, scale);
+
+		AddComponent(transform);
+	}
+
+	void GameObject::Update()
+	{
+		for (auto& component : components)
 		{
+			component->Update();
 		}
+	}
 
-		GameObject::
-		GameObject(std::string name, Vector3 position, Vector3 scale, Quaternion rotate) : name(
-			std::move(name))
+	void GameObject::Draw(std::shared_ptr<GCommandList> cmdList)
+	{
+		for (auto&& component : components)
 		{
-			transform = std::make_shared<Transform>(position, rotate, scale);
-
-			AddComponent(transform);
+			component->PopulateDrawCommand(cmdList);
 		}
+	}
 
-		void GameObject::Update()
-		{
-			for (auto& component : components)
-			{
-				component->Update();
-			}
-		}
+	std::shared_ptr<Transform> GameObject::GetTransform() const
+	{
+		return transform;
+	}
 
-		void GameObject::Draw(std::shared_ptr<GCommandList> cmdList)
+	std::shared_ptr<ModelRenderer> GameObject::GetRenderer()
+	{
+		if (renderer == nullptr)
 		{
 			for (auto&& component : components)
 			{
-				component->PopulateDrawCommand(cmdList);
-			}
-		}
-
-		std::shared_ptr<Transform> GameObject::GetTransform() const
-		{
-			return transform;
-		}
-
-		std::shared_ptr<ModelRenderer> GameObject::GetRenderer()
-		{
-			if (renderer == nullptr)
-			{
-				for (auto&& component : components)
+				const auto comp = dynamic_cast<ModelRenderer*>(component.get());
+				if (comp)
 				{
-					const auto comp = dynamic_cast<ModelRenderer*>(component.get());
-					if (comp)
-					{
-						renderer = std::static_pointer_cast<ModelRenderer>(component);
-						break;
-					}
+					renderer = std::static_pointer_cast<ModelRenderer>(component);
+					break;
 				}
 			}
-
-			return renderer;
 		}
 
-		void GameObject::SetScale(float scale) const
-		{
-			transform->SetScale(Vector3(scale, scale, scale));
-		}
+		return renderer;
+	}
 
-		void GameObject::SetScale(Vector3& scale) const
-		{
-			transform->SetScale(scale);
-		}
+	void GameObject::SetScale(float scale) const
+	{
+		transform->SetScale(Vector3(scale, scale, scale));
+	}
+
+	void GameObject::SetScale(Vector3& scale) const
+	{
+		transform->SetScale(scale);
 	}
 }

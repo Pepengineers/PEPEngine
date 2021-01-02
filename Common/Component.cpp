@@ -1,12 +1,9 @@
 #include "pch.h"
 #include "Component.h"
 
-namespace PEPEngine
+namespace PEPEngine::Common
 {
-	namespace Common
+	Component::Component()
 	{
-		Component::Component()
-		{
-		}
 	}
 }

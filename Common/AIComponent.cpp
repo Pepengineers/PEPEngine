@@ -5,13 +5,13 @@
 #include "GameObject.h"
 #include "Transform.h"
 
-enum test { TARGET_ACQUIRED, TARGET_DEAD,IN_LOCATION };
+enum test { TARGET_ACQUIRED, TARGET_DEAD, IN_LOCATION };
+
 AIComponent::AIComponent()
 {
 	this->SetWorldState();
 	this->SetActionList();
 	this->currentState_ = FSMState::Idle;
-	
 }
 
 void AIComponent::SetActionList()
@@ -33,7 +33,6 @@ void AIComponent::SetActionList()
 	c.setRequiresInRange(true);
 	c.target->SetPosition(Vector3(100, 0, 0));
 	availableActions.push_back(c);
-
 }
 
 
@@ -49,7 +48,8 @@ void AIComponent::SetWorldState()
 
 void AIComponent::Update()
 {
-	if(worldState.getVariable(PEPEngine::goap::Action::POKE_A) && worldState.getVariable(PEPEngine::goap::Action::POKE_B) &&worldState.getVariable(PEPEngine::goap::Action::POKE_C))
+	if (worldState.getVariable(PEPEngine::goap::Action::POKE_A) && worldState.
+		getVariable(PEPEngine::goap::Action::POKE_B) && worldState.getVariable(PEPEngine::goap::Action::POKE_C))
 	{
 		worldState.setVariable(PEPEngine::goap::Action::POKE_A, false);
 		worldState.setVariable(PEPEngine::goap::Action::POKE_B, false);
@@ -59,13 +59,13 @@ void AIComponent::Update()
 	{
 	case FSMState::Idle:
 		{
-		auto plan = planner.plan(worldState, goal, availableActions);
+			auto plan = planner.plan(worldState, goal, availableActions);
 
-			if(plan.empty())
+			if (plan.empty())
 			{
 				currentState_ = FSMState::Idle;
-				
-			} else
+			}
+			else
 			{
 				currentActions = plan;
 				currentState_ = FSMState::PerformAction;
@@ -74,37 +74,32 @@ void AIComponent::Update()
 		}
 	case FSMState::MoveTo:
 		{
-		//TODO: Переписать под нормальное передвижение
-			
-		auto action = &currentActions.back();
-		auto transform = gameObject->GetTransform();
-		auto current = gameObject->GetTransform()->GetWorldPosition();
-		auto target = action->target.get()->GetWorldPosition();
-		auto len = (target - current);
-		auto lelen = len.Length();
+			//TODO: Переписать под нормальное передвижение
 
-			if(lelen > 0 && lelen <2)
+			auto action = &currentActions.back();
+			auto transform = gameObject->GetTransform();
+			auto current = gameObject->GetTransform()->GetWorldPosition();
+			auto target = action->target.get()->GetWorldPosition();
+			auto len = (target - current);
+			auto lelen = len.Length();
+
+			if (lelen > 0 && lelen < 2)
 			{
 				action->setInRange(true);
 				currentState_ = FSMState::PerformAction;
-				
 			}
 			else
 			{
 				auto dir = target - current;
 				dir.Normalize();
-				transform->AdjustPosition(dir*0.1);
-				
+				transform->AdjustPosition(dir * 0.1);
 			}
-			
+
 			break;
-			
 		}
 	case FSMState::PerformAction:
-	{
-		
-			
-			if(currentActions.empty())
+		{
+			if (currentActions.empty())
 			{
 				currentState_ = FSMState::Idle;
 			}
@@ -120,21 +115,17 @@ void AIComponent::Update()
 					}
 					else
 					{
-						if (currentActions.empty()) 
+						if (currentActions.empty())
 							currentState_ = FSMState::Idle;
-					
 					}
 				}
 				else
 				{
 					currentState_ = FSMState::MoveTo;
 				}
-			
-				
 			}
-			
+
 			break;
-			
 		}
 	}
 }

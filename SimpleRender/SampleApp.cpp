@@ -5,6 +5,7 @@
 #include "GameObject.h"
 #include "GDeviceFactory.h"
 #include "GModel.h"
+#include "GPass.h"
 #include "GraphicPSO.h"
 #include "MathHelper.h"
 #include "ModelRenderer.h"
@@ -13,23 +14,18 @@
 
 namespace SimpleRender
 {
-
-
-
-
-	SampleApp::SampleApp(HINSTANCE hInstance) : D3DApp(hInstance), assetLoader(AssetsLoader(GDeviceFactory::GetDevice()))
+	SampleApp::SampleApp(HINSTANCE hInstance) : D3DApp(hInstance),
+	                                            assetLoader(AssetsLoader(GDeviceFactory::GetDevice()))
 	{
-	 
 	}
 
 	bool SampleApp::Initialize()
 	{
 		device = GDeviceFactory::GetDevice();
-		dsvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+
 		rtvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, globalCountFrameResources);
-		defferedRTVMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, GBufferMapsCount);
-		//+1 для SRV Depth Map
-		defferedSRVMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, GBufferMapsCount + 1);
+
+		passes.push_back(std::make_shared<GPass>(device));
 
 		if (!D3DApp::Initialize())
 		{
@@ -48,7 +44,7 @@ namespace SimpleRender
 
 		auto cube = assetLoader.GenerateSphere(cmdList);
 		models[L"cube"] = std::move(cube);
-		
+
 		auto seamlessTex = GTexture::LoadTextureFromFile(L"Data\\Textures\\seamless_grass.jpg", cmdList);
 		seamlessTex->SetName(L"seamless");
 		assetLoader.AddTexture(seamlessTex);
@@ -106,9 +102,6 @@ namespace SimpleRender
 		computeQueue->WaitForFenceValue(computeQueue->ExecuteCommandList(computeList));
 
 
-
-
-
 		rootSignature = std::make_shared<GRootSignature>();
 
 		CD3DX12_DESCRIPTOR_RANGE texParam[6];
@@ -118,10 +111,11 @@ namespace SimpleRender
 		texParam[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 3, 2);
 		texParam[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 4, 2);
 		texParam[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, MaxMaterialTexturesMaps, 0, 0); //Material Maps
-		
+
 		rootSignature->AddConstantBufferParameter(0); // ObjectData
 		rootSignature->AddDescriptorParameter(&texParam[5], 1, D3D12_SHADER_VISIBILITY_PIXEL); //MaterialsTexture
-		rootSignature->AddConstantBufferParameter(1); // WorldData
+		rootSignature->AddConstantBufferParameter(1); // CameraData
+		rootSignature->AddConstantBufferParameter(2); // WorldData
 		rootSignature->AddShaderResourceView(0, 1); // MaterialData
 		rootSignature->AddShaderResourceView(1, 1); // LightData		
 
@@ -142,7 +136,7 @@ namespace SimpleRender
 
 		shaders[L"Debug"] = std::move(
 			std::make_unique<GShader>(L"Shaders\\Default.hlsl", PixelShader, nullptr, "PSDebug", "ps_5_1"));
-		
+
 		shaders[L"quadVS"] = std::move(
 			std::make_unique<GShader>(L"Shaders\\Quad.hlsl", VertexShader, nullptr, "VS", "vs_5_1"));
 		shaders[L"quadPS"] = std::move(
@@ -154,30 +148,11 @@ namespace SimpleRender
 			sh.second->LoadAndCompile();
 		}
 
-		defaultInputLayout =
-		{
-			{
-				"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
-				D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
-			},
-			{
-				"NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
-				D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
-			},
-			{
-				"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
-				D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
-			},
-			{
-				"TANGENT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT,
-				D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
-			},
-		};
 
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC basePsoDesc;
 
 		ZeroMemory(&basePsoDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
-		basePsoDesc.InputLayout = { defaultInputLayout.data(), static_cast<UINT>(defaultInputLayout.size()) };
+		basePsoDesc.InputLayout = {VertexInputLayout, static_cast<UINT>(_countof(VertexInputLayout))};
 		basePsoDesc.pRootSignature = rootSignature->GetRootSignature().Get();
 		basePsoDesc.VS = shaders[L"StandardVertex"]->GetShaderResource();
 		basePsoDesc.PS = shaders[L"OpaquePixel"]->GetShaderResource();
@@ -186,22 +161,14 @@ namespace SimpleRender
 		basePsoDesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 		basePsoDesc.SampleMask = UINT_MAX;
 		basePsoDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
-		basePsoDesc.NumRenderTargets = GBufferMapsCount;
-		basePsoDesc.RTVFormats[0] = GetSRGBFormat(NormalMapFormat);
-		basePsoDesc.RTVFormats[1] = GetSRGBFormat(BaseColorMapFormat);
-		basePsoDesc.RTVFormats[2] = GetSRGBFormat(PositionMapFormat);
 		basePsoDesc.SampleDesc.Count = isM4xMsaa ? 4 : 1;
 		basePsoDesc.SampleDesc.Quality = isM4xMsaa ? (m4xMsaaQuality - 1) : 0;
 		basePsoDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
-
-		deferredGBufferPSO = std::make_shared<GraphicPSO>();
-		deferredGBufferPSO->SetPsoDesc(basePsoDesc);
-		deferredGBufferPSO->Initialize(device);
-
 		basePsoDesc.NumRenderTargets = 1;
 		basePsoDesc.RTVFormats[0] = GetSRGBFormat(DXGI_FORMAT_R8G8B8A8_UNORM);
 		basePsoDesc.RTVFormats[1] = GetSRGBFormat(DXGI_FORMAT_UNKNOWN);
 		basePsoDesc.RTVFormats[2] = GetSRGBFormat(DXGI_FORMAT_UNKNOWN);
+
 		quadPso = std::make_unique<GraphicPSO>(RenderMode::Quad);
 		quadPso->SetPsoDesc(basePsoDesc);
 		quadPso->SetShader(shaders[L"quadVS"].get());
@@ -222,9 +189,6 @@ namespace SimpleRender
 		debugPso->SetShader(shaders[L"Debug"].get());
 		debugPso->Initialize(device);
 
-		
-		
-		
 
 		auto seamless = std::make_shared<Material>(L"seamless", RenderMode::Opaque);
 		auto tex = assetLoader.GetTextureIndex(L"seamless");
@@ -233,7 +197,6 @@ namespace SimpleRender
 		seamless->SetMaterialMap(Material::NormalMap, assetLoader.GetTexture(tex));
 		assetLoader.AddMaterial(seamless);
 
-				
 
 		auto quadRitem = std::make_unique<GameObject>("Quad");
 		auto renderer = std::make_shared<ModelRenderer>(GDeviceFactory::GetDevice(), models[L"quad"]);
@@ -246,10 +209,11 @@ namespace SimpleRender
 		auto cameraGO = std::make_unique<GameObject>("MainCamera");
 		cameraGO->GetTransform()->SetEulerRotate(Vector3(-30, 120, 0));
 		cameraGO->GetTransform()->SetPosition(Vector3(30, 20, -130));
-		
+
 		cameraGO->AddComponent(std::make_shared<Camera>(AspectRatio()));
 		cameraGO->AddComponent(std::make_shared<CameraController>());
 		gameObjects.push_back(std::move(cameraGO));
+
 
 		for (int i = 0; i < 12; ++i)
 		{
@@ -261,40 +225,36 @@ namespace SimpleRender
 				rModel->GetTransform()->SetPosition(
 					Vector3::Right * -30 * j + Vector3::Forward * 10 * i);
 				typedGO[RenderMode::Opaque].push_back(rModel.get());
+				passes[0]->AddTarget(renderer.get());
+
+				/*	auto ai = std::make_shared<AIComponent>();
+					rModel->AddComponent(ai);*/
 
 
-				auto ai = std::make_shared<AIComponent>();
-				rModel->AddComponent(ai);
-
-
-				
 				auto pos = rModel->GetTransform()->GetWorldPosition() + (Vector3::Up * 1 * 10);
-				
-				auto sun1 = std::make_unique<GameObject>("Directional Light");
+
+				auto sun1 = std::make_unique<GameObject>("Light");
 				sun1->GetTransform()->SetPosition(pos);
 				auto light = std::make_shared<Light>();
 				light->Color = Vector4(MathHelper::RandF(), MathHelper::RandF(), MathHelper::RandF(), 1);
 				//light->Color = Vector4(1,0,0, 1);
 				light->Intensity = 1;
-			      (i+j)%2 ==1  ? light->Type = Spot : light->Type = Point;
-				
-				if (i==2 && j==2)
-				{
-					light->Intensity = 0.5;
-					light->Type = Directional;
-				}
+				(i + j) % 2 == 1 ? light->Type = Spot : light->Type = Point;
+
+
 				sun1->AddComponent(light);
-				
+
 				renderer = std::make_shared<ModelRenderer>(GDeviceFactory::GetDevice(), models[L"cube"]);
 				models[L"cube"]->SetMeshMaterial(0, assetLoader.GetMaterial(assetLoader.GetMaterialIndex(L"seamless")));
 				sun1->AddComponent(renderer);
 				typedGO[RenderMode::Debug].push_back(sun1.get());
-				
+
 				gameObjects.push_back(std::move(sun1));
 
 				gameObjects.push_back(std::move(rModel));
 			}
 		}
+
 
 		auto materials = assetLoader.GetMaterials();
 
@@ -321,7 +281,8 @@ namespace SimpleRender
 
 		for (int i = 0; i < globalCountFrameResources; ++i)
 		{
-			frameResources.push_back(std::make_shared<FrameResource>(device, 1, assetLoader.GetMaterials().size(), lights.size()));
+			frameResources.push_back(
+				std::make_shared<FrameResource>(device, assetLoader.GetMaterials().size(), lights.size()));
 		}
 	}
 
@@ -342,43 +303,12 @@ namespace SimpleRender
 			object->Update();
 		}
 
+		worldData.DeltaTime = gt.DeltaTime();
+		worldData.TotalTime = gt.TotalTime();
+		worldData.LightsCount = lights.size();
 
-		auto view = camera->GetViewMatrix();
-		auto proj = camera->GetProjectionMatrix();
+		currentFrameResource->WorldBuffer->CopyData(0, worldData);
 
-		auto viewProj = (view * proj);
-		auto invView = view.Invert();
-		auto invProj = proj.Invert();
-		auto invViewProj = viewProj.Invert();
-
-		// Transform NDC space [-1,+1]^2 to texture space [0,1]^2
-		Matrix T(
-			0.5f, 0.0f, 0.0f, 0.0f,
-			0.0f, -0.5f, 0.0f, 0.0f,
-			0.0f, 0.0f, 1.0f, 0.0f,
-			0.5f, 0.5f, 0.0f, 1.0f);
-		Matrix viewProjTex = XMMatrixMultiply(viewProj, T);
-		mainPassCB.View = view.Transpose();
-		mainPassCB.InvView = invView.Transpose();
-		mainPassCB.Proj = proj.Transpose();
-		mainPassCB.InvProj = invProj.Transpose();
-		mainPassCB.ViewProj = viewProj.Transpose();
-		mainPassCB.InvViewProj = invViewProj.Transpose();
-		mainPassCB.ViewProjTex = viewProjTex.Transpose();
-		mainPassCB.EyePosW = camera->gameObject->GetTransform()->GetWorldPosition();
-		mainPassCB.RenderTargetSize = Vector2(static_cast<float>(MainWindow->GetClientWidth()),
-			static_cast<float>(MainWindow->GetClientHeight()));
-		mainPassCB.InvRenderTargetSize = Vector2(1.0f / mainPassCB.RenderTargetSize.x,
-			1.0f / mainPassCB.RenderTargetSize.y);
-		mainPassCB.NearZ = 1.0f;
-		mainPassCB.FarZ = 1000.0f;
-		mainPassCB.TotalTime = gt.TotalTime();
-		mainPassCB.DeltaTime = gt.DeltaTime();
-		mainPassCB.LightCount = lights.size();
-		mainPassCB.AmbientLight = Vector4{ 0.25f, 0.25f, 0.35f, 1.0f };
-		
-		auto currentPassCB = currentFrameResource->PassConstantBuffer.get();
-		currentPassCB->CopyData(0, mainPassCB);
 
 		auto currentMaterialBuffer = currentFrameResource->MaterialsBuffer.get();
 		for (auto&& material : assetLoader.GetMaterials())
@@ -403,46 +333,43 @@ namespace SimpleRender
 		auto renderQueue = device->GetCommandQueue();
 		auto cmdList = renderQueue->GetCommandList();
 
-		cmdList->SetViewports(&viewport, 1);
-		cmdList->SetScissorRects(&rect, 1);
+		cmdList->SetRootSignature(rootSignature.get());
 
-				
-		for (auto&& texture : defferedGBufferTextures)
-			cmdList->TransitionBarrier(texture, D3D12_RESOURCE_STATE_RENDER_TARGET);
-		cmdList->TransitionBarrier(depthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-		cmdList->FlushResourceBarriers();
+		cmdList->SetRootShaderResourceView(MaterialsBuffer, *currentFrameResource->MaterialsBuffer);
+		cmdList->SetRootConstantBufferView(CameraDataBuffer, Camera::mainCamera->GetCameraDataBuffer());
+		for (auto&& pass : passes)
+		{
+			pass->Render(cmdList);
+		}
 
-		cmdList->SetRenderTargets(defferedGBufferTextures.size(), &defferedRTVMemory, 0, &dsvMemory, 0, true);
-		for (int i = 0; i < defferedGBufferTextures.size(); ++i)
-			cmdList->ClearRenderTarget(&defferedRTVMemory, i, DirectX::Colors::Black);
-		cmdList->ClearDepthStencil(&dsvMemory, 0);
+		const auto camera = Camera::mainCamera;
 
+		cmdList->SetViewports(&camera->GetViewPort(), 1);
+		cmdList->SetScissorRects(&camera->GetRect(), 1);
+
+
+		auto gpass = static_cast<GPass*>(passes[0].get());
 
 		cmdList->SetRootSignature(rootSignature.get());
-		cmdList->SetRootConstantBufferView(DeferredPassRSSlots::WorldDataBuffer, *currentFrameResource->PassConstantBuffer);
-		cmdList->SetRootShaderResourceView(DeferredPassRSSlots::MaterialsBuffer, *currentFrameResource->MaterialsBuffer);
-		cmdList->SetRootShaderResourceView(DeferredPassRSSlots::LightBuffer, *currentFrameResource->LightsBuffer);
+		cmdList->SetRootShaderResourceView(MaterialsBuffer, *currentFrameResource->MaterialsBuffer);
+		cmdList->SetRootConstantBufferView(WorldDataBuffer, *currentFrameResource->WorldBuffer);
+		cmdList->SetRootConstantBufferView(CameraDataBuffer, Camera::mainCamera->GetCameraDataBuffer());
+		cmdList->SetRootShaderResourceView(LightBuffer, *currentFrameResource->LightsBuffer);
 
-		cmdList->SetPipelineState(*deferredGBufferPSO.get());
-		cmdList->SetDescriptorsHeap(&defferedSRVMemory);
-		cmdList->SetRootDescriptorTable(DeferredPassRSSlots::NormalMap, &defferedSRVMemory, 0);
-		cmdList->SetRootDescriptorTable(DeferredPassRSSlots::BaseColorMap, &defferedSRVMemory, 1);
-		cmdList->SetRootDescriptorTable(DeferredPassRSSlots::PostionMap, &defferedSRVMemory, 2);
-		cmdList->SetRootDescriptorTable(DeferredPassRSSlots::DepthTexture, &defferedSRVMemory, GBufferMapsCount);
-		
-		for (auto&& object : typedGO[RenderMode::Opaque])
-			object->Draw(cmdList);
 
-		for (auto&& texture : defferedGBufferTextures)
-			cmdList->TransitionBarrier(texture, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		cmdList->SetDescriptorsHeap(&gpass->GetSRV());
+		cmdList->SetRootDescriptorTable(NormalMap, &gpass->GetSRV(), GPass::NormalMap);
+		cmdList->SetRootDescriptorTable(BaseColorMap, &gpass->GetSRV(), GPass::ColorMap);
+		cmdList->SetRootDescriptorTable(PositionMap, &gpass->GetSRV(), GPass::PositionMap);
+		cmdList->SetRootDescriptorTable(DepthMap, &gpass->GetSRV(), GPass::DepthMap);
+
+
 		cmdList->TransitionBarrier(MainWindow->GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_RENDER_TARGET);
 		cmdList->FlushResourceBarriers();
 
-		cmdList->SetRenderTargets(0, nullptr,0, &dsvMemory, 0);
-		
 		cmdList->SetRenderTargets(1, &rtvMemory, currentFrameResourceIndex);
 		cmdList->ClearRenderTarget(&rtvMemory, currentFrameResourceIndex, DirectX::Colors::Black);
-		
+
 		cmdList->SetPipelineState(*quadPso.get());
 		for (auto&& object : typedGO[RenderMode::Quad])
 			object->Draw(cmdList);
@@ -455,21 +382,13 @@ namespace SimpleRender
 			auto object = typedGO[RenderMode::Debug][i];
 			object->Draw(cmdList);
 		}
-		
-		
-		
-
 
 		cmdList->TransitionBarrier(MainWindow->GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT);
-		cmdList->TransitionBarrier(depthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
 		cmdList->FlushResourceBarriers();
 
-
-		
-		
 		currentFrameResource->FenceValue = renderQueue->ExecuteCommandList(cmdList);
 
-		currentFrameResourceIndex =  MainWindow->Present();
+		currentFrameResourceIndex = MainWindow->Present();
 	}
 
 	void SampleApp::OnResize()
@@ -478,105 +397,23 @@ namespace SimpleRender
 
 		currentFrameResourceIndex = MainWnd()->GetCurrentBackBufferIndex();
 
-		viewport.Height = static_cast<float>(MainWindow->GetClientHeight());
-		viewport.Width = static_cast<float>(MainWindow->GetClientWidth());
-		viewport.MinDepth = 0.0f;
-		viewport.MaxDepth = 1.0f;
-		viewport.TopLeftX = 0;
-		viewport.TopLeftY = 0;
-		rect = { 0, 0, MainWindow->GetClientWidth(), MainWindow->GetClientHeight() };
-
-		if (!depthBuffer.IsValid())
-		{
-			D3D12_RESOURCE_DESC depthStencilDesc;
-			depthStencilDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-			depthStencilDesc.Alignment = 0;
-			depthStencilDesc.Width = MainWindow->GetClientWidth();
-			depthStencilDesc.Height = MainWindow->GetClientHeight();
-			depthStencilDesc.DepthOrArraySize = 1;
-			depthStencilDesc.MipLevels = 1;
-			depthStencilDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-			depthStencilDesc.SampleDesc.Count = 1;
-			depthStencilDesc.SampleDesc.Quality = 0;
-			depthStencilDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
-			depthStencilDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
-
-			D3D12_CLEAR_VALUE optClear;
-			optClear.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-			optClear.DepthStencil.Depth = 1.0f;
-			optClear.DepthStencil.Stencil = 0;
-
-			depthBuffer = GTexture(device, depthStencilDesc, L"Depth Map", TextureUsage::Depth, &optClear);
-		}
-		else
-		{
-			GTexture::Resize(depthBuffer, MainWindow->GetClientWidth(), MainWindow->GetClientHeight(), 1);
-		}
-
-		auto backBufferDesc = MainWindow->GetCurrentBackBuffer().GetD3D12ResourceDesc();
-
-		if (defferedGBufferTextures.size() < GBufferMapsCount)
-		{
-			auto desc = backBufferDesc;
-			desc.Format = NormalMapFormat;
-			desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
-
-			defferedGBufferTextures.push_back((GTexture(device, desc, L"Normal Roughness GMap", TextureUsage::RenderTarget)));
-
-			desc.Format = BaseColorMapFormat;
-
-			defferedGBufferTextures.push_back((GTexture(device, desc, L"BaseColor Metalnes GMAP", TextureUsage::RenderTarget)));
-
-			desc.Format = PositionMapFormat;
-
-			defferedGBufferTextures.push_back((GTexture(device, desc, L"Position GMAP", TextureUsage::RenderTarget)));
-			
-		}
-		else
-		{
-			for (auto&& texture : defferedGBufferTextures)
-			{
-				GTexture::Resize(texture, MainWindow->GetClientWidth(), MainWindow->GetClientHeight(), 1);
-			}
-		}
+		if(Camera::mainCamera)
+			Camera::mainCamera->SetAspectRatio(AspectRatio());
 
 		D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
 		rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-		rtvDesc.Format = GetSRGBFormat(backBufferDesc.Format);
+		rtvDesc.Format = GetSRGBFormat(MainWindow->GetCurrentBackBuffer().GetD3D12ResourceDesc().Format);
+
 
 		for (int i = 0; i < globalCountFrameResources; ++i)
 		{
 			MainWindow->GetBackBuffer(i).CreateRenderTargetView(&rtvDesc, &rtvMemory, i);
 		}
 
-		D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
-		dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
-		dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-		dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-		dsvDesc.Texture2D.MipSlice = 0;
-		depthBuffer.CreateDepthStencilView(&dsvDesc, &dsvMemory);
-
-
-		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-		srvDesc.Texture2D.MostDetailedMip = 0;
-		srvDesc.Texture2D.ResourceMinLODClamp = 0.0f;
-
-		for (int i = 0; i < defferedGBufferTextures.size(); ++i)
+		for (auto&& pass : passes)
 		{
-			auto desc = defferedGBufferTextures[i].GetD3D12ResourceDesc();
-			srvDesc.Texture2D.MipLevels = desc.MipLevels;
-			srvDesc.Format = desc.Format;
-			rtvDesc.Format = desc.Format;
-
-			defferedGBufferTextures[i].CreateShaderResourceView(&srvDesc, &defferedSRVMemory, i);
-			defferedGBufferTextures[i].CreateRenderTargetView(&rtvDesc, &defferedRTVMemory, i);
+			pass->OnResize();
 		}
-
-		srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
-		depthBuffer.CreateShaderResourceView(&srvDesc, &defferedSRVMemory, GBufferMapsCount);
-
 	}
 
 	LRESULT SampleApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -584,179 +421,176 @@ namespace SimpleRender
 		switch (msg)
 		{
 		case WM_INPUT:
-		{
-			UINT dataSize;
-			GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, nullptr, &dataSize,
-				sizeof(RAWINPUTHEADER));
-			//Need to populate data size first
-
-			if (dataSize > 0)
 			{
-				std::unique_ptr<BYTE[]> rawdata = std::make_unique<BYTE[]>(dataSize);
-				if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, rawdata.get(), &dataSize,
-					sizeof(RAWINPUTHEADER)) == dataSize)
+				UINT dataSize;
+				GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, nullptr, &dataSize,
+				                sizeof(RAWINPUTHEADER));
+				//Need to populate data size first
+
+				if (dataSize > 0)
 				{
-					RAWINPUT* raw = reinterpret_cast<RAWINPUT*>(rawdata.get());
-					if (raw->header.dwType == RIM_TYPEMOUSE)
+					std::unique_ptr<BYTE[]> rawdata = std::make_unique<BYTE[]>(dataSize);
+					if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lParam), RID_INPUT, rawdata.get(), &dataSize,
+					                    sizeof(RAWINPUTHEADER)) == dataSize)
 					{
-						mouse.OnMouseMoveRaw(raw->data.mouse.lLastX, raw->data.mouse.lLastY);
+						RAWINPUT* raw = reinterpret_cast<RAWINPUT*>(rawdata.get());
+						if (raw->header.dwType == RIM_TYPEMOUSE)
+						{
+							mouse.OnMouseMoveRaw(raw->data.mouse.lLastX, raw->data.mouse.lLastY);
+						}
+					}
+				}
+
+				return DefWindowProc(hwnd, msg, wParam, lParam);
+			}
+			//Mouse Messages
+		case WM_MOUSEMOVE:
+			{
+				int x = LOWORD(lParam);
+				int y = HIWORD(lParam);
+				mouse.OnMouseMove(x, y);
+				return 0;
+			}
+		case WM_LBUTTONDOWN:
+			{
+				int x = LOWORD(lParam);
+				int y = HIWORD(lParam);
+				mouse.OnLeftPressed(x, y);
+				return 0;
+			}
+		case WM_RBUTTONDOWN:
+			{
+				int x = LOWORD(lParam);
+				int y = HIWORD(lParam);
+				mouse.OnRightPressed(x, y);
+				return 0;
+			}
+		case WM_MBUTTONDOWN:
+			{
+				int x = LOWORD(lParam);
+				int y = HIWORD(lParam);
+				mouse.OnMiddlePressed(x, y);
+				return 0;
+			}
+		case WM_LBUTTONUP:
+			{
+				int x = LOWORD(lParam);
+				int y = HIWORD(lParam);
+				mouse.OnLeftReleased(x, y);
+				return 0;
+			}
+		case WM_RBUTTONUP:
+			{
+				int x = LOWORD(lParam);
+				int y = HIWORD(lParam);
+				mouse.OnRightReleased(x, y);
+				return 0;
+			}
+		case WM_MBUTTONUP:
+			{
+				int x = LOWORD(lParam);
+				int y = HIWORD(lParam);
+				mouse.OnMiddleReleased(x, y);
+				return 0;
+			}
+		case WM_MOUSEWHEEL:
+			{
+				int x = LOWORD(lParam);
+				int y = HIWORD(lParam);
+				if (GET_WHEEL_DELTA_WPARAM(wParam) > 0)
+				{
+					mouse.OnWheelUp(x, y);
+				}
+				else if (GET_WHEEL_DELTA_WPARAM(wParam) < 0)
+				{
+					mouse.OnWheelDown(x, y);
+				}
+				return 0;
+			}
+		case WM_KEYUP:
+
+			{
+				unsigned char keycode = static_cast<unsigned char>(wParam);
+				keyboard.OnKeyReleased(keycode);
+
+
+				return 0;
+			}
+		case WM_KEYDOWN:
+			{
+				{
+					unsigned char keycode = static_cast<unsigned char>(wParam);
+					if (keyboard.IsKeysAutoRepeat())
+					{
+						keyboard.OnKeyPressed(keycode);
+					}
+					else
+					{
+						const bool wasPressed = lParam & 0x40000000;
+						if (!wasPressed)
+						{
+							keyboard.OnKeyPressed(keycode);
+						}
+					}
+
+					Vector3 addPos = Vector3::Zero;
+					const float speed = 50;
+
+					if (keyboard.KeyIsPressed(VK_LEFT) && keycode == VK_LEFT)
+					{
+						addPos += Vector3::Left * 15 * timer.DeltaTime();
+					}
+
+					if (keyboard.KeyIsPressed(VK_RIGHT) && keycode == VK_RIGHT)
+					{
+						addPos += Vector3::Right * 15 * timer.DeltaTime();
+					}
+
+					if (keyboard.KeyIsPressed(VK_UP) && keycode == VK_UP)
+					{
+						addPos += Vector3::Up * 15 * timer.DeltaTime();
+					}
+
+					if (keyboard.KeyIsPressed(VK_DOWN) && keycode == VK_DOWN)
+					{
+						addPos += Vector3::Down * 15 * timer.DeltaTime();
+					}
+
+					if (keyboard.KeyIsPressed(VK_F2) && keycode == VK_F2)
+					{
+						addPos += Vector3::Forward * 15 * timer.DeltaTime();
+					}
+
+					if (keyboard.KeyIsPressed(VK_F3) && keycode == VK_F3)
+					{
+						addPos += Vector3::Backward * 15 * timer.DeltaTime();
+					}
+
+
+					for (auto&& object : typedGO[RenderMode::Debug])
+					{
+						object->GetTransform()->AdjustPosition(addPos * speed);
 					}
 				}
 			}
 
-			return DefWindowProc(hwnd, msg, wParam, lParam);
-		}
-		//Mouse Messages
-		case WM_MOUSEMOVE:
-		{
-			int x = LOWORD(lParam);
-			int y = HIWORD(lParam);
-			mouse.OnMouseMove(x, y);
-			return 0;
-		}
-		case WM_LBUTTONDOWN:
-		{
-			int x = LOWORD(lParam);
-			int y = HIWORD(lParam);
-			mouse.OnLeftPressed(x, y);
-			return 0;
-		}
-		case WM_RBUTTONDOWN:
-		{
-			int x = LOWORD(lParam);
-			int y = HIWORD(lParam);
-			mouse.OnRightPressed(x, y);
-			return 0;
-		}
-		case WM_MBUTTONDOWN:
-		{
-			int x = LOWORD(lParam);
-			int y = HIWORD(lParam);
-			mouse.OnMiddlePressed(x, y);
-			return 0;
-		}
-		case WM_LBUTTONUP:
-		{
-			int x = LOWORD(lParam);
-			int y = HIWORD(lParam);
-			mouse.OnLeftReleased(x, y);
-			return 0;
-		}
-		case WM_RBUTTONUP:
-		{
-			int x = LOWORD(lParam);
-			int y = HIWORD(lParam);
-			mouse.OnRightReleased(x, y);
-			return 0;
-		}
-		case WM_MBUTTONUP:
-		{
-			int x = LOWORD(lParam);
-			int y = HIWORD(lParam);
-			mouse.OnMiddleReleased(x, y);
-			return 0;
-		}
-		case WM_MOUSEWHEEL:
-		{
-			int x = LOWORD(lParam);
-			int y = HIWORD(lParam);
-			if (GET_WHEEL_DELTA_WPARAM(wParam) > 0)
+		case WM_CHAR:
 			{
-				mouse.OnWheelUp(x, y);
-			}
-			else if (GET_WHEEL_DELTA_WPARAM(wParam) < 0)
-			{
-				mouse.OnWheelDown(x, y);
-			}
-			return 0;
-		}
-		case WM_KEYUP:
-
-		{
-			unsigned char keycode = static_cast<unsigned char>(wParam);
-			keyboard.OnKeyReleased(keycode);
-
-
-			return 0;
-		}
-		case WM_KEYDOWN:
-		{
-			{
-				unsigned char keycode = static_cast<unsigned char>(wParam);
-				if (keyboard.IsKeysAutoRepeat())
+				unsigned char ch = static_cast<unsigned char>(wParam);
+				if (keyboard.IsCharsAutoRepeat())
 				{
-					keyboard.OnKeyPressed(keycode);
+					keyboard.OnChar(ch);
 				}
 				else
 				{
 					const bool wasPressed = lParam & 0x40000000;
 					if (!wasPressed)
 					{
-						keyboard.OnKeyPressed(keycode);
+						keyboard.OnChar(ch);
 					}
 				}
-
-				Vector3 addPos = Vector3::Zero;
-				const float speed = 50;
-				
-				if(keyboard.KeyIsPressed(VK_LEFT) && keycode == VK_LEFT)
-				{
-					addPos += Vector3::Left * 15 * timer.DeltaTime();
-				}
-
-				if (keyboard.KeyIsPressed(VK_RIGHT) && keycode == VK_RIGHT)
-				{
-					addPos += Vector3::Right * 15 * timer.DeltaTime();
-				}
-
-				if (keyboard.KeyIsPressed(VK_UP) && keycode == VK_UP)
-				{
-					addPos += Vector3::Up * 15 * timer.DeltaTime();
-				}
-
-				if (keyboard.KeyIsPressed(VK_DOWN) && keycode == VK_DOWN)
-				{
-					addPos += Vector3::Down * 15 * timer.DeltaTime();
-				}
-
-				if (keyboard.KeyIsPressed(VK_F2) && keycode == VK_F2)
-				{
-					addPos += Vector3::Forward * 15 * timer.DeltaTime();
-				}
-
-				if (keyboard.KeyIsPressed(VK_F3) && keycode == VK_F3)
-				{
-					addPos += Vector3::Backward * 15 * timer.DeltaTime();
-				}
-
-				
-
-				
-				for (auto&& object : typedGO[RenderMode::Debug])
-				{
-					object->GetTransform()->AdjustPosition(addPos * speed);
-				}
-				
+				return 0;
 			}
-		}
-
-		case WM_CHAR:
-		{
-			unsigned char ch = static_cast<unsigned char>(wParam);
-			if (keyboard.IsCharsAutoRepeat())
-			{
-				keyboard.OnChar(ch);
-			}
-			else
-			{
-				const bool wasPressed = lParam & 0x40000000;
-				if (!wasPressed)
-				{
-					keyboard.OnChar(ch);
-				}
-			}
-			return 0;
-		}
 		}
 
 		return D3DApp::MsgProc(hwnd, msg, wParam, lParam);

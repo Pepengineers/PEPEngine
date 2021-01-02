@@ -6,12 +6,10 @@ class DoActionB :
 {
 	DoActionB() : Action()
 	{
-
 		setRequiresInRange(true);
 		target->SetPosition(Vector3(10, 10, 1));
 		setEffect(POKE_A, false);
 		setEffect(POKE_B, true);
-
 	}
 
 	DoActionB(std::string name, int cost) : Action(name, cost)
@@ -20,8 +18,5 @@ class DoActionB :
 		target->SetPosition(Vector3(10, 10, 1));
 		setEffect(POKE_A, false);
 		setEffect(POKE_B, true);
-
 	}
-
 };
-

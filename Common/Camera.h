@@ -1,6 +1,8 @@
 #pragma once
 #include "Component.h"
 #include "d3dUtil.h"
+#include "DirectXBuffers.h"
+#include "ShaderBuffersData.h"
 #include "SimpleMath.h"
 
 namespace PEPEngine
@@ -29,12 +31,35 @@ namespace PEPEngine
 			Vector3 focusPosition = Vector3::Zero;
 
 
-			int NumFramesDirty = Utils::globalCountFrameResources;
+			int NumFramesDirty = globalCountFrameResources;
+
+			CameraConstants cameraData;
+
+			std::shared_ptr<ConstantUploadBuffer<CameraConstants>> CameraConstantBuffer = nullptr;
+
+
+			GTexture* renderTarget = nullptr;
+			D3D12_VIEWPORT viewport;
+			D3D12_RECT rect;
+
 		public:
+
+			inline static Camera* mainCamera = nullptr;
+
+			const D3D12_VIEWPORT GetViewPort() const { return viewport; }
+			const D3D12_RECT GetRect() const { return rect; }
+
+			CameraConstants& GetCameraData() { return cameraData; }
+
+			ConstantUploadBuffer<CameraConstants>& GetCameraDataBuffer() const;;
+
+			void SetRenderTarget(GTexture* target);
+
+			const GTexture* GetRenderTarget() const;
 
 			const Vector3& GetFocusPosition() const;
 
-			Camera(float aspect);;
+			Camera(float aspect);
 
 			void SetAspectRatio(float aspect);
 

@@ -5,6 +5,7 @@
 #include "Light.h"
 #include "GDescriptor.h"
 #include "GraphicPSO.h"
+#include "RenderPass.h"
 
 namespace SimpleRender
 {
@@ -47,26 +48,15 @@ namespace SimpleRender
 		std::vector<Light*> lights;
 		std::unique_ptr<Camera> camera = nullptr;
 
-		PassConstants mainPassCB;
+		WorldData worldData;
 
-		D3D12_VIEWPORT viewport;
-		D3D12_RECT rect;
-
-		GTexture depthBuffer;
-
-
-		GDescriptor dsvMemory;
 		GDescriptor rtvMemory;
 
-		GDescriptor defferedRTVMemory;
-		GDescriptor defferedSRVMemory;
-
-		std::vector<GTexture> defferedGBufferTextures;
 		std::shared_ptr<GRootSignature> rootSignature;
 		std::unordered_map<std::wstring, std::shared_ptr<GShader>> shaders;
-		std::vector<D3D12_INPUT_ELEMENT_DESC> defaultInputLayout;
-		std::shared_ptr<GraphicPSO> deferredGBufferPSO;
 		std::shared_ptr<GraphicPSO> quadPso;
 		std::shared_ptr<GraphicPSO> debugPso;
+
+		std::vector<std::shared_ptr<RenderPass>> passes;
 	};
 }

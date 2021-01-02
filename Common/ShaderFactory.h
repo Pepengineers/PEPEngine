@@ -17,8 +17,9 @@ namespace PEPEngine
 		{
 			static custom_unordered_map<std::string, std::shared_ptr<GShader>> shaders;
 
-			custom_unordered_map<RenderMode::Mode, std::shared_ptr<GraphicPSO>> PSO = MemoryAllocator::CreateUnorderedMap<
-				RenderMode::Mode, std::shared_ptr<GraphicPSO>>();
+			custom_unordered_map<RenderMode::Mode, std::shared_ptr<GraphicPSO>> PSO =
+				MemoryAllocator::CreateUnorderedMap<
+					RenderMode::Mode, std::shared_ptr<GraphicPSO>>();
 
 		public:
 

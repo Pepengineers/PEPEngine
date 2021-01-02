@@ -3,17 +3,14 @@
 #include "GameObject.h"
 #include "Transform.h"
 
-namespace PEPEngine
+namespace PEPEngine::Common
 {
-	namespace Common
+	void Rotater::Update()
 	{
-		void Rotater::Update()
-		{
-			const float dt = D3DApp::GetApp().GetTimer()->DeltaTime();
+		const float dt = D3DApp::GetApp().GetTimer()->DeltaTime();
 
-			auto tr = gameObject->GetTransform();
+		auto tr = gameObject->GetTransform();
 
-			tr->AdjustEulerRotation(Vector3(speed * dt, 0, 0));
-		}
+		tr->AdjustEulerRotation(Vector3(speed * dt, 0, 0));
 	}
 }

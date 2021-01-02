@@ -1,13 +1,13 @@
 #include "FrameResource.h"
 
 
-SimpleRender::FrameResource::FrameResource(std::shared_ptr<GDevice> device, UINT passCount, UINT materials, UINT lights)
+SimpleRender::FrameResource::FrameResource(std::shared_ptr<GDevice> device, UINT materials, UINT lights)
 {
-	PassConstantBuffer = std::make_shared<ConstantUploadBuffer<PassConstants>>(device, passCount, L"World Data Buffer");
+	WorldBuffer = std::make_shared<ConstantUploadBuffer<WorldData>>(device, 1, L"World Data Buffer");
 
-	MaterialsBuffer = std::make_shared<PEPEngine::Graphics::StructuredUploadBuffer<PEPEngine::Common::MaterialData>>(
+	MaterialsBuffer = std::make_shared<StructuredUploadBuffer<MaterialData>>(
 		device, materials, L"Materials Data UploadBuffer");
 
-	LightsBuffer = std::make_shared<PEPEngine::Graphics::StructuredUploadBuffer<PEPEngine::Common::LightData>>(
+	LightsBuffer = std::make_shared<StructuredUploadBuffer<LightData>>(
 		device, lights, L"lights dat upload buffer");
 }
