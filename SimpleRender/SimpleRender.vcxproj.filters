@@ -52,8 +52,5 @@
     <FxCompile Include="Shaders\Quad.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="ParticleMoveCS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
   </ItemGroup>
 </Project>

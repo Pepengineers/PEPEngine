@@ -60,7 +60,7 @@ namespace PEPEngine
 
 			void ComputeSsao(
 				std::shared_ptr<GCommandList> cmdList,
-				std::shared_ptr<ConstantBuffer<SsaoConstants>> currFrame,
+				std::shared_ptr<ConstantUploadBuffer<SsaoConstants>> currFrame,
 				int blurCount);
 			void ClearAmbiantMap(std::shared_ptr<GCommandList> cmdList);
 
@@ -69,7 +69,7 @@ namespace PEPEngine
 			std::shared_ptr<GDevice> device;
 
 			void BlurAmbientMap(std::shared_ptr<GCommandList> cmdList,
-			                    std::shared_ptr<ConstantBuffer<SsaoConstants>> currFrame, int blurCount);
+			                    std::shared_ptr<ConstantUploadBuffer<SsaoConstants>> currFrame, int blurCount);
 			void BlurAmbientMap(std::shared_ptr<GCommandList> cmdList, bool horzBlur);
 			GTexture CreateNormalMap() const;
 			GTexture CreateAmbientMap() const;

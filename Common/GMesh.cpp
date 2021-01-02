@@ -3,6 +3,7 @@
 #include <DirectXMesh.h>
 #include "GBuffer.h"
 #include "GCommandList.h"
+#include "GMeshBuffer.h"
 #include "NativeModel.h"
 
 namespace PEPEngine
@@ -19,25 +20,23 @@ namespace PEPEngine
 			return mesh->topology;
 		}
 
-
-		GMesh::GMesh(std::shared_ptr<NativeMesh> meshData, std::shared_ptr<GCommandList>& cmdList) : mesh(meshData)
+		D3D12_VERTEX_BUFFER_VIEW* GMesh::GetVertexView() const
 		{
-			indexBuffer = std::make_shared<GBuffer>(std::move(GBuffer::CreateBuffer(
-				cmdList, mesh->GetIndexes().data(), mesh->GetIndexSize(), mesh->GetIndexes().size(),
-				mesh->GetName() + L" Indexes")));
-
-			vertexBuffer = std::make_shared<GBuffer>(std::move(GBuffer::CreateBuffer(
-				cmdList, mesh->GetVertexes().data(), mesh->GetVertexSize(), mesh->GetVertexes().size(),
-				mesh->GetName() + L" Vertexes")));
-
-			
+			return vertexBuffer->VertexBufferView();
 		}
 
-
-		GMesh::GMesh(const GMesh& copy) : mesh(copy.mesh),
-		                                  vertexBuffer(copy.vertexBuffer), indexBuffer(copy.indexBuffer)
+		D3D12_INDEX_BUFFER_VIEW* GMesh::GetIndexView() const
 		{
+			return indexBuffer->IndexBufferView();
 		}
+
+		GMesh::GMesh(const std::shared_ptr<NativeMesh>& data, std::shared_ptr<GCommandList>& cmdList) : mesh(std::move(data))
+		{
+			indexBuffer = std::make_shared<GMeshBuffer>(std::move(GMeshBuffer::CreateBuffer(cmdList, mesh->GetIndexes().data(), mesh->GetIndexSize(), mesh->GetIndexes().size(), mesh->GetName() + L" Indexes")));
+
+			vertexBuffer = std::make_shared<GMeshBuffer>(std::move(GMeshBuffer::CreateBuffer(cmdList, mesh->GetVertexes().data(), mesh->GetVertexSize(), mesh->GetVertexes().size(), mesh->GetName() + L" Vertexes")));
+		}
+
 
 		void GMesh::Draw(std::shared_ptr<GCommandList> cmdList) const
 		{

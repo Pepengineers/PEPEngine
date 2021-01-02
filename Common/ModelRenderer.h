@@ -18,7 +18,7 @@ namespace PEPEngine
 		protected:
 
 			ObjectConstants objectWorldData{};
-			std::shared_ptr<ConstantBuffer<ObjectConstants>> modelDataBuffer = nullptr;
+			std::shared_ptr<ConstantUploadBuffer<ObjectConstants>> modelDataBuffer = nullptr;
 			std::shared_ptr<GDevice> device;
 			std::shared_ptr<GModel> model;
 

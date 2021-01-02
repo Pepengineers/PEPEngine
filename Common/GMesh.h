@@ -4,6 +4,7 @@
 
 #include "GBuffer.h"
 #include "GCommandList.h"
+#include "GMeshBuffer.h"
 #include "Lazy.h"
 
 namespace PEPEngine
@@ -23,18 +24,21 @@ namespace PEPEngine
 			std::shared_ptr<NativeMesh> mesh;
 
 
-			std::shared_ptr<GBuffer> vertexBuffer = nullptr;
-			std::shared_ptr<GBuffer> indexBuffer = nullptr;
+			std::shared_ptr<GMeshBuffer> vertexBuffer = nullptr;
+			std::shared_ptr<GMeshBuffer> indexBuffer = nullptr;
 		public:
 
 			std::shared_ptr<NativeMesh> GetMeshData() const;
 
 			D3D12_PRIMITIVE_TOPOLOGY GetPrimitiveType() const;
 
+			D3D12_VERTEX_BUFFER_VIEW* GetVertexView() const;
 
-			GMesh(std::shared_ptr<NativeMesh> meshData, std::shared_ptr<GCommandList>& cmdList);
+			D3D12_INDEX_BUFFER_VIEW* GetIndexView() const;
 
-			GMesh(const GMesh& copy);
+
+			GMesh(const std::shared_ptr<NativeMesh>& data, std::shared_ptr<GCommandList>& cmdList);
+
 
 			void Draw(std::shared_ptr<GCommandList> cmdList) const;
 

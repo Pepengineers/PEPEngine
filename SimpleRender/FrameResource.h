@@ -21,8 +21,8 @@ namespace SimpleRender
 
 		UINT64 FenceValue = 0;
 
-		std::shared_ptr<ConstantBuffer<PassConstants>> PassConstantBuffer = nullptr;
-		std::shared_ptr<UploadBuffer<MaterialData>> MaterialsBuffer = nullptr;
-		std::shared_ptr<UploadBuffer<LightData>> LightsBuffer = nullptr;
+		std::shared_ptr<ConstantUploadBuffer<PassConstants>> PassConstantBuffer = nullptr;
+		std::shared_ptr<StructuredUploadBuffer<MaterialData>> MaterialsBuffer = nullptr;
+		std::shared_ptr<StructuredUploadBuffer<LightData>> LightsBuffer = nullptr;
 	};
 }

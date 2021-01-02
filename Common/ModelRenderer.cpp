@@ -51,7 +51,7 @@ namespace PEPEngine
 			if (modelDataBuffer == nullptr || modelDataBuffer->GetElementCount() < asset->GetMeshesCount())
 			{
 				modelDataBuffer.reset();
-				modelDataBuffer = std::make_shared<ConstantBuffer<ObjectConstants>>(
+				modelDataBuffer = std::make_shared<ConstantUploadBuffer<ObjectConstants>>(
 					device, asset->GetMeshesCount(), asset->GetName());
 			}
 
