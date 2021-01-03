@@ -40,6 +40,8 @@ VertexOut VS(VertexIn input)
 
 	output.NormalWorldSpace = mul(float4(input.NormalObjectSpace, 0.0f),
 	                              ObjectBuffer.World).xyz;
+	output.NormalWorldSpace = normalize(output.NormalWorldSpace);
+	
 	output.NormalViewSpace = mul(float4(output.NormalWorldSpace, 0.0f),
 	                             CameraBuffer.View).xyz;
 
@@ -77,14 +79,14 @@ PixelShaderOutput PS(VertexOut input)
 
 	float4 baseColor = MaterialTexture[material.DiffuseMapIndex].Sample(gsamAnisotropicWrap, input.UV);
 	clip(baseColor.a - material.AlphaThreshold);
-
-	float4 normalColor = MaterialTexture[material.NormalMapIndex].Sample(gsamAnisotropicWrap, input.UV);
-
+	
 	// Interpolating normal can unnormalize it, so renormalize it.
-    input.NormalWorldSpace = normalize(input.NormalWorldSpace);
-
+	// input.NormalWorldSpace = normalize(input.NormalWorldSpace);
+    //output.Normal = float4((mul(input.NormalWorldSpace, (float3x3) CameraBuffer.View)), 0.0);
+	
+    output.Normal = float4(input.NormalViewSpace, 1);
 	output.BaseColor = baseColor;
-    output.Normal = float4(( mul(input.NormalWorldSpace, (float3x3)CameraBuffer.View)), 0.0);
+   
 	output.PositionBuffer = float4(input.PositionWorldSpace, 1);
 
 	return output;
