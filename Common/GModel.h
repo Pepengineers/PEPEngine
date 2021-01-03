@@ -23,8 +23,7 @@ namespace PEPEngine
 
 		public:
 
-			custom_vector<std::shared_ptr<Material>> meshesMaterials = MemoryAllocator::CreateVector<std::shared_ptr<
-				Material>>();
+			std::vector<std::shared_ptr<Material>> meshesMaterials;
 
 			DirectX::SimpleMath::Matrix scaleMatrix = DirectX::SimpleMath::Matrix::CreateScale(1);
 
@@ -34,7 +33,9 @@ namespace PEPEngine
 
 			std::shared_ptr<GMesh> GetMesh(UINT index);
 
-			std::wstring GetName() const;;
+			std::wstring GetName() const;
+			
+			
 
 			GModel(std::shared_ptr<NativeModel> model, std::shared_ptr<GCommandList> uploadCmdList);
 

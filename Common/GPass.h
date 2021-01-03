@@ -47,11 +47,12 @@ namespace PEPEngine::Common
 
 		GTexture& GetGTexture(DeferredPassRTVSlot slot);
 
-		GDescriptor& GetSRV();
+		const GDescriptor* GetSRV() const;
 
 
 		void Render(std::shared_ptr<GCommandList> cmdList) override;
 
-		void OnResize() override;;
+		void OnResize() override;
+		void Update() override {};
 	};
 }

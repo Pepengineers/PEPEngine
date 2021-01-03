@@ -32,6 +32,7 @@ namespace PEPEngine
 			ModelRenderer(std::shared_ptr<GDevice> device, std::shared_ptr<GModel> model);
 
 			void SetModel(std::shared_ptr<GModel> asset);
+			std::vector<std::shared_ptr<Material>>& GetSharedMaterials() override;;
 		};
 	}
 }

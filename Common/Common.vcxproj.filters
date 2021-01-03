@@ -139,6 +139,18 @@
       <Filter>Render\Pass</Filter>
     </ClInclude>
     <ClInclude Include="GPass.h">
+      <Filter>Render\Pass</Filter>
+    </ClInclude>
+    <ClInclude Include="LightPass.h">
+      <Filter>Render\Pass</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FrameResource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SSAOPass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -242,7 +254,19 @@
     <ClCompile Include="RenderPass.cpp">
       <Filter>Render\Pass</Filter>
     </ClCompile>
+    <ClCompile Include="LightPass.cpp">
+      <Filter>Render\Pass</Filter>
+    </ClCompile>
     <ClCompile Include="GPass.cpp">
+      <Filter>Render\Pass</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FrameResource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SSAOPass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

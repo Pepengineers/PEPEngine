@@ -3,7 +3,7 @@
 #include <GDevice.h>
 #include "ShaderBuffersData.h"
 
-namespace SimpleRender
+namespace PEPEngine::Common
 {
 	using namespace PEPEngine;
 	using namespace Graphics;

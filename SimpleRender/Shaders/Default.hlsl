@@ -79,10 +79,12 @@ PixelShaderOutput PS(VertexOut input)
 	clip(baseColor.a - material.AlphaThreshold);
 
 	float4 normalColor = MaterialTexture[material.NormalMapIndex].Sample(gsamAnisotropicWrap, input.UV);
-	float3 bumpedNormalW = NormalSampleToWorldSpace(normalColor.rgb, input.NormalWorldSpace, input.TangentWorldSpace);
+
+	// Interpolating normal can unnormalize it, so renormalize it.
+    input.NormalWorldSpace = normalize(input.NormalWorldSpace);
 
 	output.BaseColor = baseColor;
-	output.Normal = float4(bumpedNormalW, 1);
+    output.Normal = float4(( mul(input.NormalWorldSpace, (float3x3)CameraBuffer.View)), 0.0);
 	output.PositionBuffer = float4(input.PositionWorldSpace, 1);
 
 	return output;

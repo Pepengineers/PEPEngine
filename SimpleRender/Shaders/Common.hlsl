@@ -93,7 +93,7 @@ Texture2D<float4> NormalMap : register (t0, space2);
 Texture2D<float4> BaseColorMap : register (t1, space2);
 Texture2D<float4> PositionTexture : register (t2, space2);
 Texture2D<float> AmbientMap : register (t3, space2);
-Texture2D<float> DepthTexture : register (t4, space2);
+Texture2D<float> ShadowMap : register (t4, space2);
 
 
 SamplerState gsamPointWrap : register(s0);

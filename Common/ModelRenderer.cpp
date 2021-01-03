@@ -12,7 +12,8 @@ namespace PEPEngine::Common
 	{
 		for (int i = 0; i < model->GetMeshesCount(); ++i)
 		{
-			model->meshesMaterials[i]->Draw(cmdList);
+			if(model->meshesMaterials[i] != nullptr)
+				model->meshesMaterials[i]->Draw(cmdList);
 
 			cmdList->SetRootConstantBufferView(ObjectDataBuffer,
 			                                   *modelDataBuffer, i);
@@ -32,8 +33,13 @@ namespace PEPEngine::Common
 			objectWorldData.World = (transform->GetWorldMatrix() * model->scaleMatrix).Transpose();
 			for (int i = 0; i < model->GetMeshesCount(); ++i)
 			{
-				objectWorldData.MaterialIndex = model->GetMeshMaterial(i)->GetMaterialIndex();
-				modelDataBuffer->CopyData(i, objectWorldData);
+				auto material = model->GetMeshMaterial(i);
+
+				if (material != nullptr)
+				{
+					objectWorldData.MaterialIndex = model->GetMeshMaterial(i)->GetMaterialIndex();
+					modelDataBuffer->CopyData(i, objectWorldData);
+				}
 			}
 		}
 	}
@@ -54,5 +60,10 @@ namespace PEPEngine::Common
 		}
 
 		model = asset;
+	}
+
+	std::vector<std::shared_ptr<Material>>& ModelRenderer::GetSharedMaterials()
+	{
+		return model->meshesMaterials;
 	}
 }

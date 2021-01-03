@@ -44,7 +44,10 @@ float4 PS(VertexOut input) : SV_Target
 	const float4 diffuse = BaseColorMap.Load(fragmentPositionScreenSpace);
 
 	float4 viewDir = normalize(float4(CameraBuffer.CameraWorldPosition, 0.0) - position);
-	float4 resultColor = diffuse * 0.1; //ambient
+	
+    float ambientAccess = AmbientMap.Sample(gsamAnisotropicWrap, input.UV, 0.0f).r;
+		
+    float4 resultColor = ambientAccess * diffuse;
 
 	[loop]
 	for (int i = 0; i < WorldBuffer.LightsCount; ++i)

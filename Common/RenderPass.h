@@ -10,31 +10,18 @@ namespace PEPEngine::Common
 
 	class RenderPass
 	{
-	protected:
-		custom_vector<Renderer*> renderers = MemoryAllocator::CreateVector<Renderer*>();
+	
 
 	public:
 
 		virtual ~RenderPass()
 		{
-			renderers.clear();
-		};
-
-		void AddTargets(Renderer** targets, UINT size)
-		{
-			for (int i = 0; i < size; ++i)
-			{
-				this->renderers.push_back(targets[i]);
-			}
-		}
-
-		void AddTarget(Renderer* target)
-		{
-			renderers.push_back(target);
-		}
+		};		
 
 		void virtual Render(std::shared_ptr<GCommandList> cmdList) = 0;
 
+		void virtual Update() = 0;
+		
 		void virtual OnResize() = 0;
 	};
 }

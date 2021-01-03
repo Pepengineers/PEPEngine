@@ -73,9 +73,10 @@ namespace PEPEngine::Common
 		return *CameraConstantBuffer.get();
 	}
 
-	void Camera::SetRenderTarget(GTexture* target)
+	void Camera::SetRenderTarget(const GTexture* target, GDescriptor* rtv)
 	{
 		renderTarget = target;
+		rtvDescriptor = rtv;
 		NumFramesDirty = globalCountFrameResources;
 
 		if (renderTarget != nullptr)
@@ -100,7 +101,12 @@ namespace PEPEngine::Common
 
 	const GTexture* Camera::GetRenderTarget() const
 	{
-		return renderTarget;
+			return renderTarget;
+	}
+
+	GDescriptor* Camera::GetRTV() const
+	{
+		return rtvDescriptor;
 	}
 
 	const Vector3& Camera::GetFocusPosition() const
@@ -108,24 +114,25 @@ namespace PEPEngine::Common
 		return focusPosition;
 	}
 
-	Camera::Camera(float aspect) : Component(), aspectRatio(aspect)
+	Camera::Camera(float aspect,const  GTexture* target, GDescriptor* rtv) : Component(), aspectRatio(aspect)
 	{
 		mainCamera = this;
 		CameraConstantBuffer = std::make_shared<ConstantUploadBuffer<CameraConstants>>(
 			GDeviceFactory::GetDevice(), 1, L"Camera Data Buffer");
-		SetRenderTarget(nullptr);
+
+		SetRenderTarget(target, rtv);
 	}
 
 	void Camera::SetAspectRatio(float aspect)
 	{
 		aspectRatio = aspect;
-		SetRenderTarget(renderTarget);
+		NumFramesDirty = globalCountFrameResources;
 	}
 
 	void Camera::SetFov(float fov)
 	{
 		this->fov = fov;
-		SetRenderTarget(renderTarget);
+		NumFramesDirty = globalCountFrameResources;
 	}
 
 	float Camera::GetFov() const
