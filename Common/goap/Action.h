@@ -25,7 +25,7 @@ namespace PEPEngine
 
 		class Action
 		{
-		private:
+		protected:
 			std::string name_; // The human-readable action name
 			int cost_; // The numeric cost of this action
 
@@ -39,16 +39,17 @@ namespace PEPEngine
 			bool inRange = false;
 			bool isDone = false;
 
-
+		
 		public:
 			Action();
 			Action(std::string name, int cost);
 
-			enum tests
+			enum ActionList
 			{
 				POKE_A,
 				POKE_B,
-				POKE_C
+				POKE_C,
+				WANDERING,
 			};
 
 			bool perform(WorldState& ws);
@@ -58,7 +59,12 @@ namespace PEPEngine
 			[[nodiscard]] bool getIsDone() const;
 			void setInRange(bool);
 			void setRequiresInRange(bool);
+			void setCost(int);
+			virtual void prePerform() = 0;
+			void postPerform();
+			Vector3 getSteering();
 			std::shared_ptr<Common::Transform> target;
+			float range = 2;
 
 			/**
 			 Is this action eligible to operate on the given worldstate?

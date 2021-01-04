@@ -212,6 +212,7 @@
     <ClInclude Include="SSAA.h" />
     <ClInclude Include="Ssao.h" />
     <ClInclude Include="Transform.h" />
+    <ClInclude Include="WanderingAction.h" />
     <ClInclude Include="Window.h" />
   </ItemGroup>
   <ItemGroup>
@@ -253,6 +254,7 @@
     <ClCompile Include="SSAA.cpp" />
     <ClCompile Include="Ssao.cpp" />
     <ClCompile Include="Transform.cpp" />
+    <ClCompile Include="WanderingAction.cpp" />
     <ClCompile Include="Window.cpp" />
   </ItemGroup>
   <ItemGroup>
