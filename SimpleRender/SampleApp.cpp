@@ -11,6 +11,7 @@
 #include "LightPass.h"
 #include "MathHelper.h"
 #include "ModelRenderer.h"
+#include "ShadowPass.h"
 #include "SSAOPass.h"
 #include "Transform.h"
 #include "Window.h"
@@ -35,7 +36,8 @@ namespace SimpleRender
 		
 		gpass = std::make_shared<GPass>(MainWindow->GetClientWidth(), MainWindow->GetClientHeight());
 		ambiantPass = std::make_shared<SSAOPass>( 1920, 1080, *gpass.get());
-		lightPass = std::make_shared<LightPass>(MainWindow->GetClientWidth(), MainWindow->GetClientHeight() , *gpass.get(), *ambiantPass.get());
+		shadowPass = std::make_shared<ShadowPass>(2048, 2048);
+		lightPass = std::make_shared<LightPass>(MainWindow->GetClientWidth(), MainWindow->GetClientHeight() , *gpass.get(), *ambiantPass.get(), *shadowPass.get());
 
 		
 		auto copyQueue = device->GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COPY);
@@ -134,6 +136,13 @@ namespace SimpleRender
 
 		scene->AddGameObject(std::move(cameraGO));
 
+		auto sun = std::make_unique<GameObject>("Directional Light");
+		auto light = std::make_shared<Light>();
+		light->Type = LightType::Directional;
+		light->Direction = Vector3( 0.57735f, -0.57735f, 0.57735f );
+		light->Intensity = 0.1f;
+		sun->AddComponent(light);
+		scene->AddGameObject(std::move(sun));
 
 		for (int i = 0; i < 12; ++i)
 		{
@@ -155,7 +164,6 @@ namespace SimpleRender
 				sun1->GetTransform()->SetPosition(pos);
 				auto light = std::make_shared<Light>();
 				light->Color = Vector4(MathHelper::RandF(), MathHelper::RandF(), MathHelper::RandF(), 1);
-				//light->Color = Vector4(1,0,0, 1);
 				light->Intensity = 1;
 				(i + j) % 2 == 1 ? light->Type = Spot : light->Type = Point;
 
@@ -188,7 +196,9 @@ namespace SimpleRender
 
 		gpass->Update();
 		ambiantPass->Update();
+		shadowPass->Update();
 		lightPass->Update();
+		
 	}
 
 	void SampleApp::Draw(const GameTimer& gt)
@@ -200,6 +210,7 @@ namespace SimpleRender
 		
 		gpass->Render(cmdList);
 		ambiantPass->Render(cmdList);
+		shadowPass->Render(cmdList);
 		lightPass->Render(cmdList);
 
 		cmdList->TransitionBarrier(MainWindow->GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT);

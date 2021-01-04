@@ -5,6 +5,7 @@
 #include "GModel.h"
 #include "GPass.h"
 #include "Scene.h"
+#include "ShadowPass.h"
 #include "Window.h"
 #include "SSAOPass.h"
 namespace PEPEngine::Common
@@ -73,7 +74,7 @@ namespace PEPEngine::Common
 	{
 	}
 
-	LightPass::LightPass(float width, float height,GPass& pass, SSAOPass& ssao): RenderPass(width, height), gpass(pass), ssaoPass(ssao)
+	LightPass::LightPass(float width, float height,GPass& pass, SSAOPass& ssao, ShadowPass& shadow): RenderPass(width, height), gpass(pass), ssaoPass(ssao), shadowPass(shadow)
 	{
 		LoadAndCompileShaders();
 
@@ -124,10 +125,15 @@ namespace PEPEngine::Common
 		cmdList->SetDescriptorsHeap(gpass.GetSRV());
 		cmdList->SetRootDescriptorTable(NormalMap, gpass.GetSRV(), GPass::NormalMap);
 		cmdList->SetRootDescriptorTable(BaseColorMap, gpass.GetSRV(), GPass::ColorMap);
-		cmdList->SetRootDescriptorTable(PositionMap, gpass.GetSRV(), GPass::PositionMap);		
+		cmdList->SetRootDescriptorTable(PositionMap, gpass.GetSRV(), GPass::PositionMap);
+		
 		cmdList->SetDescriptorsHeap(ssaoPass.AmbientMapSrv());
 		cmdList->SetRootDescriptorTable(AmbientMap, ssaoPass.AmbientMapSrv());
 
+		cmdList->SetDescriptorsHeap(shadowPass.GetSrvMemory());
+		cmdList->SetRootDescriptorTable(ShadowMap, shadowPass.GetSrvMemory());
+
+		
 		cmdList->ClearRenderTarget(rtv, offset, DirectX::Colors::Black);
 		cmdList->SetRenderTargets(1, rtv, offset);
 

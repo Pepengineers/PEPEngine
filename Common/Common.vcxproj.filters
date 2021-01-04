@@ -27,6 +27,7 @@
     </Filter>
     <Filter Include="Render\Pass">
       <UniqueIdentifier>{8b37aebf-99c7-4b15-abfa-dae63a5169c3}</UniqueIdentifier>
+      <Extensions>*Pass.h;*Pass.cpp</Extensions>
     </Filter>
     <Filter Include="Render\Objects">
       <UniqueIdentifier>{b307ed34-1c1e-409f-b2a0-879f8e7b971b}</UniqueIdentifier>
@@ -153,6 +154,9 @@
     <ClInclude Include="SSAOPass.h">
       <Filter>Render\Pass</Filter>
     </ClInclude>
+    <ClInclude Include="ShadowPass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -265,6 +269,9 @@
     </ClCompile>
     <ClCompile Include="SSAOPass.cpp">
       <Filter>Render\Pass</Filter>
+    </ClCompile>
+    <ClCompile Include="ShadowPass.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

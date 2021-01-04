@@ -46,5 +46,6 @@ namespace SimpleRender
 		std::shared_ptr<GPass> gpass;
 		std::shared_ptr < LightPass> lightPass;
 		std::shared_ptr < SSAOPass> ambiantPass;
+		std::shared_ptr<ShadowPass> shadowPass;
 	};
 }

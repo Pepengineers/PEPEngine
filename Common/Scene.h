@@ -18,8 +18,7 @@ namespace PEPEngine::Common
 
 		std::shared_ptr<GDevice> device = nullptr;
 
-		custom_set<Light*> sceneLights = MemoryAllocator::CreateSet<Light*>();
-		custom_set<Material*> sceneMaterials = MemoryAllocator::CreateSet<Material*>();
+		
 		
 		std::set<Renderer*> typedRenderer[RenderMode::Count];
 
@@ -36,6 +35,9 @@ namespace PEPEngine::Common
 
 	public:
 
+		custom_set<Light*> sceneLights = MemoryAllocator::CreateSet<Light*>();
+		custom_set<Material*> sceneMaterials = MemoryAllocator::CreateSet<Material*>();
+		
 		inline static Scene* currentScene = nullptr;
 
 		FrameResource* GetCurrentFrameResource() const;

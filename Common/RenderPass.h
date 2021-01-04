@@ -29,6 +29,6 @@ namespace PEPEngine::Common
 
 		void virtual Update() = 0;
 		
-		void virtual ChangeRenderTargetSize(float width, float height) = 0;
+		void virtual ChangeRenderTargetSize(float newWidth, float newHeight) = 0;
 	};
 }

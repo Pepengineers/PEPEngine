@@ -16,33 +16,23 @@ VertexOut VS(VertexIn vin)
 {
 	VertexOut vout = (VertexOut)0.0f;
 
-	MaterialData matData = materialData[objectBuffer.materialIndex];
-
 	// Transform to world space.
-	float4 posW = mul(float4(vin.PosL, 1.0f), objectBuffer.World);
+	float4 posW = mul(float4(vin.PosL, 1.0f), ObjectBuffer.World);
 
 	// Transform to homogeneous clip space.
-	vout.PosH = mul(posW, worldBuffer.ViewProj);
+	vout.PosH = mul(posW, CameraBuffer.ViewProj);
 
 	// Output vertex attributes for interpolation across triangle.
-	float4 texC = mul(float4(vin.TexC, 0.0f, 1.0f), objectBuffer.TexTransform);
-	vout.TexC = mul(texC, matData.MatTransform).xy;
+	//float4 texC = mul(float4(vin.TexC, 0.0f, 1.0f), ObjectBuffer.TexTransform);
+	vout.TexC = vin.TexC;
 
 	return vout;
 }
 
 
 void PS(VertexOut pin)
-{
-	
-	MaterialData matData = materialData[objectBuffer.materialIndex];
-	float4 diffuseAlbedo = matData.DiffuseAlbedo;
-	uint diffuseMapIndex = matData.DiffuseMapIndex;
-
-	diffuseAlbedo *= texturesMaps[diffuseMapIndex].Sample(gsamAnisotropicWrap, pin.TexC);
-
-#ifdef ALPHA_TEST
-   
-    clip(diffuseAlbedo.a - 0.3f);
-#endif
+{	
+	MaterialData material = Materials[ObjectBuffer.MaterialIndex];
+	float4 diffuseAlbedo = MaterialTexture[material.DiffuseMapIndex].Sample(gsamAnisotropicWrap, pin.TexC);   
+    clip(diffuseAlbedo.a - material.AlphaThreshold);
 }

@@ -91,7 +91,7 @@ float4 PSDebug(VertexOut input) : SV_Target
 	MaterialData material = Materials[ObjectBuffer.MaterialIndex];
 
 	float4 baseColor = MaterialTexture[material.DiffuseMapIndex].Sample(gsamAnisotropicWrap, input.UV);
-	clip(baseColor.a - 0.1f);
+    clip(baseColor.a - material.AlphaThreshold);
 
 
 	return baseColor;

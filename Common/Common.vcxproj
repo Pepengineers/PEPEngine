@@ -211,6 +211,7 @@
     <ClInclude Include="ShaderBuffersData.h" />
     <ClInclude Include="ShaderFactory.h" />
     <ClInclude Include="ShadowMap.h" />
+    <ClInclude Include="ShadowPass.h" />
     <ClInclude Include="SkyBox.h" />
     <ClInclude Include="SSAA.h" />
     <ClInclude Include="SSAOPass.h" />
@@ -255,6 +256,7 @@
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="ShaderFactory.cpp" />
     <ClCompile Include="ShadowMap.cpp" />
+    <ClCompile Include="ShadowPass.cpp" />
     <ClCompile Include="SkyBox.cpp" />
     <ClCompile Include="SSAA.cpp" />
     <ClCompile Include="SSAOPass.cpp" />
