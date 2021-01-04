@@ -40,8 +40,6 @@ namespace PEPEngine::Common
 		D3D12_VIEWPORT viewport{};
 		D3D12_RECT scissorRect{};
 
-		std::shared_ptr<GDevice> device;
-
 		std::shared_ptr<ConstantUploadBuffer<SsaoConstants>> SsaoConstantUploadBuffer;
 
 		GShader ssaoVertexShader;
@@ -69,7 +67,7 @@ namespace PEPEngine::Common
 		void GetOffsetVectors(Vector4 offsets[]);;
 
 		std::vector<float> CalcGaussWeights(float sigma) const;;
-		void Render(std::shared_ptr<GCommandList> cmdList) override;;
+	
 
 		void BlurAmbientMap(std::shared_ptr<GCommandList> cmdList,
 		                    std::shared_ptr<ConstantUploadBuffer<SsaoConstants>> currFrame, int blurCount);
@@ -77,7 +75,7 @@ namespace PEPEngine::Common
 	public:
 
 
-		SSAOPass(GPass& pass, UINT width, UINT height);
+		SSAOPass(float width, float height, GPass& pass );
 
 		UINT SsaoMapWidth() const;;
 		
@@ -88,7 +86,8 @@ namespace PEPEngine::Common
 		GDescriptor* AmbientMapSrv();;
 
 		void Update() override;
-
-		void OnResize() override;;
+		void Render(std::shared_ptr<GCommandList> cmdList) override;
+		
+		void ChangeRenderTargetSize(float width, float height) override;;
 	};
 }

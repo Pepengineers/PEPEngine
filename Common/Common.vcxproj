@@ -213,7 +213,6 @@
     <ClInclude Include="ShadowMap.h" />
     <ClInclude Include="SkyBox.h" />
     <ClInclude Include="SSAA.h" />
-    <ClInclude Include="Ssao.h" />
     <ClInclude Include="SSAOPass.h" />
     <ClInclude Include="Transform.h" />
     <ClInclude Include="Window.h" />
@@ -258,7 +257,6 @@
     <ClCompile Include="ShadowMap.cpp" />
     <ClCompile Include="SkyBox.cpp" />
     <ClCompile Include="SSAA.cpp" />
-    <ClCompile Include="Ssao.cpp" />
     <ClCompile Include="SSAOPass.cpp" />
     <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Window.cpp" />

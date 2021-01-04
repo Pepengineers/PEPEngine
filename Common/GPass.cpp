@@ -61,13 +61,15 @@ namespace PEPEngine::Common
 		deferredPSO.Initialize(device);
 	}
 
-	GPass::GPass(std::shared_ptr<GDevice> renderDevice) : device(renderDevice)
+	GPass::GPass(float width, float height) : RenderPass(width,height) 
 	{
 		AllocateDescriptors();
 
 		InitRootSignature();
 
 		InitPSO();
+
+		CreateBuffers();
 	}
 
 	GTexture& GPass::GetGTexture(DeferredPassRTVSlot slot)
@@ -122,55 +124,44 @@ namespace PEPEngine::Common
 		cmdList->FlushResourceBarriers();
 	}
 
-	void GPass::OnResize()
+	void GPass::CreateBuffers()
 	{
-		const auto* window = D3DApp::GetApp().GetMainWindow();
+		auto desc = CD3DX12_RESOURCE_DESC(CD3DX12_RESOURCE_DESC::Tex2D(NormalMapFormat, width, height));
+		desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
+		desc.MipLevels = 1;
 
-		if (gbuffers.size() < GBufferMapsCount)
-		{
-			auto desc = CD3DX12_RESOURCE_DESC(
-				CD3DX12_RESOURCE_DESC::Tex2D(NormalMapFormat, window->GetClientWidth(),
-					window->GetClientHeight()));
-			desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
-			desc.MipLevels = 1;
-
-			CD3DX12_CLEAR_VALUE optClear(NormalMapFormat, DirectX::Colors::Blue);
+		CD3DX12_CLEAR_VALUE optClear(NormalMapFormat, DirectX::Colors::Blue);
 			
-			gbuffers.push_back((GTexture(device, desc, L"Normal Roughness GMap", TextureUsage::RenderTarget, &optClear)));
+		gbuffers.push_back((GTexture(device, desc, L"Normal Roughness GMap", TextureUsage::RenderTarget, &optClear)));
 
-			desc.Format = BaseColorMapFormat;
+		desc.Format = BaseColorMapFormat;
 
-			optClear = CD3DX12_CLEAR_VALUE(desc.Format, DirectX::Colors::Black);
+		optClear = CD3DX12_CLEAR_VALUE(desc.Format, DirectX::Colors::Black);
 			
-			gbuffers.push_back((GTexture(device, desc, L"BaseColor Metalnes GMAP", TextureUsage::RenderTarget, &optClear)));
+		gbuffers.push_back((GTexture(device, desc, L"BaseColor Metalnes GMAP", TextureUsage::RenderTarget, &optClear)));
 
-			desc.Format = PositionMapFormat;
+		desc.Format = PositionMapFormat;
 
-			optClear = CD3DX12_CLEAR_VALUE(desc.Format, DirectX::Colors::Black);
+		optClear = CD3DX12_CLEAR_VALUE(desc.Format, DirectX::Colors::Black);
 			
-			gbuffers
-				.push_back((GTexture(device, desc, L"Position GMAP", TextureUsage::RenderTarget, &optClear)));
+		gbuffers
+			.push_back((GTexture(device, desc, L"Position GMAP", TextureUsage::RenderTarget, &optClear)));
 
 			
-			optClear.Format = DepthMapFormat;
-			optClear.DepthStencil.Depth = 1.0f;
-			optClear.DepthStencil.Stencil = 0;
+		optClear.Format = DepthMapFormat;
+		optClear.DepthStencil.Depth = 1.0f;
+		optClear.DepthStencil.Stencil = 0;
 
-			desc.Format = DepthMapFormat;
-			desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+		desc.Format = DepthMapFormat;
+		desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 
-			gbuffers.push_back(GTexture(device, desc, L"Depth Map", TextureUsage::Depth, &optClear));
-		}
-		else
-		{
-			for (auto&& texture : gbuffers)
-			{
-				GTexture::Resize(texture, window->GetClientWidth(),
-					window->GetClientHeight(), 1);
-			}
-		}
+		gbuffers.push_back(GTexture(device, desc, L"Depth Map", TextureUsage::Depth, &optClear));
 
+		BuildDescriptors();
+	}
 
+	void GPass::BuildDescriptors()
+	{
 		D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
 		dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
 		dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
@@ -200,5 +191,19 @@ namespace PEPEngine::Common
 
 		srvDesc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
 		gbuffers[DepthMap].CreateShaderResourceView(&srvDesc, &deferredSRVDescriptor, DepthMap);
+	}
+
+	void GPass::ChangeRenderTargetSize(float width, float height)
+	{
+		if(this->width != width || this->height != height)		
+		{
+			for (auto&& texture : gbuffers)
+			{
+				GTexture::Resize(texture, width, height, 1);
+			}
+		}
+
+
+		BuildDescriptors();
 	}
 }

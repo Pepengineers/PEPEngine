@@ -69,11 +69,11 @@ namespace PEPEngine::Common
 		pso.Initialize(GDeviceFactory::GetDevice());
 	}
 
-	void LightPass::OnResize()
+	void LightPass::ChangeRenderTargetSize(float width, float height)
 	{
 	}
 
-	LightPass::LightPass(GPass& pass, SSAOPass& ssao): gpass(pass), ssaoPass(ssao), device(GDeviceFactory::GetDevice())
+	LightPass::LightPass(float width, float height,GPass& pass, SSAOPass& ssao): RenderPass(width, height), gpass(pass), ssaoPass(ssao)
 	{
 		LoadAndCompileShaders();
 
@@ -87,8 +87,6 @@ namespace PEPEngine::Common
 		quadModel = AssetsLoader::GenerateQuad(cmdList);
 
 		copyQueue->WaitForFenceValue(copyQueue->ExecuteCommandList(cmdList));;
-
-		
 	}
 
 	void PEPEngine::Common::LightPass::Render(std::shared_ptr<GCommandList> cmdList)

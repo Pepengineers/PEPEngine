@@ -28,6 +28,9 @@
     <Filter Include="Render\Pass">
       <UniqueIdentifier>{8b37aebf-99c7-4b15-abfa-dae63a5169c3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Render\Objects">
+      <UniqueIdentifier>{b307ed34-1c1e-409f-b2a0-879f8e7b971b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -84,18 +87,6 @@
     <ClInclude Include="GameObject.h">
       <Filter>Components</Filter>
     </ClInclude>
-    <ClInclude Include="GMesh.h">
-      <Filter>Render</Filter>
-    </ClInclude>
-    <ClInclude Include="GModel.h">
-      <Filter>Render</Filter>
-    </ClInclude>
-    <ClInclude Include="Material.h">
-      <Filter>Render</Filter>
-    </ClInclude>
-    <ClInclude Include="NativeModel.h">
-      <Filter>Render</Filter>
-    </ClInclude>
     <ClInclude Include="ShaderBuffersData.h">
       <Filter>Render</Filter>
     </ClInclude>
@@ -106,12 +97,6 @@
       <Filter>Render</Filter>
     </ClInclude>
     <ClInclude Include="SSAA.h">
-      <Filter>Render</Filter>
-    </ClInclude>
-    <ClInclude Include="Ssao.h">
-      <Filter>Render</Filter>
-    </ClInclude>
-    <ClInclude Include="Window.h">
       <Filter>Render</Filter>
     </ClInclude>
     <ClInclude Include="goap\Planner.h">
@@ -144,14 +129,29 @@
     <ClInclude Include="LightPass.h">
       <Filter>Render\Pass</Filter>
     </ClInclude>
-    <ClInclude Include="Scene.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FrameResource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GMesh.h">
+      <Filter>Render\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="GModel.h">
+      <Filter>Render\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Material.h">
+      <Filter>Render\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="NativeModel.h">
+      <Filter>Render\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Window.h">
+      <Filter>Render\Objects</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Render\Objects</Filter>
+    </ClInclude>
     <ClInclude Include="SSAOPass.h">
-      <Filter>Header Files</Filter>
+      <Filter>Render\Pass</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -176,25 +176,7 @@
     <ClCompile Include="KeyboardDevice.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GMesh.cpp">
-      <Filter>Render</Filter>
-    </ClCompile>
-    <ClCompile Include="GModel.cpp">
-      <Filter>Render</Filter>
-    </ClCompile>
-    <ClCompile Include="Material.cpp">
-      <Filter>Render</Filter>
-    </ClCompile>
-    <ClCompile Include="NativeModel.cpp">
-      <Filter>Render</Filter>
-    </ClCompile>
     <ClCompile Include="SSAA.cpp">
-      <Filter>Render</Filter>
-    </ClCompile>
-    <ClCompile Include="Ssao.cpp">
-      <Filter>Render</Filter>
-    </ClCompile>
-    <ClCompile Include="Window.cpp">
       <Filter>Render</Filter>
     </ClCompile>
     <ClCompile Include="ShaderFactory.cpp">
@@ -260,14 +242,29 @@
     <ClCompile Include="GPass.cpp">
       <Filter>Render\Pass</Filter>
     </ClCompile>
-    <ClCompile Include="Scene.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="FrameResource.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GMesh.cpp">
+      <Filter>Render\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="GModel.cpp">
+      <Filter>Render\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Material.cpp">
+      <Filter>Render\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="NativeModel.cpp">
+      <Filter>Render\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Window.cpp">
+      <Filter>Render\Objects</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Render\Objects</Filter>
+    </ClCompile>
     <ClCompile Include="SSAOPass.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Render\Pass</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

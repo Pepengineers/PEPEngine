@@ -12,7 +12,6 @@ struct VertexOut
 {
 	float4 PositionClipSpace : SV_POSITION;
 	float4 ShadowPosClip : POSITION0;
-	float4 SsaoPosClip : POSITION1;
 	float3 PositionWorldSpace : POS_WORLD;
 	float3 PositionViewSpace : POS_VIEW;
 	float3 NormalWorldSpace : NORMAL_WORLD;
@@ -54,9 +53,7 @@ VertexOut VS(VertexIn input)
 	                                            output.TangentWorldSpace));
 	output.BinormalViewSpace = normalize(cross(output.NormalViewSpace,
 	                                           output.TangentViewSpace));
-
-	// Generate projective tex-coords to project SSAO map onto scene.
-	output.SsaoPosClip = mul(output.PositionWorldSpace, CameraBuffer.ViewProjTex);
+	
 
 	// Generate projective tex-coords to project shadow map onto scene.
 	output.ShadowPosClip = mul(output.PositionWorldSpace, CameraBuffer.ShadowTransform);
@@ -79,10 +76,6 @@ PixelShaderOutput PS(VertexOut input)
 
 	float4 baseColor = MaterialTexture[material.DiffuseMapIndex].Sample(gsamAnisotropicWrap, input.UV);
 	clip(baseColor.a - material.AlphaThreshold);
-	
-	// Interpolating normal can unnormalize it, so renormalize it.
-	// input.NormalWorldSpace = normalize(input.NormalWorldSpace);
-    //output.Normal = float4((mul(input.NormalWorldSpace, (float3x3) CameraBuffer.View)), 0.0);
 	
     output.Normal = float4(input.NormalViewSpace, 1);
 	output.BaseColor = baseColor;

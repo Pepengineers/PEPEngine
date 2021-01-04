@@ -21,8 +21,6 @@ namespace PEPEngine::Common
 
 		std::shared_ptr<GModel> quadModel;
 
-		std::shared_ptr<GDevice> device;
-
 		void LoadAndCompileShaders();
 
 		void CreateAndInitializeRS();
@@ -30,10 +28,10 @@ namespace PEPEngine::Common
 		void InitializePSO();
 
 	public:
-		LightPass(GPass& pass, SSAOPass& ssao);
+		LightPass(float width, float height,GPass& pass, SSAOPass& ssao);
 
 		void Render(std::shared_ptr<GCommandList> cmdList) override;;
-		void OnResize() override;
+		void ChangeRenderTargetSize(float width, float height) override;
 		void Update() override {};
 	};
 }

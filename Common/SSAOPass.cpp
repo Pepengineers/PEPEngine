@@ -225,8 +225,7 @@ namespace PEPEngine::Common
 		blurPSO.Initialize(device);
 	}
 
-	SSAOPass::SSAOPass(GPass& pass, UINT width, UINT height) : gpass(pass),
-	                                                           device(GDeviceFactory::GetDevice())
+	SSAOPass::SSAOPass(float width, float height, GPass& pass) :RenderPass(width,height), gpass(pass)
 	{
 		randomVectorSrvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1);
 		ambientMapMapSrvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 2);
@@ -523,7 +522,7 @@ namespace PEPEngine::Common
 		}
 	}
 
-	void SSAOPass::OnResize()
+	void SSAOPass::ChangeRenderTargetSize(float width, float height)
 	{
 	}
 }

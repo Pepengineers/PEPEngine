@@ -8,12 +8,12 @@
 #include "GPass.h"
 #include "GraphicPSO.h"
 #include "Light.h"
+#include "LightPass.h"
 #include "MathHelper.h"
 #include "ModelRenderer.h"
+#include "SSAOPass.h"
 #include "Transform.h"
 #include "Window.h"
-#include "LightPass.h"
-#include "SSAOPass.h"
 
 namespace SimpleRender
 {
@@ -25,20 +25,19 @@ namespace SimpleRender
 	bool SampleApp::Initialize()
 	{
 		device = GDeviceFactory::GetDevice();		
-
-		auto gPass = std::make_shared<GPass>(device);
-		auto ambiantPass = std::make_shared<SSAOPass>(*gPass.get(), 1920, 1080);
-		auto lightPass = std::make_shared<LightPass>(*gPass.get(), *ambiantPass.get());
 		
-		passes.push_back(gPass);
-		passes.push_back(ambiantPass);
-		passes.push_back(lightPass);
-
 		if (!D3DApp::Initialize())
 		{
 			return false;
 		}
 
+
+		
+		gpass = std::make_shared<GPass>(MainWindow->GetClientWidth(), MainWindow->GetClientHeight());
+		ambiantPass = std::make_shared<SSAOPass>( 1920, 1080, *gpass.get());
+		lightPass = std::make_shared<LightPass>(MainWindow->GetClientWidth(), MainWindow->GetClientHeight() , *gpass.get(), *ambiantPass.get());
+
+		
 		auto copyQueue = device->GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COPY);
 
 		auto cmdList = copyQueue->GetCommandList();
@@ -187,10 +186,9 @@ namespace SimpleRender
 
 		scene->Update();
 
-		for (auto && render_pass : passes)
-		{
-			render_pass->Update();
-		}
+		gpass->Update();
+		ambiantPass->Update();
+		lightPass->Update();
 	}
 
 	void SampleApp::Draw(const GameTimer& gt)
@@ -200,10 +198,9 @@ namespace SimpleRender
 		auto renderQueue = device->GetCommandQueue();
 		auto cmdList = renderQueue->GetCommandList();
 		
-		for (auto&& pass : passes)
-		{
-			pass->Render(cmdList);
-		}		
+		gpass->Render(cmdList);
+		ambiantPass->Render(cmdList);
+		lightPass->Render(cmdList);
 
 		cmdList->TransitionBarrier(MainWindow->GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT);
 		cmdList->FlushResourceBarriers();
@@ -222,10 +219,11 @@ namespace SimpleRender
 		if(Camera::mainCamera)
 			Camera::mainCamera->SetAspectRatio(AspectRatio());
 
-		for (auto&& pass : passes)
-		{
-			pass->OnResize();
-		}
+		if (gpass)
+			gpass->ChangeRenderTargetSize(MainWindow->GetClientWidth(), MainWindow->GetClientHeight());
+		if (lightPass)
+			lightPass->ChangeRenderTargetSize(MainWindow->GetClientWidth(), MainWindow->GetClientHeight());
+		
 	}
 
 	LRESULT SampleApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)

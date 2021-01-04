@@ -1,9 +1,11 @@
 #pragma once
 #include "AssetsLoader.h"
 #include "d3dApp.h"
-#include "GraphicPSO.h"
+#include "GPass.h"
+#include "LightPass.h"
 #include "RenderPass.h"
 #include "Scene.h"
+#include "SSAOPass.h"
 
 namespace SimpleRender
 {
@@ -40,8 +42,9 @@ namespace SimpleRender
 		UINT64 fenceValues[globalCountFrameResources];
 
 		std::shared_ptr<Scene> scene = nullptr;
-		
-		
-		std::vector<std::shared_ptr<RenderPass>> passes;
+
+		std::shared_ptr<GPass> gpass;
+		std::shared_ptr < LightPass> lightPass;
+		std::shared_ptr < SSAOPass> ambiantPass;
 	};
 }
