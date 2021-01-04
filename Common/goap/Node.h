@@ -24,10 +24,10 @@ namespace PEPEngine
 			int parent_id_; // the ID of this node's immediate predecessor
 			int g_; // The A* cost from 'start' to 'here'
 			int h_; // The estimated remaining cost to 'goal' form 'here'
-			const Action* action_; // The action that got us here (for replay purposes)
+			 Action* action_; // The action that got us here (for replay purposes)
 
 			Node();
-			Node(WorldState state, int g, int h, int parent_id, const Action* action);
+			Node(WorldState state, int g, int h, int parent_id, Action* action);
 
 			// F -- which is simply G+H -- is autocalculated
 			int f() const

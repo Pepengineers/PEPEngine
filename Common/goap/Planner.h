@@ -91,8 +91,8 @@ namespace PEPEngine
 			 @return a vector of Actions in REVERSE ORDER - use a reverse_iterator on this to get stepwise-order
 			 @exception std::runtime_error if no plan could be made with the available actions and states
 			 */
-			std::vector<Action> plan(const WorldState& start, const WorldState& goal,
-			                         const std::vector<Action>& actions);
+			std::vector<Action*> plan(const WorldState& start, const WorldState& goal,
+			                         const std::vector<Action*>& actions);
 
 			TEST_FRIENDS;
 		};

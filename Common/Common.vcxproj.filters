@@ -97,6 +97,12 @@
     <ClInclude Include="ShaderFactory.h">
       <Filter>Render</Filter>
     </ClInclude>
+    <ClInclude Include="ShadowMap.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="SSAA.h">
+      <Filter>Render</Filter>
+    </ClInclude>
     <ClInclude Include="goap\Planner.h">
       <Filter>GOAP</Filter>
     </ClInclude>
@@ -204,7 +210,13 @@
     <ClCompile Include="KeyboardDevice.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SSAA.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
     <ClCompile Include="ShaderFactory.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="ShadowMap.cpp">
       <Filter>Render</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">

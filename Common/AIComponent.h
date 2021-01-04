@@ -17,8 +17,8 @@ class AIComponent : public PEPEngine::Common::Component
 	PEPEngine::goap::WorldState goal;
 	PEPEngine::goap::Planner planner;
 
-	std::vector<PEPEngine::goap::Action> currentActions;
-	std::vector<PEPEngine::goap::Action> availableActions;
+	std::vector<PEPEngine::goap::Action*> currentActions;
+	std::vector<PEPEngine::goap::Action*> availableActions;
 
 	FSMState currentState_;
 
@@ -29,4 +29,8 @@ public:
 	void SetWorldState();
 	void Update() override;
 	void PopulateDrawCommand(std::shared_ptr<PEPEngine::Graphics::GCommandList> cmdList) override;
+
+private:
+	float dt;
+	Vector3 dumpTarget;
 };

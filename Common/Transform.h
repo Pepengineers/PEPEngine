@@ -25,6 +25,8 @@ namespace PEPEngine
 
 			void SetEulerRotate(const Vector3& eulerAngl);
 			void SetRadianRotate(const Vector3& radianAngl);
+			void SetMatrixRotate(const Matrix& rot);
+			void SetQuaternionRotate(const Quaternion& quaternion);
 
 			void AdjustPosition(const Vector3& pos);
 

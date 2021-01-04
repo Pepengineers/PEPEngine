@@ -2,6 +2,7 @@
 
 #include "DoActionA.h"
 #include "DoActionB.h"
+#include "WanderingAction.h"
 #include "GameObject.h"
 #include "Transform.h"
 
@@ -16,23 +17,13 @@ AIComponent::AIComponent()
 
 void AIComponent::SetActionList()
 {
-	PEPEngine::goap::Action a("move_a", 5);
-	a.setEffect(PEPEngine::goap::Action::POKE_A, true);
-	a.setRequiresInRange(true);
-	a.target->SetPosition(Vector3(0, 0, 0));
-	availableActions.push_back(a);
+	
+	availableActions.push_back(new DoActionA);
+	availableActions.push_back(new DoActionB);
+	availableActions.push_back(new WanderingAction);
 
-	PEPEngine::goap::Action b("move_b", 5);
-	b.setEffect(PEPEngine::goap::Action::POKE_B, true);
-	b.setRequiresInRange(true);
-	b.target->SetPosition(Vector3(0, 100, 0));
-	availableActions.push_back(b);
 
-	PEPEngine::goap::Action c("move_c", 5);
-	c.setEffect(PEPEngine::goap::Action::POKE_C, true);
-	c.setRequiresInRange(true);
-	c.target->SetPosition(Vector3(100, 0, 0));
-	availableActions.push_back(c);
+
 }
 
 
@@ -40,21 +31,24 @@ void AIComponent::SetWorldState()
 {
 	worldState.setVariable(PEPEngine::goap::Action::POKE_A, false);
 	worldState.setVariable(PEPEngine::goap::Action::POKE_B, false);
-	worldState.setVariable(PEPEngine::goap::Action::POKE_C, false);
+	worldState.setVariable(PEPEngine::goap::Action::WANDERING, false);
 	goal.setVariable(PEPEngine::goap::Action::POKE_A, true);
 	goal.setVariable(PEPEngine::goap::Action::POKE_B, true);
-	goal.setVariable(PEPEngine::goap::Action::POKE_C, true);
+	goal.setVariable(PEPEngine::goap::Action::WANDERING, false);
+
+	//goal.setVariable(PEPEngine::goap::Action::POKE_C, true);
 }
 
 void AIComponent::Update()
 {
-	if (worldState.getVariable(PEPEngine::goap::Action::POKE_A) && worldState.
-		getVariable(PEPEngine::goap::Action::POKE_B) && worldState.getVariable(PEPEngine::goap::Action::POKE_C))
+	/*if (worldState.getVariable(PEPEngine::goap::Action::POKE_A) && worldState.
+		getVariable(PEPEngine::goap::Action::POKE_B))
 	{
 		worldState.setVariable(PEPEngine::goap::Action::POKE_A, false);
 		worldState.setVariable(PEPEngine::goap::Action::POKE_B, false);
-		worldState.setVariable(PEPEngine::goap::Action::POKE_C, false);
-	}
+
+	}*/
+	
 	switch (currentState_)
 	{
 	case FSMState::Idle:
@@ -64,6 +58,7 @@ void AIComponent::Update()
 			if (plan.empty())
 			{
 				currentState_ = FSMState::Idle;
+				worldState.setVariable(PEPEngine::goap::Action::WANDERING, true);
 			}
 			else
 			{
@@ -76,14 +71,24 @@ void AIComponent::Update()
 		{
 			//TODO: Переписать под нормальное передвижение
 
-			auto action = &currentActions.back();
+			auto action = currentActions.back();
 			auto transform = gameObject->GetTransform();
 			auto current = gameObject->GetTransform()->GetWorldPosition();
 			auto target = action->target.get()->GetWorldPosition();
-			auto len = (target - current);
-			auto lelen = len.Length();
 
-			if (lelen > 0 && lelen < 2)
+			if (dumpTarget != target) dt = 0;
+			dt += 0.0001;
+			if (dt > 1) dt = 0;
+			dumpTarget = target;
+			
+			auto len = (target - current);
+			auto distanceTo = len.Length();
+		    auto lookAt= Matrix::CreateLookAt(current, target, gameObject->GetTransform()->GetUpVector()).Transpose();	
+		    auto q =Quaternion::Slerp(gameObject->GetTransform()->GetQuaternionRotate(),	Quaternion::CreateFromRotationMatrix(lookAt), dt);
+			
+			gameObject->GetTransform()->SetQuaternionRotate(q);
+
+			if (distanceTo > 0 && distanceTo < action->range)
 			{
 				action->setInRange(true);
 				currentState_ = FSMState::PerformAction;
@@ -92,7 +97,7 @@ void AIComponent::Update()
 			{
 				auto dir = target - current;
 				dir.Normalize();
-				transform->AdjustPosition(dir * 0.1);
+				transform->AdjustPosition(gameObject->GetTransform()->GetForwardVector() * 0.1);
 			}
 
 			break;
@@ -105,12 +110,15 @@ void AIComponent::Update()
 			}
 			else
 			{
-				auto action = &currentActions.back();
+				auto action = currentActions.back();
+				action->prePerform();
+				
 				if (action->IsRequiresInRange() && action->getInRange() || !action->IsRequiresInRange())
 				{
 					bool result = action->perform(worldState);
 					if (result)
 					{
+						action->postPerform();
 						currentActions.pop_back();
 					}
 					else

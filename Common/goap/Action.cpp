@@ -6,7 +6,8 @@ using namespace PEPEngine;
 
 goap::Action::Action() : cost_(0)
 {
-	target = std::make_shared<Common::Transform>();
+	 target = std::make_shared<Common::Transform>();
+	 target->SetPosition(Vector3(0, 0, 0));
 }
 
 goap::Action::Action(std::string name, int cost) : Action()
@@ -14,6 +15,7 @@ goap::Action::Action(std::string name, int cost) : Action()
 	// Because delegating constructors cannot initialize & delegate at the same time...
 	name_ = name;
 	cost_ = cost;
+	target->SetPosition(Vector3(0, 0, 0));
 }
 
 bool goap::Action::perform(WorldState& ws)
@@ -47,6 +49,23 @@ void goap::Action::setInRange(bool val)
 void goap::Action::setRequiresInRange(bool value)
 {
 	requiresInRange = value;
+}
+
+void goap::Action::setCost(int cost)
+{
+	cost_ = cost;
+}
+
+
+void goap::Action::postPerform()
+{
+	setInRange(false);
+	isDone = false;
+}
+
+Vector3 goap::Action::getSteering()
+{
+	return Vector3(0, 0, 0);
 }
 
 
