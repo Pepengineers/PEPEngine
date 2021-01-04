@@ -97,12 +97,6 @@
     <ClInclude Include="ShaderFactory.h">
       <Filter>Render</Filter>
     </ClInclude>
-    <ClInclude Include="ShadowMap.h">
-      <Filter>Render</Filter>
-    </ClInclude>
-    <ClInclude Include="SSAA.h">
-      <Filter>Render</Filter>
-    </ClInclude>
     <ClInclude Include="goap\Planner.h">
       <Filter>GOAP</Filter>
     </ClInclude>
@@ -187,6 +181,9 @@
     <ClInclude Include="..\ThirdPerson\imgui\imstb_truetype.h">
       <Filter>IMGUI</Filter>
     </ClInclude>
+    <ClInclude Include="WanderingAction.h">
+      <Filter>GOAP\Actions</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -210,13 +207,7 @@
     <ClCompile Include="KeyboardDevice.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SSAA.cpp">
-      <Filter>Render</Filter>
-    </ClCompile>
     <ClCompile Include="ShaderFactory.cpp">
-      <Filter>Render</Filter>
-    </ClCompile>
-    <ClCompile Include="ShadowMap.cpp">
       <Filter>Render</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
@@ -326,6 +317,9 @@
     </ClCompile>
     <ClCompile Include="..\ThirdPerson\imgui\imgui_widgets.cpp">
       <Filter>IMGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="WanderingAction.cpp">
+      <Filter>GOAP\Actions</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
