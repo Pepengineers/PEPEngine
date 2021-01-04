@@ -49,7 +49,7 @@ namespace PEPEngine
 			UINT Present();
 			void Initialize();
 
-			GTexture& GetCurrentBackBuffer();
+			GRenderTexture* GetCurrentBackBuffer();
 
 
 			void SetHeight(int height);
@@ -59,9 +59,7 @@ namespace PEPEngine
 
 			float AspectRatio() const;
 
-			GTexture& GetBackBuffer(UINT i);
-
-			GDescriptor* GetBackBuffersRTV();
+			GRenderTexture* GetBackBuffer(UINT i);
 
 			void SetWindowTitle(std::wstring text) const;
 		protected:
@@ -107,7 +105,8 @@ namespace PEPEngine
 			ComPtr<IDXGISwapChain4> swapChain;
 
 			std::shared_ptr<GDevice> device;
-			std::vector<GTexture> backBuffers;
+			std::vector<std::shared_ptr<GTexture>> backBuffers;
+			std::vector<std::shared_ptr<GRenderTexture>> renderTargets;
 			GDescriptor rtvDescriptors;
 
 			UINT currentBackBufferIndex;

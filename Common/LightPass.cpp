@@ -94,19 +94,16 @@ namespace PEPEngine::Common
 	{
 		auto* const camera = Camera::mainCamera;
 
-		const auto* target = camera->GetRenderTarget();
-		auto* rtv = camera->GetRTV();
-		UINT offset = 0;
+		auto* target = camera->GetRenderTarget();
+		
 
 		if (target == nullptr)
 		{
-			target = &D3DApp::GetApp().GetMainWindow()->GetCurrentBackBuffer();
-			rtv = D3DApp::GetApp().GetMainWindow()->GetBackBuffersRTV();
-			offset = D3DApp::GetApp().GetMainWindow()->GetCurrentBackBufferIndex();
+			target = D3DApp::GetApp().GetMainWindow()->GetCurrentBackBuffer();
 		}
 
 
-		cmdList->TransitionBarrier(target->GetD3D12Resource(), D3D12_RESOURCE_STATE_RENDER_TARGET);
+		cmdList->TransitionBarrier(target, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		cmdList->FlushResourceBarriers();
 
 		cmdList->SetViewports(&camera->GetViewPort(), 1);
@@ -134,13 +131,10 @@ namespace PEPEngine::Common
 		cmdList->SetRootDescriptorTable(ShadowMap, shadowPass.GetSrvMemory());
 
 		
-		cmdList->ClearRenderTarget(rtv, offset, DirectX::Colors::Black);
-		cmdList->SetRenderTargets(1, rtv, offset);
+		cmdList->ClearRenderTarget(*target, DirectX::Colors::Black);
+		cmdList->SetRenderTarget(*target);
 
 
 		quadModel->Draw(cmdList);
-
-		cmdList->TransitionBarrier(target->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON);
-		cmdList->FlushResourceBarriers();
 	}
 }

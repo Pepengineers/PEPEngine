@@ -7,6 +7,7 @@
 #include "GTexture.h"
 #include "Transform.h"
 #include "Window.h"
+#include "GRenderTarger.h"
 
 namespace PEPEngine::Common
 {
@@ -73,54 +74,57 @@ namespace PEPEngine::Common
 		return *CameraConstantBuffer.get();
 	}
 
-	void Camera::SetRenderTarget(const GTexture* target, GDescriptor* rtv)
+	void Camera::SetRenderTarget(std::shared_ptr<GTexture> target, GDescriptor* rtv)
+	{
+		renderTarget = std::make_shared<GRenderTexture>(target, rtv);
+				
+		SetRenderTarget(renderTarget);
+	}
+
+	void Camera::SetRenderTarget(std::shared_ptr<GRenderTexture> target)
 	{
 		renderTarget = target;
-		rtvDescriptor = rtv;
+
 		NumFramesDirty = globalCountFrameResources;
 
 		if (renderTarget != nullptr)
 		{
-			viewport.Height = static_cast<float>(renderTarget->GetD3D12ResourceDesc().Height);
-			viewport.Width = static_cast<float>(renderTarget->GetD3D12ResourceDesc().Width);
+			viewport.Height = static_cast<float>(renderTarget->GetRenderTexture()->GetD3D12ResourceDesc().Height);
+			viewport.Width = static_cast<float>(renderTarget->GetRenderTexture()->GetD3D12ResourceDesc().Width);
 		}
 		else
 		{
 			const auto* const window = D3DApp::GetApp().GetMainWindow();
 			viewport.Height = static_cast<float>(window->GetClientHeight());
-			viewport.Width = static_cast<float>(window->GetClientWidth());			
+			viewport.Width = static_cast<float>(window->GetClientWidth());
 		}
 
 		viewport.MinDepth = 0.0f;
 		viewport.MaxDepth = 1.0f;
 		viewport.TopLeftX = 0;
 		viewport.TopLeftY = 0;
-		
+
 		rect = { 0, 0,  static_cast<LONG>(viewport.Width), static_cast<LONG>(viewport.Height) };
 	}
 
-	const GTexture* Camera::GetRenderTarget() const
+	GRenderTexture* Camera::GetRenderTarget() const
 	{
-			return renderTarget;
+		return renderTarget.get();
 	}
 
-	GDescriptor* Camera::GetRTV() const
-	{
-		return rtvDescriptor;
-	}
 
 	const Vector3& Camera::GetFocusPosition() const
 	{
 		return focusPosition;
 	}
 
-	Camera::Camera(float aspect,const  GTexture* target, GDescriptor* rtv) : Component(), aspectRatio(aspect)
+	Camera::Camera(float aspect,const  std::shared_ptr<GRenderTexture> target) : Component(), aspectRatio(aspect)
 	{
 		mainCamera = this;
 		CameraConstantBuffer = std::make_shared<ConstantUploadBuffer<CameraConstants>>(
 			GDeviceFactory::GetDevice(), 1, L"Camera Data Buffer");
 
-		SetRenderTarget(target, rtv);
+		SetRenderTarget(target);
 	}
 
 	void Camera::SetAspectRatio(float aspect)

@@ -6,6 +6,7 @@
 #include "RenderPass.h"
 #include "Scene.h"
 #include "SSAOPass.h"
+#include "UILayer.h"
 
 namespace SimpleRender
 {
@@ -47,5 +48,6 @@ namespace SimpleRender
 		std::shared_ptr < LightPass> lightPass;
 		std::shared_ptr < SSAOPass> ambiantPass;
 		std::shared_ptr<ShadowPass> shadowPass;
+		std::shared_ptr<UILayer> uiPass;
 	};
 }

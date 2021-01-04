@@ -5,6 +5,7 @@
 #include "d3dUtil.h"
 #include "GDevice.h"
 #include "GDeviceFactory.h"
+#include "GRenderTarger.h"
 #include "GResourceStateTracker.h"
 
 namespace PEPEngine
@@ -34,7 +35,8 @@ namespace PEPEngine
 
 			for (auto&& back_buffer : backBuffers)
 			{
-				back_buffer.Reset();
+				back_buffer->Reset();
+				back_buffer.reset();
 			}
 
 			backBuffers.clear();
@@ -138,9 +140,9 @@ namespace PEPEngine
 			ShowWindow(hWnd, SW_HIDE);
 		}
 
-		GTexture& Window::GetCurrentBackBuffer()
+		GRenderTexture* Window::GetCurrentBackBuffer()
 		{
-			return backBuffers[currentBackBufferIndex];
+			return renderTargets[currentBackBufferIndex].get();
 		}
 
 		void Window::SetHeight(int height)
@@ -158,14 +160,9 @@ namespace PEPEngine
 			return static_cast<float>(width) / height;
 		}
 
-		GTexture& Window::GetBackBuffer(UINT i)
+		GRenderTexture* Window::GetBackBuffer(UINT i)
 		{
-			return backBuffers[i];
-		}
-
-		GDescriptor* Window::GetBackBuffersRTV()
-		{
-			return &rtvDescriptors;
+			return renderTargets[i].get();
 		}
 
 		UINT Window::GetCurrentBackBufferIndex() const
@@ -191,7 +188,7 @@ namespace PEPEngine
 
 			for (int i = 0; i < globalCountFrameResources; ++i)
 			{
-				backBuffers.push_back(GTexture(windowName + L" Backbuffer[" + std::to_wstring(i) + L"]",
+				backBuffers.push_back(std::make_shared<GTexture>(windowName + L" Backbuffer[" + std::to_wstring(i) + L"]",
 				                               TextureUsage::RenderTarget));
 			}
 
@@ -281,13 +278,13 @@ namespace PEPEngine
 
 			for (int i = 0; i < globalCountFrameResources; ++i)
 			{
-				GResourceStateTracker::RemoveGlobalResourceState(backBuffers[i].GetD3D12Resource().Get());
-				backBuffers[i].Reset();
+				GResourceStateTracker::RemoveGlobalResourceState(backBuffers[i]->GetD3D12Resource().Get());
+				backBuffers[i]->Reset();
 			}
 
 			for (int i = 0; i < globalCountFrameResources; ++i)
 			{
-				backBuffers[i].Reset();
+				backBuffers[i]->Reset();
 			}
 
 			DXGI_SWAP_CHAIN_DESC desc;
@@ -312,8 +309,14 @@ namespace PEPEngine
 				ThrowIfFailed(swapChain->GetBuffer(i, IID_PPV_ARGS(&backBuffer)));
 				GResourceStateTracker::AddGlobalResourceState(backBuffer.Get(), D3D12_RESOURCE_STATE_COMMON);
 
-				backBuffers[i].SetD3D12Resource(device, backBuffer);
-				backBuffers[i].CreateRenderTargetView(&rtvDesc, &rtvDescriptors, i);
+				backBuffers[i]->SetD3D12Resource(device, backBuffer);
+
+				if(renderTargets.size() < globalCountFrameResources)
+				{
+					renderTargets.push_back(std::make_shared<GRenderTexture>(backBuffers[i], &rtvDescriptors, i));
+				}
+
+				renderTargets[i]->ChangeTexture(backBuffers[i]);				
 			}
 		}
 

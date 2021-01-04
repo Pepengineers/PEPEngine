@@ -32,6 +32,9 @@
     <Filter Include="Render\Objects">
       <UniqueIdentifier>{b307ed34-1c1e-409f-b2a0-879f8e7b971b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="IMGUI">
+      <UniqueIdentifier>{860f83c5-9b22-4116-b9b9-066d1ad4ec42}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -94,12 +97,6 @@
     <ClInclude Include="ShaderFactory.h">
       <Filter>Render</Filter>
     </ClInclude>
-    <ClInclude Include="ShadowMap.h">
-      <Filter>Render</Filter>
-    </ClInclude>
-    <ClInclude Include="SSAA.h">
-      <Filter>Render</Filter>
-    </ClInclude>
     <ClInclude Include="goap\Planner.h">
       <Filter>GOAP</Filter>
     </ClInclude>
@@ -155,7 +152,34 @@
       <Filter>Render\Pass</Filter>
     </ClInclude>
     <ClInclude Include="ShadowPass.h">
+      <Filter>Render\Pass</Filter>
+    </ClInclude>
+    <ClInclude Include="UILayer.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ThirdPerson\imgui\backends\imgui_impl_dx12.h">
+      <Filter>IMGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ThirdPerson\imgui\backends\imgui_impl_win32.h">
+      <Filter>IMGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ThirdPerson\imgui\imconfig.h">
+      <Filter>IMGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ThirdPerson\imgui\imgui.h">
+      <Filter>IMGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ThirdPerson\imgui\imgui_internal.h">
+      <Filter>IMGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ThirdPerson\imgui\imstb_rectpack.h">
+      <Filter>IMGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ThirdPerson\imgui\imstb_textedit.h">
+      <Filter>IMGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="..\ThirdPerson\imgui\imstb_truetype.h">
+      <Filter>IMGUI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -180,13 +204,7 @@
     <ClCompile Include="KeyboardDevice.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SSAA.cpp">
-      <Filter>Render</Filter>
-    </ClCompile>
     <ClCompile Include="ShaderFactory.cpp">
-      <Filter>Render</Filter>
-    </ClCompile>
-    <ClCompile Include="ShadowMap.cpp">
       <Filter>Render</Filter>
     </ClCompile>
     <ClCompile Include="Camera.cpp">
@@ -271,7 +289,31 @@
       <Filter>Render\Pass</Filter>
     </ClCompile>
     <ClCompile Include="ShadowPass.cpp">
+      <Filter>Render\Pass</Filter>
+    </ClCompile>
+    <ClCompile Include="UILayer.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ThirdPerson\imgui\backends\imgui_impl_dx12.cpp">
+      <Filter>IMGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ThirdPerson\imgui\backends\imgui_impl_win32.cpp">
+      <Filter>IMGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ThirdPerson\imgui\imgui.cpp">
+      <Filter>IMGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ThirdPerson\imgui\imgui_demo.cpp">
+      <Filter>IMGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ThirdPerson\imgui\imgui_draw.cpp">
+      <Filter>IMGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ThirdPerson\imgui\imgui_tables.cpp">
+      <Filter>IMGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="..\ThirdPerson\imgui\imgui_widgets.cpp">
+      <Filter>IMGUI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

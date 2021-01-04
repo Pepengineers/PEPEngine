@@ -169,7 +169,7 @@ namespace PEPEngine::Common
 		cmdList->TransitionBarrier(shadowMap, D3D12_RESOURCE_STATE_DEPTH_WRITE);
 		cmdList->FlushResourceBarriers();
 
-		cmdList->SetRenderTargets(0, nullptr, 0, &dsvMemory, 0, true);
+		cmdList->SetRenderTargets(0, nullptr, 0, &dsvMemory, 0);
 		cmdList->ClearDepthStencil(&dsvMemory, 0,
 			D3D12_CLEAR_FLAG_DEPTH);
 

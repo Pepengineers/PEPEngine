@@ -38,8 +38,7 @@ namespace PEPEngine
 			std::shared_ptr<ConstantUploadBuffer<CameraConstants>> CameraConstantBuffer = nullptr;
 
 
-			const GTexture* renderTarget = nullptr;
-			GDescriptor* rtvDescriptor = nullptr;
+			std::shared_ptr<GRenderTexture> renderTarget = nullptr;
 			
 			D3D12_VIEWPORT viewport;
 			D3D12_RECT rect;
@@ -55,15 +54,15 @@ namespace PEPEngine
 
 			ConstantUploadBuffer<CameraConstants>& GetCameraDataBuffer() const;;
 
-			void SetRenderTarget(const GTexture* target, GDescriptor* rtv);
+			void SetRenderTarget(std::shared_ptr<GTexture> target, GDescriptor* rtv);
 
-			const GTexture* GetRenderTarget() const;
+			void SetRenderTarget(std::shared_ptr<GRenderTexture> target);
 
-			GDescriptor* GetRTV() const;;
-			
+			GRenderTexture* GetRenderTarget() const;
+						
 			const Vector3& GetFocusPosition() const;
 
-			Camera(float aspect,const GTexture* target = nullptr, GDescriptor* rtv = nullptr);
+			Camera(float aspect, const  std::shared_ptr<GRenderTexture> target = nullptr);
 
 			void SetAspectRatio(float aspect);
 
