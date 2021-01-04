@@ -95,7 +95,7 @@ namespace PEPEngine::Common
 		Flush();
 	}
 
-	const Window* D3DApp::GetMainWindow() const
+	Window* D3DApp::GetMainWindow() const
 	{
 		return MainWindow.get();
 	}

@@ -12,7 +12,6 @@ struct VertexOut
 {
 	float4 PositionClipSpace : SV_POSITION;
 	float4 ShadowPosClip : POSITION0;
-	float4 SsaoPosClip : POSITION1;
 	float3 PositionWorldSpace : POS_WORLD;
 	float3 PositionViewSpace : POS_VIEW;
 	float3 NormalWorldSpace : NORMAL_WORLD;
@@ -40,6 +39,8 @@ VertexOut VS(VertexIn input)
 
 	output.NormalWorldSpace = mul(float4(input.NormalObjectSpace, 0.0f),
 	                              ObjectBuffer.World).xyz;
+	output.NormalWorldSpace = normalize(output.NormalWorldSpace);
+	
 	output.NormalViewSpace = mul(float4(output.NormalWorldSpace, 0.0f),
 	                             CameraBuffer.View).xyz;
 
@@ -52,9 +53,7 @@ VertexOut VS(VertexIn input)
 	                                            output.TangentWorldSpace));
 	output.BinormalViewSpace = normalize(cross(output.NormalViewSpace,
 	                                           output.TangentViewSpace));
-
-	// Generate projective tex-coords to project SSAO map onto scene.
-	output.SsaoPosClip = mul(output.PositionWorldSpace, CameraBuffer.ViewProjTex);
+	
 
 	// Generate projective tex-coords to project shadow map onto scene.
 	output.ShadowPosClip = mul(output.PositionWorldSpace, CameraBuffer.ShadowTransform);
@@ -77,12 +76,10 @@ PixelShaderOutput PS(VertexOut input)
 
 	float4 baseColor = MaterialTexture[material.DiffuseMapIndex].Sample(gsamAnisotropicWrap, input.UV);
 	clip(baseColor.a - material.AlphaThreshold);
-
-	float4 normalColor = MaterialTexture[material.NormalMapIndex].Sample(gsamAnisotropicWrap, input.UV);
-	float3 bumpedNormalW = NormalSampleToWorldSpace(normalColor.rgb, input.NormalWorldSpace, input.TangentWorldSpace);
-
+	
+    output.Normal = float4(input.NormalViewSpace, 1);
 	output.BaseColor = baseColor;
-	output.Normal = float4(bumpedNormalW, 1);
+   
 	output.PositionBuffer = float4(input.PositionWorldSpace, 1);
 
 	return output;
@@ -94,7 +91,7 @@ float4 PSDebug(VertexOut input) : SV_Target
 	MaterialData material = Materials[ObjectBuffer.MaterialIndex];
 
 	float4 baseColor = MaterialTexture[material.DiffuseMapIndex].Sample(gsamAnisotropicWrap, input.UV);
-	clip(baseColor.a - 0.1f);
+    clip(baseColor.a - material.AlphaThreshold);
 
 
 	return baseColor;

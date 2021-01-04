@@ -1,7 +1,7 @@
 #include "FrameResource.h"
 
 
-SimpleRender::FrameResource::FrameResource(std::shared_ptr<GDevice> device, UINT materials, UINT lights)
+PEPEngine::Common::FrameResource::FrameResource(std::shared_ptr<GDevice> device, UINT materials, UINT lights)
 {
 	WorldBuffer = std::make_shared<ConstantUploadBuffer<WorldData>>(device, 1, L"World Data Buffer");
 

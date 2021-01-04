@@ -4,8 +4,7 @@
 
 namespace PEPEngine::Common
 {
-	class GPass :
-		public RenderPass
+	class GPass : public RenderPass
 	{
 		static const UINT GBufferMapsCount = 4;
 		static const DXGI_FORMAT NormalMapFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
@@ -23,16 +22,17 @@ namespace PEPEngine::Common
 		GDescriptor deferredSRVDescriptor;
 		GDescriptor deferredDSVDescriptor;
 
-		std::shared_ptr<GDevice> device;
 		GRootSignature rootSign;
-
+		
 		void AllocateDescriptors();
 
 		void InitRootSignature();
 
 		void InitPSO();
 
-
+		void CreateBuffers();
+		
+		void BuildDescriptors();
 	public:
 
 		enum DeferredPassRTVSlot: UINT
@@ -43,15 +43,15 @@ namespace PEPEngine::Common
 			DepthMap
 		};
 
-		GPass(std::shared_ptr<GDevice> renderDevice);
+		GPass(float width, float height);
 
 		GTexture& GetGTexture(DeferredPassRTVSlot slot);
 
-		GDescriptor& GetSRV();
-
+		const GDescriptor* GetSRV() const;
 
 		void Render(std::shared_ptr<GCommandList> cmdList) override;
 
-		void OnResize() override;;
+		void ChangeRenderTargetSize(float width, float height) override;
+		void Update() override {};
 	};
 }

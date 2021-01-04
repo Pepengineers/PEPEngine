@@ -147,12 +147,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="FrameResource.cpp" />
     <ClCompile Include="SampleApp.cpp" />
     <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="FrameResource.h" />
     <ClInclude Include="SampleApp.h" />
   </ItemGroup>
   <ItemGroup>

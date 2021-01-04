@@ -18,13 +18,7 @@ namespace PEPEngine::Common
 {
 	static Assimp::Importer importer;
 
-	custom_unordered_map<std::wstring, std::shared_ptr<NativeModel>> AssetsLoader::loadedModels =
-		MemoryAllocator::CreateUnorderedMap<std::wstring, std::shared_ptr<NativeModel>>();
-	custom_unordered_map<std::shared_ptr<NativeMesh>, std::shared_ptr<aiMaterial>>
-	AssetsLoader::loadedAiMaterialForMesh =
-		MemoryAllocator::CreateUnorderedMap<std::shared_ptr<NativeMesh>, std::shared_ptr<aiMaterial>>();
-	custom_unordered_map<std::shared_ptr<NativeMesh>, std::vector<UINT>> AssetsLoader::loadedTexturesForMesh =
-		MemoryAllocator::CreateUnorderedMap<std::shared_ptr<NativeMesh>, std::vector<UINT>>();
+	
 
 	inline std::shared_ptr<GModel> CreateModelFromGenerated(std::shared_ptr<GCommandList> cmdList,
 	                                                        GeometryGenerator::MeshData generatedData,

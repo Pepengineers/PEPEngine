@@ -163,6 +163,11 @@ namespace PEPEngine
 			return backBuffers[i];
 		}
 
+		GDescriptor* Window::GetBackBuffersRTV()
+		{
+			return &rtvDescriptors;
+		}
+
 		UINT Window::GetCurrentBackBufferIndex() const
 		{
 			return currentBackBufferIndex;
@@ -182,13 +187,15 @@ namespace PEPEngine
 		void Window::Initialize()
 		{
 			swapChain = CreateSwapChain();
-
+			rtvDescriptors = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, globalCountFrameResources);
 
 			for (int i = 0; i < globalCountFrameResources; ++i)
 			{
 				backBuffers.push_back(GTexture(windowName + L" Backbuffer[" + std::to_wstring(i) + L"]",
 				                               TextureUsage::RenderTarget));
 			}
+
+			
 
 			OnResize();
 		}
@@ -295,6 +302,10 @@ namespace PEPEngine
 
 			currentBackBufferIndex = swapChain->GetCurrentBackBufferIndex();
 
+			D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+			rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+			rtvDesc.Format = GetSRGBFormat(desc.BufferDesc.Format);
+			
 			for (int i = 0; i < globalCountFrameResources; ++i)
 			{
 				ComPtr<ID3D12Resource> backBuffer;
@@ -302,6 +313,7 @@ namespace PEPEngine
 				GResourceStateTracker::AddGlobalResourceState(backBuffer.Get(), D3D12_RESOURCE_STATE_COMMON);
 
 				backBuffers[i].SetD3D12Resource(device, backBuffer);
+				backBuffers[i].CreateRenderTargetView(&rtvDesc, &rtvDescriptors, i);
 			}
 		}
 

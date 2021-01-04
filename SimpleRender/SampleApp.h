@@ -1,11 +1,11 @@
 #pragma once
 #include "AssetsLoader.h"
 #include "d3dApp.h"
-#include "FrameResource.h"
-#include "Light.h"
-#include "GDescriptor.h"
-#include "GraphicPSO.h"
+#include "GPass.h"
+#include "LightPass.h"
 #include "RenderPass.h"
+#include "Scene.h"
+#include "SSAOPass.h"
 
 namespace SimpleRender
 {
@@ -38,25 +38,14 @@ namespace SimpleRender
 		std::unordered_map<std::wstring, std::shared_ptr<GModel>> models;
 
 		UINT currentFrameResourceIndex = 0;
-		std::vector<std::shared_ptr<FrameResource>> frameResources;
-		std::shared_ptr<FrameResource> currentFrameResource;
 
-		std::vector<std::shared_ptr<GameObject>> gameObjects;
-		std::vector<GameObject*> typedGO[RenderMode::Count];
+		UINT64 fenceValues[globalCountFrameResources];
 
+		std::shared_ptr<Scene> scene = nullptr;
 
-		std::vector<Light*> lights;
-		std::unique_ptr<Camera> camera = nullptr;
-
-		WorldData worldData;
-
-		GDescriptor rtvMemory;
-
-		std::shared_ptr<GRootSignature> rootSignature;
-		std::unordered_map<std::wstring, std::shared_ptr<GShader>> shaders;
-		std::shared_ptr<GraphicPSO> quadPso;
-		std::shared_ptr<GraphicPSO> debugPso;
-
-		std::vector<std::shared_ptr<RenderPass>> passes;
+		std::shared_ptr<GPass> gpass;
+		std::shared_ptr < LightPass> lightPass;
+		std::shared_ptr < SSAOPass> ambiantPass;
+		std::shared_ptr<ShadowPass> shadowPass;
 	};
 }

@@ -4,6 +4,8 @@
 #include <memory>
 #include <string>
 #include <wrl.h>
+
+#include "GDescriptor.h"
 #include "GTexture.h"
 
 using namespace Microsoft::WRL;
@@ -59,6 +61,8 @@ namespace PEPEngine
 
 			GTexture& GetBackBuffer(UINT i);
 
+			GDescriptor* GetBackBuffersRTV();
+
 			void SetWindowTitle(std::wstring text) const;
 		protected:
 
@@ -104,7 +108,7 @@ namespace PEPEngine
 
 			std::shared_ptr<GDevice> device;
 			std::vector<GTexture> backBuffers;
-
+			GDescriptor rtvDescriptors;
 
 			UINT currentBackBufferIndex;
 

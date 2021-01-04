@@ -24,15 +24,9 @@
     <ClCompile Include="SampleApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FrameResource.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SampleApp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FrameResource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

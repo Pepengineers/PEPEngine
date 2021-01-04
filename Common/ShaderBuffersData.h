@@ -29,10 +29,9 @@ namespace PEPEngine
 			NormalMap,
 			BaseColorMap,
 			PositionMap,
-			DepthMap,
 			AmbientMap,
-			SkyMap,
-			ShadowMap
+			ShadowMap,
+			SkyMap
 		};
 
 

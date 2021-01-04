@@ -24,9 +24,7 @@ namespace PEPEngine
 
 		public:
 			LightType Type;
-			Vector3 DirectionWorld;
-			Vector3 PositionView;
-			Vector3 DirectionView;
+			Vector3 Direction;
 			Vector4 Color;
 			float SpotlightAngle;
 			float Range;
@@ -36,9 +34,7 @@ namespace PEPEngine
 
 			Light()
 				: Type(Spot)
-				  , DirectionWorld(0, 0, -1)
-				  , PositionView(0, 0, 0)
-				  , DirectionView(0, 0, 1)
+				  , Direction(0, 0, -1)
 				  , Color(1, 1, 1, 1)
 				  , SpotlightAngle(45.0f)
 				  , Range(5)
@@ -49,6 +45,8 @@ namespace PEPEngine
 			}
 
 			//, type(LightType::Point)
+
+			Matrix& GetViewMatrix() const;
 
 
 			LightData& GetData();
