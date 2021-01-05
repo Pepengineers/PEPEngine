@@ -2,12 +2,12 @@
 #include "RenderPass.h"
 #include "Scene.h"
 #include "Light.h"
+
 namespace PEPEngine::Common
 {
 	class ShadowPass :
 		public RenderPass
 	{
-
 		D3D12_VIEWPORT viewPort;
 		D3D12_RECT rect;
 
@@ -25,13 +25,13 @@ namespace PEPEngine::Common
 		GShader pixelShader;
 
 		Matrix projectionMatrix;
-		
+
 		Light* mainDirectionalLight = nullptr;
 
 		CameraConstants shadowMapConstants;
 
 		std::shared_ptr<ConstantUploadBuffer<CameraConstants>> LightCameraBuffer;
-		
+
 	public:
 		void InitRootSignature();
 
@@ -56,5 +56,3 @@ namespace PEPEngine::Common
 		void ChangeRenderTargetSize(float newWidth, float newHeight) override;;
 	};
 }
-
-

@@ -6,8 +6,8 @@ using namespace PEPEngine;
 
 goap::Action::Action() : cost_(0)
 {
-	 target = std::make_shared<Common::Transform>();
-	 target->SetPosition(Vector3(0, 0, 0));
+	target = std::make_shared<Common::Transform>();
+	target->SetPosition(Vector3(0, 0, 0));
 }
 
 goap::Action::Action(std::string name, int cost) : Action()

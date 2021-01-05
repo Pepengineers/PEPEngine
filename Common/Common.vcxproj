@@ -91,7 +91,7 @@
       <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)ThirdPerson\imgui;$(SolutionDir)ThirdPerson\imgui\backends;$(SolutionDir)\Core\Utils;$(SolutionDir)Assimp\include;$(SolutionDir)\Core\Graphics;$(SolutionDir)\Core\Allocator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ThirdPerson\json\single_include;$(SolutionDir)ThirdPerson\imgui;$(SolutionDir)ThirdPerson\imgui\backends;$(SolutionDir)\Core\Utils;$(SolutionDir)Assimp\include;$(SolutionDir)\Core\Graphics;$(SolutionDir)\Core\Allocator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -114,7 +114,7 @@
       <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)ThirdPerson\imgui;$(SolutionDir)ThirdPerson\imgui\backends;$(SolutionDir)\Core\Utils;$(SolutionDir)Assimp\include;$(SolutionDir)\Core\Graphics;$(SolutionDir)\Core\Allocator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ThirdPerson\json\single_include;$(SolutionDir)ThirdPerson\imgui;$(SolutionDir)ThirdPerson\imgui\backends;$(SolutionDir)\Core\Utils;$(SolutionDir)Assimp\include;$(SolutionDir)\Core\Graphics;$(SolutionDir)\Core\Allocator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -139,7 +139,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)ThirdPerson\imgui;$(SolutionDir)ThirdPerson\imgui\backends;$(SolutionDir)\Core\Utils;$(SolutionDir)Assimp\include;$(SolutionDir)\Core\Graphics;$(SolutionDir)\Core\Allocator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ThirdPerson\json\single_include;$(SolutionDir)ThirdPerson\imgui;$(SolutionDir)ThirdPerson\imgui\backends;$(SolutionDir)\Core\Utils;$(SolutionDir)Assimp\include;$(SolutionDir)\Core\Graphics;$(SolutionDir)\Core\Allocator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -160,7 +160,7 @@
       <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)ThirdPerson\imgui;$(SolutionDir)ThirdPerson\imgui\backends;$(SolutionDir)\Core\Utils;$(SolutionDir)Assimp\include;$(SolutionDir)\Core\Graphics;$(SolutionDir)\Core\Allocator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ThirdPerson\json\single_include;$(SolutionDir)ThirdPerson\imgui;$(SolutionDir)ThirdPerson\imgui\backends;$(SolutionDir)\Core\Utils;$(SolutionDir)Assimp\include;$(SolutionDir)\Core\Graphics;$(SolutionDir)\Core\Allocator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -184,8 +184,11 @@
     <ClInclude Include="..\ThirdPerson\imgui\imstb_rectpack.h" />
     <ClInclude Include="..\ThirdPerson\imgui\imstb_textedit.h" />
     <ClInclude Include="..\ThirdPerson\imgui\imstb_truetype.h" />
+    <ClInclude Include="..\ThirdPerson\json\single_include\nlohmann\json.hpp" />
     <ClInclude Include="AIComponent.h" />
-    <ClInclude Include="AssetsLoader.h" />
+    <ClInclude Include="Asset.h" />
+    <ClInclude Include="AssetDatabase.h" />
+    <ClInclude Include="AssimpModelLoader.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraController.h" />
     <ClInclude Include="Component.h" />
@@ -201,6 +204,7 @@
     <ClInclude Include="goap\Planner.h" />
     <ClInclude Include="goap\WorldState.h" />
     <ClInclude Include="GPass.h" />
+    <ClInclude Include="Texture.h" />
     <ClInclude Include="KeyboardDevice.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="LightPass.h" />
@@ -235,7 +239,9 @@
     <ClCompile Include="..\ThirdPerson\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\ThirdPerson\imgui\imgui_widgets.cpp" />
     <ClCompile Include="AIComponent.cpp" />
-    <ClCompile Include="AssetsLoader.cpp" />
+    <ClCompile Include="Asset.cpp" />
+    <ClCompile Include="AssetDatabase.cpp" />
+    <ClCompile Include="AssimpModelLoader.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CameraController.cpp" />
     <ClCompile Include="Component.cpp" />
@@ -250,6 +256,7 @@
     <ClCompile Include="goap\Planner.cpp" />
     <ClCompile Include="goap\WorldState.cpp" />
     <ClCompile Include="GPass.cpp" />
+    <ClCompile Include="Texture.cpp" />
     <ClCompile Include="KeyboardDevice.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="LightPass.cpp" />

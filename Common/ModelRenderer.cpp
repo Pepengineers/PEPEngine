@@ -12,7 +12,7 @@ namespace PEPEngine::Common
 	{
 		for (int i = 0; i < model->GetMeshesCount(); ++i)
 		{
-			if(model->meshesMaterials[i] != nullptr)
+			if (model->meshesMaterials[i] != nullptr)
 				model->meshesMaterials[i]->Draw(cmdList);
 
 			cmdList->SetRootConstantBufferView(ObjectDataBuffer,

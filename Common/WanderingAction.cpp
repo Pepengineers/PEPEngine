@@ -18,5 +18,5 @@ WanderingAction::WanderingAction(std::string name, int cost) : Action(name, cost
 
 void WanderingAction::prePerform()
 {
-	target->SetPosition(Vector3(rand() % 200, 1, rand() %200));
+	target->SetPosition(Vector3(rand() % 200, 1, rand() % 200));
 }

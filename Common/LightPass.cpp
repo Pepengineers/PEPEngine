@@ -1,5 +1,5 @@
 #include "LightPass.h"
-#include "AssetsLoader.h"
+#include "AssetDatabase.h"
 #include "d3dApp.h"
 #include "GDeviceFactory.h"
 #include "GModel.h"
@@ -8,6 +8,7 @@
 #include "ShadowPass.h"
 #include "Window.h"
 #include "SSAOPass.h"
+
 namespace PEPEngine::Common
 {
 	void LightPass::LoadAndCompileShaders()
@@ -59,7 +60,7 @@ namespace PEPEngine::Common
 		pso.SetShader(&vertexShader);
 		pso.SetShader(&pixelShader);
 		pso.SetBlendState(CD3DX12_BLEND_DESC(D3D12_DEFAULT));
-		
+
 
 		auto depthStencilDesc = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
 		depthStencilDesc.DepthEnable = false;
@@ -74,7 +75,8 @@ namespace PEPEngine::Common
 	{
 	}
 
-	LightPass::LightPass(float width, float height,GPass& pass, SSAOPass& ssao, ShadowPass& shadow): RenderPass(width, height), gpass(pass), ssaoPass(ssao), shadowPass(shadow)
+	LightPass::LightPass(float width, float height, GPass& pass, SSAOPass& ssao, ShadowPass& shadow):
+		RenderPass(width, height), gpass(pass), ssaoPass(ssao), shadowPass(shadow)
 	{
 		LoadAndCompileShaders();
 
@@ -85,17 +87,17 @@ namespace PEPEngine::Common
 		auto copyQueue = device->GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COPY);
 		const auto cmdList = copyQueue->GetCommandList();
 
-		quadModel = AssetsLoader::GenerateQuad(cmdList);
+		quadModel = AssetDatabase::GenerateQuad(cmdList);
 
-		copyQueue->WaitForFenceValue(copyQueue->ExecuteCommandList(cmdList));;
+		copyQueue->WaitForFenceValue(copyQueue->ExecuteCommandList(cmdList));
 	}
 
-	void PEPEngine::Common::LightPass::Render(std::shared_ptr<GCommandList> cmdList)
+	void LightPass::Render(std::shared_ptr<GCommandList> cmdList)
 	{
 		auto* const camera = Camera::mainCamera;
 
 		auto* target = camera->GetRenderTarget();
-		
+
 
 		if (target == nullptr)
 		{
@@ -123,14 +125,14 @@ namespace PEPEngine::Common
 		cmdList->SetRootDescriptorTable(NormalMap, gpass.GetSRV(), GPass::NormalMap);
 		cmdList->SetRootDescriptorTable(BaseColorMap, gpass.GetSRV(), GPass::ColorMap);
 		cmdList->SetRootDescriptorTable(PositionMap, gpass.GetSRV(), GPass::PositionMap);
-		
+
 		cmdList->SetDescriptorsHeap(ssaoPass.AmbientMapSrv());
 		cmdList->SetRootDescriptorTable(AmbientMap, ssaoPass.AmbientMapSrv());
 
 		cmdList->SetDescriptorsHeap(shadowPass.GetSrvMemory());
 		cmdList->SetRootDescriptorTable(ShadowMap, shadowPass.GetSrvMemory());
 
-		
+
 		cmdList->ClearRenderTarget(*target, DirectX::Colors::Black);
 		cmdList->SetRenderTarget(*target);
 

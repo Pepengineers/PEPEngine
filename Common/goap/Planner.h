@@ -92,7 +92,7 @@ namespace PEPEngine
 			 @exception std::runtime_error if no plan could be made with the available actions and states
 			 */
 			std::vector<Action*> plan(const WorldState& start, const WorldState& goal,
-			                         const std::vector<Action*>& actions);
+			                          const std::vector<Action*>& actions);
 
 			TEST_FRIENDS;
 		};

@@ -39,7 +39,7 @@ namespace PEPEngine
 			bool inRange = false;
 			bool isDone = false;
 
-		
+
 		public:
 			Action();
 			Action(std::string name, int cost);

@@ -19,7 +19,7 @@ public:
 		target->SetPosition(Vector3(1, 1, 1));
 		setCost(cost);
 		setEffect(POKE_A, true);
-		
 	}
+
 	void prePerform() override;
 };

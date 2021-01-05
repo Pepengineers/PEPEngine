@@ -17,13 +17,9 @@ AIComponent::AIComponent()
 
 void AIComponent::SetActionList()
 {
-	
 	availableActions.push_back(new DoActionA);
 	availableActions.push_back(new DoActionB);
 	availableActions.push_back(new WanderingAction);
-
-
-
 }
 
 
@@ -48,7 +44,7 @@ void AIComponent::Update()
 		worldState.setVariable(PEPEngine::goap::Action::POKE_B, false);
 
 	}*/
-	
+
 	switch (currentState_)
 	{
 	case FSMState::Idle:
@@ -80,12 +76,13 @@ void AIComponent::Update()
 			dt += 0.0001;
 			if (dt > 1) dt = 0;
 			dumpTarget = target;
-			
+
 			auto len = (target - current);
 			auto distanceTo = len.Length();
-		    auto lookAt= Matrix::CreateLookAt(current, target, gameObject->GetTransform()->GetUpVector()).Transpose();	
-		    auto q =Quaternion::Slerp(gameObject->GetTransform()->GetQuaternionRotate(),	Quaternion::CreateFromRotationMatrix(lookAt), dt);
-			
+			auto lookAt = Matrix::CreateLookAt(current, target, gameObject->GetTransform()->GetUpVector()).Transpose();
+			auto q = Quaternion::Slerp(gameObject->GetTransform()->GetQuaternionRotate(),
+			                           Quaternion::CreateFromRotationMatrix(lookAt), dt);
+
 			gameObject->GetTransform()->SetQuaternionRotate(q);
 
 			if (distanceTo > 0 && distanceTo < action->range)
@@ -112,7 +109,7 @@ void AIComponent::Update()
 			{
 				auto action = currentActions.back();
 				action->prePerform();
-				
+
 				if (action->IsRequiresInRange() && action->getInRange() || !action->IsRequiresInRange())
 				{
 					bool result = action->perform(worldState);

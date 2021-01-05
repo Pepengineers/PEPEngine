@@ -63,8 +63,8 @@ namespace PEPEngine::Common
 
 	void Material::UpdateDescriptors()
 	{
-		if(!IsInited) return;
-		
+		if (!IsInited) return;
+
 		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
@@ -93,8 +93,8 @@ namespace PEPEngine::Common
 
 	void Material::InitMaterial(std::shared_ptr<GDevice> device)
 	{
-		if(IsInited) return;
-		
+		if (IsInited) return;
+
 		if (textureMapsSRVMemory.IsNull())
 		{
 			textureMapsSRVMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
@@ -104,7 +104,6 @@ namespace PEPEngine::Common
 		IsInited = true;
 
 		UpdateDescriptors();
-
 	}
 
 	void Material::Draw(std::shared_ptr<GCommandList> cmdList) const

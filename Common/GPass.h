@@ -23,7 +23,7 @@ namespace PEPEngine::Common
 		GDescriptor deferredDSVDescriptor;
 
 		GRootSignature rootSign;
-		
+
 		void AllocateDescriptors();
 
 		void InitRootSignature();
@@ -31,7 +31,7 @@ namespace PEPEngine::Common
 		void InitPSO();
 
 		void CreateBuffers();
-		
+
 		void BuildDescriptors();
 	public:
 
@@ -52,6 +52,9 @@ namespace PEPEngine::Common
 		void Render(std::shared_ptr<GCommandList> cmdList) override;
 
 		void ChangeRenderTargetSize(float width, float height) override;
-		void Update() override {};
+
+		void Update() override
+		{
+		};
 	};
 }

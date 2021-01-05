@@ -53,7 +53,7 @@ namespace PEPEngine
 			GDescriptor textureMapsSRVMemory;
 
 			bool IsInited = false;
-			
+
 		public:
 
 			Vector4 AmbientColor;

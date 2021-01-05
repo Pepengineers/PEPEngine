@@ -3,7 +3,6 @@
 
 namespace PEPEngine::Common
 {
-	
 	class UILayer :
 		public RenderPass
 	{
@@ -14,9 +13,9 @@ namespace PEPEngine::Common
 
 		void Initialize();;
 
-		
+
 	public:
-		UILayer(float width, float height, const HWND hwnd);
+		UILayer(float width, float height, HWND hwnd);
 
 		~UILayer();
 

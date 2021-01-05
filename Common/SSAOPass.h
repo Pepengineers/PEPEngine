@@ -3,7 +3,6 @@
 
 
 #include "Camera.h"
-#include "GDeviceFactory.h"
 #include "MathHelper.h"
 #include "RenderPass.h"
 
@@ -41,7 +40,8 @@ namespace PEPEngine::Common
 		D3D12_RECT scissorRect{};
 
 		UINT currentFrameResourceIndex = 0;
-		std::array<std::shared_ptr<ConstantUploadBuffer<SsaoConstants>>, globalCountFrameResources> SsaoConstantUploadBuffers;
+		std::array<std::shared_ptr<ConstantUploadBuffer<SsaoConstants>>, globalCountFrameResources>
+		SsaoConstantUploadBuffers;
 
 		GShader ssaoVertexShader;
 		GShader ssaoPixelShader;
@@ -68,7 +68,7 @@ namespace PEPEngine::Common
 		void GetOffsetVectors(Vector4 offsets[]);;
 
 		std::vector<float> CalcGaussWeights(float sigma) const;;
-	
+
 
 		void BlurAmbientMap(std::shared_ptr<GCommandList> cmdList,
 		                    int blurCount);
@@ -76,10 +76,10 @@ namespace PEPEngine::Common
 	public:
 
 
-		SSAOPass(float width, float height, GPass& pass );
+		SSAOPass(float width, float height, GPass& pass);
 
 		UINT SsaoMapWidth() const;;
-		
+
 		UINT SsaoMapHeight() const;;
 
 		GTexture& AmbientMap();;
@@ -88,7 +88,7 @@ namespace PEPEngine::Common
 
 		void Update() override;
 		void Render(std::shared_ptr<GCommandList> cmdList) override;
-		
+
 		void ChangeRenderTargetSize(float width, float height) override;;
 	};
 }

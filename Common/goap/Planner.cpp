@@ -63,7 +63,7 @@ void goap::Planner::printClosedList() const
 }
 
 std::vector<goap::Action*> goap::Planner::plan(const WorldState& start, const WorldState& goal,
-                                              const std::vector<Action*>& actions)
+                                               const std::vector<Action*>& actions)
 {
 	if (start.meetsGoal(goal))
 	{

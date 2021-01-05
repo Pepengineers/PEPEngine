@@ -155,12 +155,11 @@ namespace PEPEngine::Common
 		localEulerAngles = Vector3(DirectX::XMConvertToDegrees(radianAngl.x),
 		                           DirectX::XMConvertToDegrees(radianAngl.y),
 		                           DirectX::XMConvertToDegrees(radianAngl.z));
-		
+
 
 		localRotate = Quaternion::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(radianAngl.y),
 		                                                 DirectX::XMConvertToRadians(radianAngl.x),
 		                                                 DirectX::XMConvertToRadians(radianAngl.z));
-		
 
 
 		world = CalculateWorldMatrix();
@@ -169,16 +168,14 @@ namespace PEPEngine::Common
 
 	void Transform::SetMatrixRotate(const Matrix& rot)
 	{
-		
 		localRotate = Quaternion::CreateFromRotationMatrix(rot);
-	
+
 		world = CalculateWorldMatrix();
 		NumFramesDirty = globalCountFrameResources;
 	}
 
 	void Transform::SetQuaternionRotate(const Quaternion& quaternion)
 	{
-
 		localRotate = quaternion;
 
 		world = CalculateWorldMatrix();

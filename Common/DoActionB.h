@@ -18,9 +18,9 @@ public:
 		setRequiresInRange(true);
 		target->SetPosition(Vector3(100, 1, 100));
 		setEffect(POKE_B, true);
-		
+
 		setCost(cost);
-		
 	}
+
 	void prePerform() override;
 };

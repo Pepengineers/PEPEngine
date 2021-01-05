@@ -10,9 +10,9 @@ namespace PEPEngine
 		{
 		public:
 
-			virtual std::vector<std::shared_ptr<Material>>&  GetSharedMaterials() = 0;
+			virtual std::vector<std::shared_ptr<Material>>& GetSharedMaterials() = 0;
 
-			
+
 			Renderer() : Component()
 			{
 			};

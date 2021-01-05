@@ -18,8 +18,8 @@
 
 namespace SimpleRender
 {
-	SampleApp::SampleApp(HINSTANCE hInstance) : D3DApp(hInstance),
-	                                            assetLoader(AssetsLoader(GDeviceFactory::GetDevice()))
+	SampleApp::SampleApp(HINSTANCE hInstance) : D3DApp(hInstance)
+	                                            
 	{
 	}
 
@@ -34,21 +34,18 @@ namespace SimpleRender
 
 		MainWindow->SetVSync(true);
 		
-		gpass = std::make_shared<GPass>(MainWindow->GetClientWidth(), MainWindow->GetClientHeight());
-		ambiantPass = std::make_shared<SSAOPass>( 1920, 1080, *gpass.get());
-		shadowPass = std::make_shared<ShadowPass>(2048, 2048);
-		lightPass = std::make_shared<LightPass>(MainWindow->GetClientWidth(), MainWindow->GetClientHeight() , *gpass.get(), *ambiantPass.get(), *shadowPass.get());
+		
 		uiPass = std::make_shared<UILayer>(MainWindow->GetClientWidth(), MainWindow->GetClientHeight(), MainWindow->GetWindowHandle());
 		
 		auto copyQueue = device->GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COPY);
 
 		auto cmdList = copyQueue->GetCommandList();
 
-		auto atlas = assetLoader.CreateModelFromFile(cmdList, "Data\\Objects\\Atlas\\Atlas.obj");
-		models[L"atlas"] = std::move(atlas);
+		//auto atlas = assetLoader.CreateModelFromFile(cmdList, "Data\\Objects\\Atlas\\Atlas.obj");
+		//models[L"atlas"] = std::move(atlas);
 
-		auto PBody = assetLoader.CreateModelFromFile(cmdList, "Data\\Objects\\P-Body\\P-Body.obj");
-		models[L"PBody"] = std::move(PBody);
+		//auto PBody = assetLoader.CreateModelFromFile(cmdList, "Data\\Objects\\P-Body\\P-Body.obj");
+		//models[L"PBody"] = std::move(PBody);
 
 		auto quad = assetLoader.GenerateQuad(cmdList);
 		models[L"quad"] = std::move(quad);
@@ -58,7 +55,7 @@ namespace SimpleRender
 
 		auto seamlessTex = GTexture::LoadTextureFromFile(L"Data\\Textures\\seamless_grass.jpg", cmdList);
 		seamlessTex->SetName(L"seamless");
-		assetLoader.AddTexture(seamlessTex);
+		//assetLoader.AddTexture(seamlessTex);
 
 
 		std::vector<std::wstring> texNormalNames =
@@ -79,7 +76,7 @@ namespace SimpleRender
 		{
 			auto texture = GTexture::LoadTextureFromFile(texNormalFilenames[i], cmdList, TextureUsage::Normalmap);
 			texture->SetName(texNormalNames[i]);
-			assetLoader.AddTexture(texture);
+			//assetLoader.AddTexture(texture);
 		}
 
 		copyQueue->ExecuteCommandList(cmdList);
@@ -88,9 +85,9 @@ namespace SimpleRender
 
 		std::vector<GTexture*> noMipMapsTextures;
 
-		auto allTextures = assetLoader.GetTextures();
+		//auto allTextures = assetLoader.GetTextures();
 
-		for (auto&& texture : allTextures)
+		/*for (auto&& texture : allTextures)
 		{
 			texture->ClearTrack();
 
@@ -101,7 +98,7 @@ namespace SimpleRender
 			{
 				noMipMapsTextures.push_back(texture.get());
 			}
-		}
+		}*/
 
 
 		const auto computeQueue = device->GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COMPUTE);
@@ -116,11 +113,11 @@ namespace SimpleRender
 
 		
 		auto seamless = std::make_shared<Material>(L"seamless", RenderMode::Opaque);
-		auto tex = assetLoader.GetTextureIndex(L"seamless");
-		seamless->SetMaterialMap(Material::DiffuseMap, assetLoader.GetTexture(tex));
-		tex = assetLoader.GetTextureIndex(L"defaultNormalMap");
-		seamless->SetMaterialMap(Material::NormalMap, assetLoader.GetTexture(tex));
-		assetLoader.AddMaterial(seamless);
+		//auto tex = assetLoader.GetTextureIndex(L"seamless");
+		//seamless->SetMaterialMap(Material::DiffuseMap, assetLoader.GetTexture(tex));
+		//tex = assetLoader.GetTextureIndex(L"defaultNormalMap");
+		//seamless->SetMaterialMap(Material::NormalMap, assetLoader.GetTexture(tex));
+		//assetLoader.AddMaterial(seamless);
 
 
 		auto quadRitem = std::make_unique<GameObject>("Quad");
@@ -196,11 +193,7 @@ namespace SimpleRender
 		}
 
 		scene->Update();
-
-		gpass->Update();
-		ambiantPass->Update();
-		shadowPass->Update();
-		lightPass->Update();
+		
 
 		static bool spawned = false;
 
@@ -231,11 +224,10 @@ namespace SimpleRender
 
 		auto renderQueue = device->GetCommandQueue();
 		auto cmdList = renderQueue->GetCommandList();
+
 		
-		gpass->Render(cmdList);
-		ambiantPass->Render(cmdList);
-		shadowPass->Render(cmdList);
-		lightPass->Render(cmdList);
+		scene->Render(cmdList);
+
 		uiPass->Render(cmdList);
 
 		cmdList->TransitionBarrier(MainWindow->GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT);
@@ -252,13 +244,14 @@ namespace SimpleRender
 
 		currentFrameResourceIndex = MainWnd()->GetCurrentBackBufferIndex();
 
-		if(Camera::mainCamera)
+		if (Camera::mainCamera)
+		{
 			Camera::mainCamera->SetAspectRatio(AspectRatio());
 
-		if (gpass)
-			gpass->ChangeRenderTargetSize(MainWindow->GetClientWidth(), MainWindow->GetClientHeight());
-		if (lightPass)
-			lightPass->ChangeRenderTargetSize(MainWindow->GetClientWidth(), MainWindow->GetClientHeight());
+			Camera::mainCamera->ChangeRenderSize(MainWindow->GetClientHeight(), MainWindow->GetClientWidth());
+		}
+
+		
 		if (uiPass)
 			uiPass->ChangeRenderTargetSize(MainWindow->GetClientWidth(), MainWindow->GetClientHeight());
 		
