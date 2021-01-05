@@ -20,6 +20,7 @@ namespace PEPEngine::Common
 
 		~UILayer();
 
+		void RenderMainWindowAsDockPanel();
 		void Render(std::shared_ptr<GCommandList> cmdList) override;;
 
 		void Update() override;;

@@ -251,9 +251,11 @@ namespace PEPEngine::Common
 		BuildOffsetVectors();
 		ChangeResolutionSize(width, height);
 
-		
-		SsaoConstantUploadBuffer = std::make_shared<ConstantUploadBuffer<SsaoConstants>
-		>(device, 1, L"SSAO Constant Buffer");
+		for (int i = 0; i < globalCountFrameResources; ++i)
+		{
+			SsaoConstantUploadBuffers[i] = std::make_shared<ConstantUploadBuffer<SsaoConstants>
+			>(device, 1, L"SSAO Constant Buffer" + std::to_wstring(i));
+		}	
 	}
 
 
@@ -397,7 +399,7 @@ namespace PEPEngine::Common
 		cmdList->SetPipelineState(ssaoPSO);
 
 	
-		cmdList->SetRootConstantBufferView(0, *SsaoConstantUploadBuffer.get());
+		cmdList->SetRootConstantBufferView(0, *SsaoConstantUploadBuffers[currentFrameResourceIndex].get());
 		cmdList->SetRoot32BitConstant(1, 0, 0);
 
 		cmdList->SetDescriptorsHeap(gpass.GetSRV());
@@ -415,16 +417,15 @@ namespace PEPEngine::Common
 		cmdList->TransitionBarrier(ambientMap0, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		cmdList->FlushResourceBarriers();
 
-		BlurAmbientMap(cmdList, SsaoConstantUploadBuffer, 3);
+		BlurAmbientMap(cmdList, 3);
 	}
 
-	void SSAOPass::BlurAmbientMap(std::shared_ptr<GCommandList> cmdList,
-	                              std::shared_ptr<ConstantUploadBuffer<SsaoConstants>> currFrame,
+	void SSAOPass::BlurAmbientMap(std::shared_ptr<GCommandList> cmdList,	                             
 	                              int blurCount)
 	{
 		cmdList->SetPipelineState(blurPSO);
 
-		cmdList->SetRootConstantBufferView(0, *currFrame.get());
+		cmdList->SetRootConstantBufferView(0, *SsaoConstantUploadBuffers[currentFrameResourceIndex].get());
 
 		for (int i = 0; i < blurCount; ++i)
 		{
@@ -482,6 +483,8 @@ namespace PEPEngine::Common
 
 	void SSAOPass::Update()
 	{
+		currentFrameResourceIndex = (currentFrameResourceIndex + 1) % globalCountFrameResources;
+		
 		SsaoConstants ssaoCB;
 
 		auto camera = Camera::mainCamera;
@@ -518,7 +521,7 @@ namespace PEPEngine::Common
 			ssaoCB.OcclusionFadeEnd = 1.0f;
 			ssaoCB.SurfaceEpsilon = 0.05f;
 
-			SsaoConstantUploadBuffer->CopyData(0, ssaoCB);
+			SsaoConstantUploadBuffers[currentFrameResourceIndex]->CopyData(0, ssaoCB);
 		}
 	}
 

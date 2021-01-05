@@ -40,7 +40,8 @@ namespace PEPEngine::Common
 		D3D12_VIEWPORT viewport{};
 		D3D12_RECT scissorRect{};
 
-		std::shared_ptr<ConstantUploadBuffer<SsaoConstants>> SsaoConstantUploadBuffer;
+		UINT currentFrameResourceIndex = 0;
+		std::array<std::shared_ptr<ConstantUploadBuffer<SsaoConstants>>, globalCountFrameResources> SsaoConstantUploadBuffers;
 
 		GShader ssaoVertexShader;
 		GShader ssaoPixelShader;
@@ -70,7 +71,7 @@ namespace PEPEngine::Common
 	
 
 		void BlurAmbientMap(std::shared_ptr<GCommandList> cmdList,
-		                    std::shared_ptr<ConstantUploadBuffer<SsaoConstants>> currFrame, int blurCount);
+		                    int blurCount);
 
 	public:
 
