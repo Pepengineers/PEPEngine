@@ -3,6 +3,8 @@
 #include <WindowsX.h>
 
 
+
+#include "AssetDatabase.h"
 #include "GCommandQueue.h"
 #include "Window.h"
 #include "MemoryAllocator.h"
@@ -266,6 +268,8 @@ namespace PEPEngine::Common
 		if (!InitDirect3D())
 			return false;
 
+		AssetDatabase::Initialize();
+		
 		OnResize();
 
 

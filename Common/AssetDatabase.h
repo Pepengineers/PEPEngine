@@ -16,11 +16,9 @@ namespace PEPEngine
 
 		class AssetDatabase
 		{
-			friend class AssimpModelLoader;
-			friend class Asset;
-
-		
-
+			friend class AssimpModelLoader;	
+			friend class D3DApp;
+			
 			inline static GeometryGenerator geoGen;
 
 			inline static custom_unordered_map<std::wstring, std::shared_ptr<NativeModel>> loadedNativeModels =
@@ -34,11 +32,19 @@ namespace PEPEngine
 				MemoryAllocator::CreateUnorderedMap<std::wstring, std::shared_ptr<GModel>>();
 
 			inline static custom_unordered_map<UINT64, std::shared_ptr<Asset>> loadedAssets =
-				MemoryAllocator::CreateUnorderedMap<UINT64, std::shared_ptr<Asset>>();			
+				MemoryAllocator::CreateUnorderedMap<UINT64, std::shared_ptr<Asset>>();
 
+			static std::filesystem::path GetOrCreateAssetFolderPath();
+
+			static void Initialize();
+			
 		public:
 
+			
+			
 			static UINT64 GenerateID();
+			
+			inline static std::filesystem::path AssetFolderPath = GetOrCreateAssetFolderPath();
 			
 			inline const static std::wstring ASSET_EXTENSION_NAME = L".pepe";
 			
@@ -47,14 +53,21 @@ namespace PEPEngine
 			static std::shared_ptr<GModel> LoadModelFromFile(const std::filesystem::path& pathToFile);
 
 			static void DeserializeAssetData(std::shared_ptr<Asset> asset, const std::filesystem::path& pathToFile);
+
+			static void CreatePEPEFile(std::shared_ptr<Asset> asset, const std::filesystem::path& saveAssetPath);
 			
 			template <class T = Asset>
 			static std::shared_ptr<T> LoadAssetFromFile(const std::filesystem::path& pathToFile)
 			{
+				if (pathToFile.wstring().find(AssetFolderPath) == std::string::npos)
+				{
+					return  nullptr;
+				}
+				
 				auto asset = std::make_shared<T>();
 
-				DeserializeAssetData(asset, pathToFile);
-
+				CreatePEPEFile(asset, pathToFile);
+				
 				return asset;
 			};
 
@@ -62,13 +75,21 @@ namespace PEPEngine
 
 
 			template <class T = Asset>
-			static std::shared_ptr<T> CreateAsset(const std::filesystem::path& pathToFile)
+			static std::shared_ptr<T> CreateAsset(std::filesystem::path& saveAssetPath)
 			{
-				auto id = GenerateID();
-				auto asset = std::make_shared<T>(id, pathToFile);
-				asset->CreateMetaInfoFile();
+				if(saveAssetPath.wstring().find(AssetFolderPath) == std::string::npos)
+				{
+					saveAssetPath = AssetFolderPath.concat(L"\\").concat(saveAssetPath.filename().wstring());
+				}
 				
-				loadedAssets[id] = asset;
+				if(saveAssetPath.wstring().find(ASSET_EXTENSION_NAME) == std::wstring::npos)
+				{
+					saveAssetPath = saveAssetPath.concat(ASSET_EXTENSION_NAME);
+				}
+				
+				auto asset = std::make_shared<T>();
+
+				CreatePEPEFile(asset, saveAssetPath);				
 
 				return asset;
 			};

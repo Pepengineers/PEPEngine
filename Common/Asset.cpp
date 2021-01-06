@@ -6,13 +6,7 @@
 
 namespace PEPEngine::Common
 {
-	void Asset::CreateMetaInfoFile()
-	{
-		json j;		
-		Serialize(j);
-		WriteToFile(pathToFile, j);
-	}
-
+	
 	void Asset::SerializeIDAndType(json& serializer)
 	{
 		serializer["Version"] = SCHEMA_VERSION;

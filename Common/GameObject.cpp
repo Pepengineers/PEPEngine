@@ -87,7 +87,8 @@ namespace PEPEngine::Common
 		ID = AssetDatabase::GenerateID();
 		
 		SerializeIDAndType(j);
-		
+
+		j["name"] = name;
 		j["ComponentCount"] = components.size();
 
 		auto componentsArray = json::array();
@@ -112,6 +113,7 @@ namespace PEPEngine::Common
 		
 		std::vector<UINT> componentID;
 
+		name = j["name"];
 		json array = j["Components"];
 		
 		for (int i = 0; i < size; ++i)

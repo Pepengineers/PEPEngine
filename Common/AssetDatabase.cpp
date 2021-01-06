@@ -1,4 +1,7 @@
 #include "AssetDatabase.h"
+
+#include <fstream>
+
 #include "Asset.h"
 #include "AssimpModelLoader.h"
 #include "GCommandQueue.h"
@@ -16,7 +19,18 @@ namespace PEPEngine::Common
 	using namespace Allocator;
 	using namespace Utils;
 	using namespace Graphics;
+	
+	void CheckOrCreateFolder(const std::filesystem::path fileRelativePath)
+	{
+		if (exists(fileRelativePath.parent_path()))
+			return;
 
+		CheckOrCreateFolder(fileRelativePath.parent_path());
+		
+		create_directories(fileRelativePath.parent_path());
+	}
+
+	
 	static inline std::shared_ptr<GModel> CreateModelFromGenerated(std::shared_ptr<GCommandList> cmdList,
 	                                                               GeometryGenerator::MeshData generatedData,
 	                                                               std::wstring name)
@@ -103,6 +117,36 @@ namespace PEPEngine::Common
 		return loadedModels[pathToFile];
 	}
 
+	std::filesystem::path AssetDatabase::GetOrCreateAssetFolderPath()
+	{
+		auto path = std::filesystem::current_path().concat("\\Assets");
+
+		CheckOrCreateFolder(path);
+		
+		if (!exists(path))
+		{
+			create_directory(path);
+		}
+
+		return path;
+	}
+
+	void AssetDatabase::Initialize()
+	{
+		CheckOrCreateFolder(AssetFolderPath);
+
+		for (auto&& file : std::filesystem::recursive_directory_iterator(AssetFolderPath))
+		{
+			if(file.is_regular_file())
+			{
+				if(file.path().filename().extension() == ASSET_EXTENSION_NAME)
+				{
+					LoadAssetFromFile(file.path());
+				}
+			}
+		}		
+	}
+
 	UINT64 AssetDatabase::GenerateID()
 	{
 		return IDGenerator::Generate();
@@ -123,5 +167,32 @@ namespace PEPEngine::Common
 		if (it != loadedAssets.end()) return it->second;
 
 		return nullptr;
+	}
+
+	
+	
+	void AssetDatabase::CreatePEPEFile(std::shared_ptr<Asset> asset, const std::filesystem::path& saveAssetPath)
+	{
+		CheckOrCreateFolder(saveAssetPath);
+
+		json json;
+		if(std::filesystem::exists(saveAssetPath))
+		{
+			Asset::ReadFromFile(saveAssetPath, json);		
+			asset->Deserialize(json);
+			
+			asset->pathToFile = saveAssetPath;
+			IDGenerator::AddLoadedID(asset->ID);			
+		}
+		else
+		{
+			asset->ID = GenerateID();
+			asset->pathToFile = saveAssetPath;
+			
+			asset->Serialize(json);
+			Asset::WriteToFile( saveAssetPath, json);
+		}
+
+		loadedAssets[asset->ID] = asset;
 	}
 }

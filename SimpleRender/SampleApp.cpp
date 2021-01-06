@@ -15,6 +15,7 @@
 #include "SSAOPass.h"
 #include "Transform.h"
 #include "Window.h"
+#include "AssetDatabase.h"
 
 namespace SimpleRender
 {
@@ -33,6 +34,7 @@ namespace SimpleRender
 		}
 
 		MainWindow->SetVSync(true);
+
 		
 		
 		uiPass = std::make_shared<UILayer>(MainWindow->GetClientWidth(), MainWindow->GetClientHeight(), MainWindow->GetWindowHandle());

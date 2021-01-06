@@ -1,4 +1,6 @@
 #include "Scene.h"
+
+#include "AssetDatabase.h"
 #include "Light.h"
 #include "Renderer.h"
 #include "Material.h"
@@ -181,6 +183,46 @@ namespace PEPEngine::Common
 		{
 			cameras.insert(camera.get());
 		}
+	}
+
+	void Scene::Serialize(json& j)
+	{
+		if(type == AssetType::None)		
+			type = AssetType::Scene;
+
+		if(ID == UINT64_MAX)
+			ID = AssetDatabase::GenerateID();
+
+		SerializeIDAndType(j);
+
+		j["GameObjectsCount"] = objects.size();
+
+		auto array = json::array();
+
+		for (auto && object : objects)
+		{
+			json element;
+			object->Serialize(element);
+			array.push_back(element);
+		}
+		j["GameObjects"] = array;		
+	}
+
+	void Scene::Deserialize(json& j)
+	{
+		DeserializeIDAndType(j);
+
+		UINT count;
+		assert(TryReadVariable<UINT>(j, "GameObjectsCount", &count));
+
+		json array = j["GameObjects"];
+		
+		for (int i = 0; i < count; ++i)
+		{
+			auto GO = std::shared_ptr<GameObject>();
+			GO->Serialize(array[i]);
+			AddGameObject(GO);
+		}		
 	}
 
 	FrameResource* Scene::GetCurrentFrameResource() const

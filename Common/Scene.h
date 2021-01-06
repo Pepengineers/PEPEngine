@@ -12,7 +12,7 @@ namespace PEPEngine::Common
 	class Material;
 	class Camera;
 
-	class Scene
+	class Scene : public Asset
 	{
 		custom_vector<std::shared_ptr<GameObject>> objects = MemoryAllocator::CreateVector<std::shared_ptr<GameObject>
 		>();
@@ -69,5 +69,8 @@ namespace PEPEngine::Common
 		void AddGameObject(std::shared_ptr<GameObject> gameObject);
 
 		void UpdateGameObjects(std::shared_ptr<GameObject> gameObject);
+
+		void Serialize(json& j) override;;
+		void Deserialize(json& j) override;;
 	};
 }

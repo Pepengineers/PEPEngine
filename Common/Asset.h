@@ -40,26 +40,26 @@ namespace PEPEngine::Common
 		void SerializeIDAndType(json& serializer);
 
 		void DeserializeIDAndType(const json& json);
-
-		void virtual CreateMetaInfoFile();
+				
 		
-		Asset()
-		{
-		};
 
 
 	public:
 
+		Asset()
+		{
+		};
+		
 		Asset(unsigned long long ID, std::filesystem::path pathToFile, AssetType::Type type = AssetType::None);
 
 
 		virtual ~Asset();
 
 		//TODO: В идеале тут должен принматься сериализатор, чтобы написать код один раз и забыть на всю жизнь, но не в этот раз
-		virtual void Serialize(json& json) = 0;
+		virtual void Serialize(json& json) {};
 
 		//TODO: В идеале тут должен принматься сериализатор, чтобы написать код один раз и забыть на всю жизнь, но не в этот раз
-		virtual void Deserialize(json& json) = 0;
+		virtual void Deserialize(json& json) {};
 
 
 		static void WriteToFile(const std::filesystem::path& pathToFile, const json& j);
