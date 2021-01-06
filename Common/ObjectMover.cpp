@@ -9,10 +9,6 @@ using namespace DirectX::SimpleMath;
 
 namespace PEPEngine::Common
 {
-	void ObjectMover::PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList)
-	{
-	}
-
 	void ObjectMover::Update()
 	{
 		const float dt = D3DApp::GetApp().GetTimer()->DeltaTime();

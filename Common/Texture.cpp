@@ -11,15 +11,14 @@ namespace PEPEngine::Common
 		WriteToFile(pathToFile, j);
 	}
 
-	
-	
+
 	void Texture::Deserialize(std::filesystem::path pathToFile)
 	{
 		json j;
 		ReadFromFile(pathToFile, j);
 		DeserializeIDAndType(j);
 
-		const auto file = FindNativeFile(pathToFile);		
+		const auto file = FindNativeFile(pathToFile);
 
 		if (file.has_filename())
 		{

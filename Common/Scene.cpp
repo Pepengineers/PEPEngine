@@ -44,7 +44,7 @@ namespace PEPEngine::Common
 	}
 
 
-	void Scene::Update()
+	void Scene::SpawnNewGO()
 	{
 		if (addedGameObjects.Size() > 0)
 		{
@@ -71,7 +71,11 @@ namespace PEPEngine::Common
 				}
 			}
 		}
+	}
 
+	void Scene::Update()
+	{
+		SpawnNewGO();
 
 		currentFrameResource = frameResources[currentFrameResourceIndex];
 
@@ -103,9 +107,22 @@ namespace PEPEngine::Common
 
 	void Scene::RenderTypedObjects(RenderMode::Mode mode, std::shared_ptr<GCommandList> cmdList)
 	{
-		for (auto&& renderer : typedRenderers[mode])
+		auto materials = typedMaterials[mode];
+
+		for (auto&& material : materials)
 		{
-			renderer->PopulateDrawCommand(cmdList);
+			auto it = typedRenderers.find(material);
+			if(it != typedRenderers.end())
+			{
+				material->SetRenderMaterialData(cmdList);
+				for (auto && renderPair : it->second)
+				{
+					for (auto && meshIndex : renderPair.second)
+					{
+						renderPair.first->PopulateDrawCommand(cmdList, meshIndex);
+					}
+				}
+			}
 		}
 	}
 
@@ -138,25 +155,28 @@ namespace PEPEngine::Common
 		auto renderer = gameObject->GetComponent<Renderer>();
 		if (renderer != nullptr)
 		{
-			for (auto&& material : renderer->GetSharedMaterials())
+			auto sharedMaterials = renderer->GetSharedMaterials();
+
+			for (int i = 0; i < sharedMaterials.size(); ++i)
 			{
+				auto material = sharedMaterials[i];
+				
 				if (material != nullptr)
 				{
 					const auto it = typedMaterials[material->GetRenderMode()].insert(material.get());
 
 					if (it.second)
 					{
-						material->InitMaterial(device);
+						material->Init(device);
 						material->SetMaterialIndex(TotalMaterialCount++);
 					}
 
-
-					typedRenderers[material->GetRenderMode()].push_back(renderer.get());
+					typedRenderers[material.get()][renderer.get()].push_back(i);
 				}
-			}
+			}			
 		}
 
-		auto camera = gameObject->GetComponent<Camera>();
+		const auto camera = gameObject->GetComponent<Camera>();
 		if (camera != nullptr)
 		{
 			cameras.insert(camera.get());

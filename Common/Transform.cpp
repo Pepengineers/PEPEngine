@@ -56,9 +56,6 @@ namespace PEPEngine::Common
 		}
 	}
 
-	void Transform::PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList)
-	{
-	}
 
 	void Transform::SetParent(Transform* transform)
 	{

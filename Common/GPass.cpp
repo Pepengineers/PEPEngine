@@ -24,7 +24,7 @@ namespace PEPEngine::Common
 		texParam[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 2);
 		texParam[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 3, 2);
 		texParam[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 4, 2);
-		texParam[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, MaxMaterialTexturesMaps, 0, 0); //Material Maps
+		texParam[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, Material::MaxMaterialTexturesMaps, 0, 0); //Material Maps
 
 		rootSign.AddConstantBufferParameter(0); // ObjectData
 		rootSign.AddDescriptorParameter(&texParam[5], 1, D3D12_SHADER_VISIBILITY_PIXEL); //MaterialsTexture

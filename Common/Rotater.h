@@ -19,10 +19,7 @@ namespace PEPEngine
 
 		private:
 			void Update() override;;
-
-			void PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList) override
-			{
-			};
+			
 
 			const float time = 2;
 			float currentTime = 0;

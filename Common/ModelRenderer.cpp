@@ -8,19 +8,11 @@
 
 namespace PEPEngine::Common
 {
-	void ModelRenderer::PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList)
+	void ModelRenderer::PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList, UINT meshIndex)
 	{
-		for (int i = 0; i < model->GetMeshesCount(); ++i)
-		{
-			if (model->meshesMaterials[i] != nullptr)
-				model->meshesMaterials[i]->Draw(cmdList);
-
-			cmdList->SetRootConstantBufferView(ObjectDataBuffer,
-			                                   *modelDataBuffer, i);
-
-			const auto mesh = model->GetMesh(i);
-			mesh->Draw(cmdList);
-		}
+		cmdList->SetRootConstantBufferView(ObjectDataBuffer, *modelDataBuffer.get(), meshIndex);
+		const auto mesh = model->GetMesh(meshIndex);
+		mesh->Render(cmdList);
 	}
 
 	void ModelRenderer::Update()
@@ -29,41 +21,52 @@ namespace PEPEngine::Common
 
 		if (transform->IsDirty())
 		{
-			objectWorldData.TextureTransform = transform->TextureTransform.Transpose();
-			objectWorldData.World = (transform->GetWorldMatrix() * model->scaleMatrix).Transpose();
-			for (int i = 0; i < model->GetMeshesCount(); ++i)
+			modelWorldData.TextureTransform = transform->TextureTransform.Transpose();
+			modelWorldData.World = (transform->GetWorldMatrix() * model->scaleMatrix).Transpose();
+						
+			for (int i = 0; i < materials.size(); ++i)
 			{
-				auto material = model->GetMeshMaterial(i);
+				auto material = materials[i];
 
 				if (material != nullptr)
 				{
-					objectWorldData.MaterialIndex = model->GetMeshMaterial(i)->GetMaterialIndex();
-					modelDataBuffer->CopyData(i, objectWorldData);
+					modelWorldData.MaterialIndex = material->GetMaterialIndex();
+					modelDataBuffer->CopyData(i, modelWorldData);
 				}
 			}
 		}
 	}
 
-	ModelRenderer::ModelRenderer(const std::shared_ptr<GDevice> device,
-	                             std::shared_ptr<GModel> model) : Renderer(), device(device), model(model)
+	ModelRenderer::ModelRenderer(std::shared_ptr<GModel> model) : Renderer()
 	{
 		SetModel(model);
 	}
 
 	void ModelRenderer::SetModel(std::shared_ptr<GModel> asset)
 	{
+		assert(asset != nullptr);
+		
 		if (modelDataBuffer == nullptr || modelDataBuffer->GetElementCount() < asset->GetMeshesCount())
 		{
 			modelDataBuffer.reset();
-			modelDataBuffer = std::make_shared<ConstantUploadBuffer<ObjectConstants>>(
-				device, asset->GetMeshesCount(), asset->GetName());
+			modelDataBuffer = std::make_shared<ConstantUploadBuffer<ObjectConstants>>(asset->GetDevice(), asset->GetMeshesCount(), asset->GetName());
+
+			if (materials.size() < asset->GetMeshesCount())
+			{
+				materials.resize(asset->GetMeshesCount());
+			}
 		}
 
 		model = asset;
 	}
 
-	std::vector<std::shared_ptr<Material>>& ModelRenderer::GetSharedMaterials()
+	UINT ModelRenderer::GetMeshCount()
 	{
-		return model->meshesMaterials;
+		return model->GetMeshesCount();
+	}
+
+	std::shared_ptr<GMesh> ModelRenderer::GetMesh(UINT index)
+	{
+		return model->GetMesh(index);
 	}
 }

@@ -12,12 +12,11 @@ namespace PEPEngine::Common
 
 		Texture(): Asset()
 		{
-			
 		}
-		
+
 	public:
 
-		Texture(unsigned long long id, const std::filesystem::path pathToFile): Asset( id, pathToFile, AssetType::Image)
+		Texture(unsigned long long id, const std::filesystem::path pathToFile): Asset(id, pathToFile, AssetType::Image)
 		{
 		}
 

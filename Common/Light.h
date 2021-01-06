@@ -1,6 +1,7 @@
 #pragma once
 #include "Component.h"
 #include "d3dUtil.h"
+#include "GCommandList.h"
 #include "ShaderBuffersData.h"
 
 namespace PEPEngine
@@ -18,7 +19,6 @@ namespace PEPEngine
 			int NumFramesDirty = globalCountFrameResources;
 			LightData lightData{};
 			void Update() override;;
-			void PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList) override;
 			Matrix view = Matrix::Identity;
 			Matrix projection = Matrix::Identity;
 
@@ -32,6 +32,9 @@ namespace PEPEngine
 			bool Enabled;
 			bool Selected;
 
+
+			void Render(std::shared_ptr<Graphics::GCommandList> cmdList);
+			
 			Light()
 				: Type(Spot)
 				  , Direction(0, 0, -1)

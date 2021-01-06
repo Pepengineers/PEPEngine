@@ -49,7 +49,6 @@ namespace PEPEngine
 			bool IsDirty() const;
 
 			void Update() override;;
-			void PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList) override;;
 
 			void SetParent(Transform* transform);
 

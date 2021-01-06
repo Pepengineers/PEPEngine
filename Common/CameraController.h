@@ -29,7 +29,6 @@ namespace PEPEngine
 			CameraController();
 
 			void Update() override;;
-			void PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList) override;;
 		};
 	}
 }

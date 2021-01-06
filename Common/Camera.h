@@ -18,11 +18,12 @@ namespace PEPEngine
 		class SSAOPass;
 		class ShadowPass;
 
+		using namespace Graphics;
+		using namespace Utils;
+		
 		class Camera : public Component
 		{
-			void PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList) override
-			{
-			};
+			
 			void Update() override;
 
 			void CreateProjection();
@@ -60,6 +61,7 @@ namespace PEPEngine
 
 		public:
 
+			
 			void Render(std::shared_ptr<GCommandList> cmdList);
 
 			inline static Camera* mainCamera = nullptr;

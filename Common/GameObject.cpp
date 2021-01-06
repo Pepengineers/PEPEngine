@@ -38,13 +38,6 @@ namespace PEPEngine::Common
 		}
 	}
 
-	void GameObject::Draw(std::shared_ptr<GCommandList> cmdList)
-	{
-		for (auto&& component : components)
-		{
-			component->PopulateDrawCommand(cmdList);
-		}
-	}
 
 	std::shared_ptr<Transform> GameObject::GetTransform() const
 	{

@@ -26,15 +26,11 @@ namespace PEPEngine
 				DiffuseMap = 0,
 				BaseColor = DiffuseMap,
 				NormalMap = BaseColor + 1,
-				HeightMap = NormalMap + 1,
-				MetallicMap = HeightMap + 1,
-				RoughnessMap = MetallicMap + 1,
-				AOMap = RoughnessMap + 1
+				RoughnessMap = NormalMap + 1
 			};
 
 		private:
-
-			static UINT materialIndexGlobal;
+		
 
 			UINT materialIndex = -1;
 
@@ -56,16 +52,10 @@ namespace PEPEngine
 
 		public:
 
-			Vector4 AmbientColor;
-			Vector4 EmissiveColor;
+			static const UINT MaxMaterialTexturesMaps = 3;
+			
 			Vector4 DiffuseColor;
-			Vector4 SpecularColor;
-			Vector4 Reflectance;
-			float Opacity;
-			float SpecularPower;
-			float IndexOfRefraction;
-			float BumpIntensity;
-			float SpecularScale;
+			Vector4 SpecularColor;			
 			float AlphaThreshold;
 
 			UINT GetMaterialIndex() const;
@@ -73,7 +63,6 @@ namespace PEPEngine
 			void SetMaterialIndex(UINT index);
 
 			MaterialData& GetMaterialConstantData();
-
 
 			void SetDirty();
 
@@ -86,9 +75,9 @@ namespace PEPEngine
 			Material(std::wstring name, RenderMode::Mode pso = RenderMode::Opaque);
 			void UpdateDescriptors();
 
-			void InitMaterial(std::shared_ptr<GDevice> device);
+			void Init(std::shared_ptr<GDevice> device);
 
-			void Draw(std::shared_ptr<GCommandList> cmdList) const;
+			void SetRenderMaterialData(std::shared_ptr<GCommandList> cmdList) const;
 
 
 			void Update();

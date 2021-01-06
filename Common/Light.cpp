@@ -36,7 +36,7 @@ namespace PEPEngine::Common
 		}
 	}
 
-	void Light::PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList)
+	void Light::Render(std::shared_ptr<GCommandList> cmdList)
 	{
 	}
 

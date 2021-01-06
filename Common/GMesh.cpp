@@ -41,7 +41,7 @@ namespace PEPEngine::Common
 	}
 
 
-	void GMesh::Draw(std::shared_ptr<GCommandList> cmdList) const
+	void GMesh::Render(std::shared_ptr<GCommandList> cmdList) const
 	{
 		cmdList->SetVBuffer(0, 1, vertexBuffer->VertexBufferView());
 		cmdList->SetIBuffer(indexBuffer->IndexBufferView());

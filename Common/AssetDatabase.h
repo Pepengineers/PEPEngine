@@ -11,27 +11,29 @@ namespace PEPEngine
 {
 	namespace Common
 	{
-
-
 		using namespace Allocator;
-		
-		
+
+
 		class AssetDatabase
 		{
 			friend class AssimpModelLoader;
 
 			const std::wstring ASSET_EXTENSION_NAME = L".pepe";
-			
+
 			inline static GeometryGenerator geoGen;
 
-			inline static custom_unordered_map<std::wstring, std::shared_ptr<NativeModel>> loadedNativeModels = MemoryAllocator::CreateUnorderedMap<std::wstring, std::shared_ptr<NativeModel>>();
+			inline static custom_unordered_map<std::wstring, std::shared_ptr<NativeModel>> loadedNativeModels =
+				MemoryAllocator::CreateUnorderedMap<std::wstring, std::shared_ptr<NativeModel>>();
 
-			inline static custom_unordered_map<std::wstring, std::shared_ptr<GTexture>> loadedTextures = MemoryAllocator::CreateUnorderedMap<std::wstring, std::shared_ptr<
-				GTexture>>();
-			
-			inline static custom_unordered_map<std::wstring, std::shared_ptr<GModel>> loadedModels = MemoryAllocator::CreateUnorderedMap<std::wstring, std::shared_ptr<GModel>>();
-			
-			inline static custom_unordered_map<UINT64, std::shared_ptr<Asset>> loadedAssets = MemoryAllocator::CreateUnorderedMap<UINT64, std::shared_ptr<Asset>>();
+			inline static custom_unordered_map<std::wstring, std::shared_ptr<GTexture>> loadedTextures =
+				MemoryAllocator::CreateUnorderedMap<std::wstring, std::shared_ptr<
+					                                    GTexture>>();
+
+			inline static custom_unordered_map<std::wstring, std::shared_ptr<GModel>> loadedModels =
+				MemoryAllocator::CreateUnorderedMap<std::wstring, std::shared_ptr<GModel>>();
+
+			inline static custom_unordered_map<UINT64, std::shared_ptr<Asset>> loadedAssets =
+				MemoryAllocator::CreateUnorderedMap<UINT64, std::shared_ptr<Asset>>();
 
 
 			static std::shared_ptr<GTexture> LoadTextureFromFile(const std::filesystem::path& pathToFile);
@@ -41,20 +43,20 @@ namespace PEPEngine
 			static UINT64 GenerateID();
 
 			static void DeserializeAssetData(std::shared_ptr<Asset> asset, const std::filesystem::path& pathToFile);
-			
+
 		public:
 
 			template <class T = Asset>
 			static std::shared_ptr<T> LoadAssetFromFile(const std::filesystem::path& pathToFile)
 			{
 				auto asset = std::make_shared<T>();
-				
-				DeserializeAssetData(asset, pathToFile);					
-				
-				return  asset;
+
+				DeserializeAssetData(asset, pathToFile);
+
+				return asset;
 			};
 
-			static std::shared_ptr<Asset> FindAssetByID(const UINT64 id);
+			static std::shared_ptr<Asset> FindAssetByID(UINT64 id);
 
 
 			template <class T = Asset>
@@ -65,20 +67,19 @@ namespace PEPEngine
 
 				loadedAssets[id] = asset;
 
-				return asset;				
+				return asset;
 			};
 
 			static void RemoveAsset(UINT64 id);
 			static void RemoveAsset(Asset* asset);
-			
 
-			static std::shared_ptr<GModel> GenerateSphere(std::shared_ptr<Graphics::GCommandList> cmdList, float radius = 1.0f,
+
+			static std::shared_ptr<GModel> GenerateSphere(std::shared_ptr<GCommandList> cmdList, float radius = 1.0f,
 			                                              UINT sliceCount = 20, UINT stackCount = 20);
 
-			static std::shared_ptr<GModel> GenerateQuad(std::shared_ptr<Graphics::GCommandList> cmdList, float x = 1.0f, float y = 1.0f,
+			static std::shared_ptr<GModel> GenerateQuad(std::shared_ptr<GCommandList> cmdList, float x = 1.0f,
+			                                            float y = 1.0f,
 			                                            float w = 1.0f, float h = 1.0f, float depth = 0.0);
 		};
-
-		
 	}
 }

@@ -12,8 +12,6 @@ namespace PEPEngine
 		{
 			KeyboardDevice* keyboard;
 
-			void PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList) override;;
-
 			void Update() override;;
 		public:
 			ObjectMover();;

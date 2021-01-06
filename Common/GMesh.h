@@ -23,7 +23,6 @@ namespace PEPEngine
 
 			std::shared_ptr<NativeMesh> mesh;
 
-
 			std::shared_ptr<GMeshBuffer> vertexBuffer = nullptr;
 			std::shared_ptr<GMeshBuffer> indexBuffer = nullptr;
 		public:
@@ -36,11 +35,9 @@ namespace PEPEngine
 
 			D3D12_INDEX_BUFFER_VIEW* GetIndexView() const;
 
-
 			GMesh(const std::shared_ptr<NativeMesh>& data, std::shared_ptr<GCommandList>& cmdList);
 
-
-			void Draw(std::shared_ptr<GCommandList> cmdList) const;
+			void Render(std::shared_ptr<GCommandList> cmdList) const;
 
 			std::wstring GetName() const;
 		};

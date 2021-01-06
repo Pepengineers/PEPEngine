@@ -30,8 +30,6 @@ namespace PEPEngine
 
 			void virtual Update();
 
-			void virtual Draw(std::shared_ptr<GCommandList> cmdList);
-
 			std::shared_ptr<Transform> GetTransform() const;
 
 			std::shared_ptr<ModelRenderer> GetRenderer();

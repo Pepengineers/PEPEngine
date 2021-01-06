@@ -11,16 +11,15 @@
 #include "NativeModel.h"
 
 
-
 namespace PEPEngine::Common
 {
 	using namespace Allocator;
 	using namespace Utils;
 	using namespace Graphics;
-	
-	static inline std::shared_ptr<GModel> CreateModelFromGenerated(std::shared_ptr<Graphics::GCommandList> cmdList,
-	                                                        GeometryGenerator::MeshData generatedData,
-	                                                        std::wstring name)
+
+	static inline std::shared_ptr<GModel> CreateModelFromGenerated(std::shared_ptr<GCommandList> cmdList,
+	                                                               GeometryGenerator::MeshData generatedData,
+	                                                               std::wstring name)
 	{
 		auto nativeMesh = std::make_shared<NativeMesh>(generatedData.Vertices.data(), generatedData.Vertices.size(),
 		                                               generatedData.Indices32.data(),
@@ -34,7 +33,7 @@ namespace PEPEngine::Common
 	}
 
 
-	std::shared_ptr<GModel> AssetDatabase::GenerateSphere(std::shared_ptr<Graphics::GCommandList> cmdList, float radius,
+	std::shared_ptr<GModel> AssetDatabase::GenerateSphere(std::shared_ptr<GCommandList> cmdList, float radius,
 	                                                      UINT sliceCount,
 	                                                      UINT stackCount)
 	{
@@ -43,15 +42,14 @@ namespace PEPEngine::Common
 		return CreateModelFromGenerated(cmdList, sphere, L"sphere");
 	}
 
-	std::shared_ptr<GModel> AssetDatabase::GenerateQuad(std::shared_ptr<Graphics::GCommandList> cmdList, float x, float y,
-		float w,
-		float h, float depth)
+	std::shared_ptr<GModel> AssetDatabase::GenerateQuad(std::shared_ptr<GCommandList> cmdList, float x, float y,
+	                                                    float w,
+	                                                    float h, float depth)
 	{
 		const GeometryGenerator::MeshData genMesh = geoGen.CreateQuad(x, y, w, h, depth);
 
 		return CreateModelFromGenerated(cmdList, genMesh, L"quad");
 	}
-
 
 
 	void AssetDatabase::RemoveAsset(const UINT64 id)
@@ -71,17 +69,17 @@ namespace PEPEngine::Common
 
 		if (it != loadedTextures.end()) return it->second;
 
-		auto device = PEPEngine::Graphics::GDeviceFactory::GetDevice();
+		auto device = GDeviceFactory::GetDevice();
 
 		auto queue = device->GetCommandQueue();
 		auto cmdList = queue->GetCommandList();
-		
+
 		auto texture = GTexture::LoadTextureFromFile(pathToFile, cmdList);
 
 		queue->WaitForFenceValue(queue->ExecuteCommandList(cmdList));
 
 		loadedTextures[pathToFile] = std::move(texture);
-		
+
 		return loadedTextures[pathToFile];
 	}
 
@@ -91,7 +89,7 @@ namespace PEPEngine::Common
 		auto it = loadedModels.find(pathToFile);
 		if (it != loadedModels.end()) return it->second;
 
-		auto device = PEPEngine::Graphics::GDeviceFactory::GetDevice();
+		auto device = GDeviceFactory::GetDevice();
 
 		auto queue = device->GetCommandQueue();
 		const auto cmdList = queue->GetCommandList();

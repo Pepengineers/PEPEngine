@@ -16,23 +16,20 @@ namespace PEPEngine
 		class ModelRenderer : public Renderer
 		{
 		protected:
-
-			ObjectConstants objectWorldData{};
+			ObjectConstants modelWorldData{};
 			std::shared_ptr<ConstantUploadBuffer<ObjectConstants>> modelDataBuffer = nullptr;
-			std::shared_ptr<GDevice> device;
 			std::shared_ptr<GModel> model;
 
-
-			void PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList) override;
+			void PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList, UINT meshIndex = 0) override;
 
 			void Update() override;
 
 		public:
 
-			ModelRenderer(std::shared_ptr<GDevice> device, std::shared_ptr<GModel> model);
-
+			ModelRenderer(std::shared_ptr<GModel> model);
 			void SetModel(std::shared_ptr<GModel> asset);
-			std::vector<std::shared_ptr<Material>>& GetSharedMaterials() override;;
+			UINT GetMeshCount() override;
+			std::shared_ptr<GMesh> GetMesh(UINT index) override;
 		};
 	}
 }

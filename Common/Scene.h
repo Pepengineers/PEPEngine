@@ -26,7 +26,10 @@ namespace PEPEngine::Common
 
 
 		std::set<Material*> typedMaterials[RenderMode::Count];
-		std::vector<Renderer*> typedRenderers[RenderMode::Count];
+
+		std::unordered_map<Material*, std::unordered_map<Renderer*, std::vector<UINT>>> typedRenderers;
+		
+		
 		std::set<Camera*> cameras;
 
 		WorldData worldData = {};
@@ -51,6 +54,7 @@ namespace PEPEngine::Common
 		FrameResource* GetCurrentFrameResource() const;
 
 		void Prepare();
+		void SpawnNewGO();
 
 		void Update();
 

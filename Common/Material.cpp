@@ -6,8 +6,6 @@
 
 namespace PEPEngine::Common
 {
-	UINT Material::materialIndexGlobal = 0;
-
 	UINT Material::GetMaterialIndex() const
 	{
 		return materialIndex;
@@ -53,11 +51,12 @@ namespace PEPEngine::Common
 		}
 
 		UpdateDescriptors();
+
+		SetDirty();
 	}
 
-	Material::Material(std::wstring name, RenderMode::Mode pso) : Name(std::move(name)), type(pso)
+	Material::Material(std::wstring name, RenderMode::Mode pso) : Name(std::move(name)), type(pso), AlphaThreshold(0.1)
 	{
-		materialIndex = materialIndexGlobal++;
 	}
 
 
@@ -91,14 +90,13 @@ namespace PEPEngine::Common
 		}
 	}
 
-	void Material::InitMaterial(std::shared_ptr<GDevice> device)
+	void Material::Init(std::shared_ptr<GDevice> device)
 	{
 		if (IsInited) return;
 
 		if (textureMapsSRVMemory.IsNull())
 		{
-			textureMapsSRVMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,
-			                                                   MaxMaterialTexturesMaps);
+			textureMapsSRVMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV,MaxMaterialTexturesMaps);
 		}
 
 		IsInited = true;
@@ -106,7 +104,7 @@ namespace PEPEngine::Common
 		UpdateDescriptors();
 	}
 
-	void Material::Draw(std::shared_ptr<GCommandList> cmdList) const
+	void Material::SetRenderMaterialData(std::shared_ptr<GCommandList> cmdList) const
 	{
 		cmdList->SetDescriptorsHeap(&textureMapsSRVMemory);
 		cmdList->SetRootDescriptorTable(MaterialTextures, &textureMapsSRVMemory);
@@ -116,16 +114,8 @@ namespace PEPEngine::Common
 	{
 		if (NumFramesDirty > 0)
 		{
-			matConstants.AmbientColor = AmbientColor;
-			matConstants.EmissiveColor = EmissiveColor;
 			matConstants.DiffuseColor = DiffuseColor;
 			matConstants.SpecularColor = SpecularColor;
-			matConstants.Reflectance = Reflectance;
-			matConstants.Opacity = Opacity;
-			matConstants.SpecularPower = SpecularPower;
-			matConstants.IndexOfRefraction = IndexOfRefraction;
-			matConstants.BumpIntensity = BumpIntensity;
-			matConstants.SpecularScale = SpecularScale;
 			matConstants.AlphaThreshold = AlphaThreshold;
 
 			for (auto& [type, Index] : slots)
@@ -135,15 +125,9 @@ namespace PEPEngine::Common
 				case BaseColor: matConstants.DiffuseMapIndex = Index;
 					break;
 				case NormalMap: matConstants.NormalMapIndex = Index;
-					break;
-				case HeightMap: matConstants.HeightMapIndex = Index;
-					break;
-				case MetallicMap: matConstants.MetallicMapIndex = Index;
-					break;
+					break;			
 				case RoughnessMap: matConstants.RounghessMapIndex = Index;
-					break;
-				case AOMap: matConstants.AOMapIndex = Index;
-					break;
+					break;				
 				default: assert("WTF? Is it Material?");
 				}
 			}

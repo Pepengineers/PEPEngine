@@ -28,7 +28,6 @@ public:
 	void SetActionList();
 	void SetWorldState();
 	void Update() override;
-	void PopulateDrawCommand(std::shared_ptr<PEPEngine::Graphics::GCommandList> cmdList) override;
 
 private:
 	float dt;

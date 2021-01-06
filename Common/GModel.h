@@ -21,30 +21,27 @@ namespace PEPEngine
 
 			std::vector<std::shared_ptr<GMesh>> gmeshes{};
 
+			std::shared_ptr<GDevice> device;
+			
 		public:
 
-			std::vector<std::shared_ptr<Material>> meshesMaterials;
-
+			std::shared_ptr<GDevice> GetDevice() const;;
+			
 			DirectX::SimpleMath::Matrix scaleMatrix = DirectX::SimpleMath::Matrix::CreateScale(1);
 
 			UINT GetMeshesCount() const;
-
-			std::shared_ptr<Material> GetMeshMaterial(UINT index);
 
 			std::shared_ptr<GMesh> GetMesh(UINT index);
 
 			std::wstring GetName() const;
 
-
 			GModel(std::shared_ptr<NativeModel> model, std::shared_ptr<GCommandList> uploadCmdList);
 
-			void SetMeshMaterial(UINT index, std::shared_ptr<Material> material);
-
-			GModel(const GModel& copy);;
+			GModel(const GModel& copy);
 
 			~GModel();
 
-			void Draw(std::shared_ptr<GCommandList> cmdList);
+			void Render(std::shared_ptr<GCommandList> cmdList);
 
 			std::shared_ptr<GModel> Dublicate(std::shared_ptr<GCommandList> otherDeviceCmdList) const;
 		};

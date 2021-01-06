@@ -121,7 +121,7 @@ namespace SimpleRender
 
 
 		auto quadRitem = std::make_unique<GameObject>("Quad");
-		auto renderer = std::make_shared<ModelRenderer>(GDeviceFactory::GetDevice(), models[L"quad"]);
+		auto renderer = std::make_shared<ModelRenderer>(models[L"quad"]);
 		
 		quadRitem->AddComponent(renderer);
 
@@ -149,7 +149,7 @@ namespace SimpleRender
 			for (int j = 0; j < 3; ++j)
 			{
 				auto rModel = std::make_unique<GameObject>();
-				auto renderer = std::make_shared<ModelRenderer>(device, models[L"atlas"]);
+				auto renderer = std::make_shared<ModelRenderer>(models[L"atlas"]);
 				rModel->AddComponent(renderer);
 				rModel->GetTransform()->SetPosition(
 					Vector3::Right * -30 * j + Vector3::Forward * 10 * i);
@@ -202,7 +202,7 @@ namespace SimpleRender
 			if(!spawned)
 			{
 				auto rModel = std::make_shared<GameObject>();
-				auto renderer = std::make_shared<ModelRenderer>(device, models[L"PBody"]);
+				auto renderer = std::make_shared<ModelRenderer>(models[L"PBody"]);
 				rModel->AddComponent(renderer);
 				rModel->GetTransform()->SetPosition(Camera::mainCamera->gameObject->GetTransform()->GetWorldPosition());
 

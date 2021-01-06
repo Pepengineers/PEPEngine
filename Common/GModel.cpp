@@ -5,14 +5,14 @@
 
 namespace PEPEngine::Common
 {
+	std::shared_ptr<GDevice> GModel::GetDevice() const
+	{
+		return device;
+	}
+
 	UINT GModel::GetMeshesCount() const
 	{
 		return model->GetMeshesCount();
-	}
-
-	std::shared_ptr<Material> GModel::GetMeshMaterial(UINT index)
-	{
-		return meshesMaterials[index];
 	}
 
 	std::shared_ptr<GMesh> GModel::GetMesh(UINT index)
@@ -25,24 +25,17 @@ namespace PEPEngine::Common
 		return model->GetName();
 	}
 
-	GModel::GModel(std::shared_ptr<NativeModel> model, std::shared_ptr<GCommandList> uploadCmdList): model(model)
-	{
-		if (meshesMaterials.size() < model->GetMeshesCount())
-		{
-			meshesMaterials.resize(model->GetMeshesCount());
-		}
-
+	GModel:: GModel(std::shared_ptr<NativeModel> model, std::shared_ptr<GCommandList> uploadCmdList): model(model)
+	{		
 		for (int i = 0; i < model->GetMeshesCount(); ++i)
 		{
 			auto nativeMesh = model->GetMesh(i);
 			gmeshes.push_back(std::make_shared<GMesh>(nativeMesh, uploadCmdList));
 		}
+
+		device = uploadCmdList->GetDevice();
 	}
 
-	void GModel::SetMeshMaterial(UINT index, const std::shared_ptr<Material> material)
-	{
-		meshesMaterials[index] = material;
-	}
 
 	GModel::GModel(const GModel& copy) : model(copy.model)
 	{
@@ -56,11 +49,11 @@ namespace PEPEngine::Common
 
 	GModel::~GModel() = default;
 
-	void GModel::Draw(std::shared_ptr<GCommandList> cmdList)
+	void GModel::Render(std::shared_ptr<GCommandList> cmdList)
 	{
 		for (auto&& mesh : gmeshes)
 		{
-			mesh->Draw(cmdList);
+			mesh->Render(cmdList);
 		}
 	}
 

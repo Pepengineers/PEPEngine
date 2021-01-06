@@ -80,8 +80,4 @@ namespace PEPEngine::Common
 			tr->AdjustPosition(tr->GetDownVector() * cameraSpeed * dt);
 		}
 	}
-
-	void CameraController::PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList)
-	{
-	}
 }

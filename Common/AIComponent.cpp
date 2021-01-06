@@ -135,6 +135,4 @@ void AIComponent::Update()
 	}
 }
 
-void AIComponent::PopulateDrawCommand(std::shared_ptr<PEPEngine::Graphics::GCommandList> cmdList)
-{
-}
+
