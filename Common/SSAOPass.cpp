@@ -2,6 +2,7 @@
 
 #include "GPass.h"
 #include "Scene.h"
+#include "GTexture.h"
 
 namespace PEPEngine::Common
 {

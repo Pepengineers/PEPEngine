@@ -1,6 +1,7 @@
 #pragma once
 #include "Camera.h"
 #include "RenderPass.h"
+#include "GRootSignature.h"
 
 namespace PEPEngine::Common
 {

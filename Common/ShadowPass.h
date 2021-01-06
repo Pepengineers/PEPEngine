@@ -2,6 +2,7 @@
 #include "RenderPass.h"
 #include "Scene.h"
 #include "Light.h"
+#include "GTexture.h"
 
 namespace PEPEngine::Common
 {

@@ -1,15 +1,15 @@
-#include "Texture.h"
+#include "ATexture.h"
 #include "AssetDatabase.h"
 
 namespace PEPEngine::Common
 {
-	void Texture::Serialize(json& j)
+	void ATexture::Serialize(json& j)
 	{
 		SerializeIDAndType(j);
 	}
 
 
-	void Texture::Deserialize(json& j)
+	void ATexture::Deserialize(json& j)
 	{
 		DeserializeIDAndType(j);
 

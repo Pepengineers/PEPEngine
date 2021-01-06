@@ -14,38 +14,13 @@ std::shared_ptr<PEPEngine::Common::Scene> PEPEngine::Common::Level::GetScene() c
 	return nullptr;
 }
 
-bool replace(std::wstring& str, const std::wstring& from, const std::wstring& to) {
-	size_t start_pos = str.find(from);
-	if (start_pos == std::wstring::npos)
-		return false;
-	str.replace(start_pos, from.length(), to);
-	return true;
-}
-
-std::filesystem::path PEPEngine::Common::Level::GetSceneFilePath() const
-{
-	auto file = pathToFile.filename().wstring();
-
-	replace(file, pathToFile.extension().wstring(), L".scene");
-
-
-	
-	return std::filesystem::path( pathToFile.parent_path().concat("\\").concat(file));
-}
-
 
 void PEPEngine::Common::Level::Serialize(json& j)
 {
-	if (type == AssetType::None)
-		type = AssetType::Level;
-
-	if (ID == UINT64_MAX)
-		ID = AssetDatabase::GenerateID();
 
 	SerializeIDAndType(j);
 
-
-	const auto  sceneFileName = GetSceneFilePath();
+	const auto  sceneFileName = Asset::GetFilePath(*this, DEFAULT_EXTENSION);
 	
 	json sceneJson;
 
@@ -63,7 +38,7 @@ void PEPEngine::Common::Level::Deserialize(json& j)
 {
 	DeserializeIDAndType(j);
 	
-	const auto  sceneFileName = GetSceneFilePath();
+	const auto  sceneFileName = Asset::GetFilePath(*this, DEFAULT_EXTENSION);
 	json sceneJson;
 	Asset::ReadFromFile(sceneFileName, sceneJson);
 

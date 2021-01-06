@@ -79,7 +79,7 @@ namespace PEPEngine::Common
 		{
 			modelDataBuffer.reset();
 			modelDataBuffer = std::make_shared<ConstantUploadBuffer<ObjectConstants>>(asset->GetDevice(), asset->GetMeshesCount(), asset->GetName());
-			materials = asset->GetMaterials();			
+			/*materials = asset->GetMaterials();	*/		
 		}
 
 		model = asset;

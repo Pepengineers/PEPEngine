@@ -1,5 +1,5 @@
 #include "Asset.h"
-
+#include "AssetDatabase.h"
 
 #include <cassert>
 #include <fstream>
@@ -67,4 +67,27 @@ namespace PEPEngine::Common
 
 		return nativeDataFile;
 	}
+
+	bool replace(std::wstring& str, const std::wstring& from, const std::wstring& to) {
+		size_t start_pos = str.find(from);
+		if (start_pos == std::wstring::npos)
+			return false;
+		str.replace(start_pos, from.length(), to);
+		return true;
+	}
+
+	std::filesystem::path Asset::GetFilePath(const Asset& asset, std::wstring extension)
+	{
+		auto file = asset.pathToFile.filename().wstring();
+
+		replace(file, asset.pathToFile.extension().wstring(), extension);
+
+		return std::filesystem::path(asset.pathToFile.parent_path().concat("\\").concat(file));
+	}
+
+	void Asset::UpdatePepe()
+	{
+		AssetDatabase::UpdateAsset(shared_from_this());
+	}
+
 }

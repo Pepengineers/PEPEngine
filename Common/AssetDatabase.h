@@ -53,6 +53,7 @@ namespace PEPEngine
 			static UINT64 GenerateID();
 
 			inline static std::filesystem::path AssetFolderPath = GetOrCreateAssetFolderPath();
+			inline static std::filesystem::path DefaultAssetPath = AssetFolderPath.parent_path().concat("\\Default\\");
 
 			inline const static std::wstring ASSET_EXTENSION_NAME = L".pepe";
 

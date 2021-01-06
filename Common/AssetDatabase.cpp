@@ -13,7 +13,9 @@
 #include "IDGenerator.hpp"
 #include "Level.h"
 #include "NativeModel.h"
-#include "Texture.h"
+#include "ATexture.h"
+#include "AMaterial.h"
+#include "AModel.h"
 
 
 namespace PEPEngine::Common
@@ -149,12 +151,58 @@ namespace PEPEngine::Common
 	void AssetDatabase::Initialize()
 	{
 		CheckOrCreateFolder(AssetFolderPath);
+		CheckOrCreateFolder(DefaultAssetPath);
+
+		static std::unordered_map<AssetType::Type, std::vector<std::filesystem::path>> sortedLoadedAssets;
+
+		for(auto& file : std::filesystem::recursive_directory_iterator(DefaultAssetPath)){
+
+			if (file.is_regular_file()) {
+
+				if (file.path().filename().extension() == ASSET_EXTENSION_NAME) {
+
+					auto path = file.path();
+
+					json j;
+					Asset::ReadFromFile(path, j);
+
+					AssetType::Type type;
+					assert(Asset::TryReadVariable< AssetType::Type>(j, "Type", &type));
+
+					sortedLoadedAssets[type].push_back(path);
+
+				}
+			}
+		}
+
+		for (auto& loadAssets : sortedLoadedAssets[AssetType::Type::Image]) {
+			std::shared_ptr<ATexture> asset = std::make_shared<ATexture>();
+			CreatePEPEFile(asset, loadAssets);
+
+			if (loadAssets.filename().wstring() == L"defaultAlbedo.pepe") {
+				ATexture::defaultAlbedo = asset;
+			}
+			else {
+				ATexture::defaultNormal = asset;
+			}
+		}
+
+		for (auto& loadAssets : sortedLoadedAssets[AssetType::Type::Material]) {
+			std::shared_ptr<AMaterial> asset = std::make_shared<AMaterial>();
+			CreatePEPEFile(asset, loadAssets);
+
+			AMaterial::defaultMaterial = asset;
+
+		}
+
+		sortedLoadedAssets.clear();
+				
 
 		for (auto&& file : std::filesystem::recursive_directory_iterator(AssetFolderPath))
 		{
-			if(file.is_regular_file())
+			if (file.is_regular_file())
 			{
-				if(file.path().filename().extension() == ASSET_EXTENSION_NAME)
+				if (file.path().filename().extension() == ASSET_EXTENSION_NAME)
 				{
 					auto path = file.path();
 
@@ -164,21 +212,36 @@ namespace PEPEngine::Common
 					AssetType::Type type;
 					assert(Asset::TryReadVariable< AssetType::Type>(j, "Type", &type));
 
-					std::shared_ptr<Asset> asset;
-					
-					switch (type)
-					{
-					case AssetType::Image: asset = std::make_shared<Texture>(); break;
-					case AssetType::Mesh: break;
-					case AssetType::Material: break;
-					case AssetType::Level: asset = std::make_shared<Level>(); break;
-					default: asset = std::make_shared<Asset>(); ;
-					}					
-
-					CreatePEPEFile(asset, path);
+					sortedLoadedAssets[type].push_back(path);
 				}
 			}
-		}		
+		}
+
+		for (auto& loadAssets : sortedLoadedAssets[AssetType::Type::Image]) {
+			std::shared_ptr<ATexture> asset = std::make_shared<ATexture>();
+			CreatePEPEFile(asset, loadAssets);
+		}
+
+		for (auto& loadAssets : sortedLoadedAssets[AssetType::Type::Material]) {
+			std::shared_ptr<AMaterial> asset = std::make_shared<AMaterial>();
+			CreatePEPEFile(asset, loadAssets);
+		}
+
+		for (auto& loadAssets : sortedLoadedAssets[AssetType::Type::Model]) {
+			std::shared_ptr<AModel> asset = std::make_shared<AModel>();
+			CreatePEPEFile(asset, loadAssets);
+		}
+
+		for (auto& loadAssets : sortedLoadedAssets[AssetType::Type::Level]) {
+			std::shared_ptr<Level> asset = std::make_shared<Level>();
+			CreatePEPEFile(asset, loadAssets);
+		}
+
+		for (auto& loadAssets : sortedLoadedAssets[AssetType::Type::None]) {
+			std::shared_ptr<Asset> asset = std::make_shared<Asset>();
+			CreatePEPEFile(asset, loadAssets);
+		}
+			
 	}
 
 	UINT64 AssetDatabase::GenerateID()

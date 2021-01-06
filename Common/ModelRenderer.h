@@ -1,6 +1,7 @@
 #pragma once
 #include "Renderer.h"
 #include "GCommandList.h"
+#include "DirectXBuffers.h"
 
 namespace PEPEngine
 {

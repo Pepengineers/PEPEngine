@@ -186,6 +186,8 @@
     <ClInclude Include="..\ThirdPerson\imgui\imstb_truetype.h" />
     <ClInclude Include="..\ThirdPerson\json\single_include\nlohmann\json.hpp" />
     <ClInclude Include="AIComponent.h" />
+    <ClInclude Include="AMaterial.h" />
+    <ClInclude Include="AModel.h" />
     <ClInclude Include="Asset.h" />
     <ClInclude Include="AssetDatabase.h" />
     <ClInclude Include="AssimpModelLoader.h" />
@@ -205,7 +207,7 @@
     <ClInclude Include="goap\WorldState.h" />
     <ClInclude Include="GPass.h" />
     <ClInclude Include="Level.h" />
-    <ClInclude Include="Texture.h" />
+    <ClInclude Include="ATexture.h" />
     <ClInclude Include="KeyboardDevice.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="LightPass.h" />
@@ -240,6 +242,8 @@
     <ClCompile Include="..\ThirdPerson\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\ThirdPerson\imgui\imgui_widgets.cpp" />
     <ClCompile Include="AIComponent.cpp" />
+    <ClCompile Include="AMaterial.cpp" />
+    <ClCompile Include="AModel.cpp" />
     <ClCompile Include="Asset.cpp" />
     <ClCompile Include="AssetDatabase.cpp" />
     <ClCompile Include="AssimpModelLoader.cpp" />
@@ -258,7 +262,7 @@
     <ClCompile Include="goap\WorldState.cpp" />
     <ClCompile Include="GPass.cpp" />
     <ClCompile Include="Level.cpp" />
-    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="ATexture.cpp" />
     <ClCompile Include="KeyboardDevice.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="LightPass.cpp" />

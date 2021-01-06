@@ -1,5 +1,6 @@
 #pragma once
 #include <filesystem>
+#include <cstdint>
 #include "nlohmann/json.hpp"
 
 #define SCHEMA_VERSION 1.0f
@@ -16,41 +17,34 @@ namespace PEPEngine::Common
 		{
 			None,
 			Image,
-			Mesh,
+			Model,
 			Material,
 			Level
 		};
 	};
 
 
-	class Asset
+	class Asset : std::enable_shared_from_this<Asset>
 	{
 		friend class AssetDatabase;
-
-		
-
 	protected:
 		std::wstring name;
 		std::filesystem::path pathToFile;
 
-		unsigned long long ID = UINT64_MAX;
+		uint64_t ID = UINT64_MAX;
 
 		AssetType::Type type;
 
 		void SerializeIDAndType(json& serializer);
 
 		void DeserializeIDAndType(const json& json);
-				
-		
-
-
 	public:
 
 		Asset(AssetType::Type type = AssetType::Type::None) : type(type)
 		{
 		}
 
-		Asset(unsigned long long ID, std::filesystem::path pathToFile, AssetType::Type type = AssetType::None);
+		Asset(uint64_t ID, std::filesystem::path pathToFile, AssetType::Type type = AssetType::None);
 
 
 		virtual ~Asset();
@@ -66,7 +60,13 @@ namespace PEPEngine::Common
 
 		static void ReadFromFile(const std::filesystem::path& pathToFile, json& j);
 
+		void UpdatePepe();
+
 		static std::filesystem::path FindNativeFile(std::filesystem::path pathToFile);
+
+		inline uint64_t GetID() const {
+			return ID;
+		}
 
 		template <typename T>
 		static bool TryReadVariable(const json& json, std::string varName, T* variable)
@@ -79,5 +79,7 @@ namespace PEPEngine::Common
 
 			return false;
 		}
+
+		static std::filesystem::path GetFilePath(const Asset& asset, std::wstring extension);
 	};
 }

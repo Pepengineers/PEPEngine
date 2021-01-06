@@ -152,12 +152,11 @@ namespace PEPEngine
 
 		struct alignas(sizeof(Vector4)) MaterialData
 		{			
-			Vector4 DiffuseColor;
-			Vector4 SpecularColor;			
+			Vector4 DiffuseColor;		
+			float SpecularPower = 1.0f;
 			float AlphaThreshold = 0.1f;
 			int DiffuseMapIndex = -1;
 			int NormalMapIndex = -1;
-			int RounghessMapIndex = -1;
 		};
 
 

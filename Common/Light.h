@@ -24,14 +24,14 @@ namespace PEPEngine
 
 			
 
-			void Serialize(json& j) override
+			inline void Serialize(json& j) override
 			{
 				j["Type"] = ComponentID;
 
 				auto jPos = json();
 				jPos["Type"] = Type;				
 				
-				auto jType = json();  ;
+				auto jType = json();
 				jType["x"] = Direction.x;
 				jType["y"] = Direction.y;
 				jType["z"] = Direction.z;
@@ -53,7 +53,7 @@ namespace PEPEngine
 				j["LightData"] = jPos;
 			};
 
-			void Deserialize(json& j) override
+			inline void Deserialize(json& j) override
 			{
 				auto jPos = j["LightData"];
 				Type = jPos["Type"];

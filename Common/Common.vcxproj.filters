@@ -196,10 +196,16 @@
     <ClInclude Include="AssimpModelLoader.h">
       <Filter>Assets</Filter>
     </ClInclude>
-    <ClInclude Include="Texture.h">
+    <ClInclude Include="Level.h">
       <Filter>Assets</Filter>
     </ClInclude>
-    <ClInclude Include="Level.h">
+    <ClInclude Include="AMaterial.h">
+      <Filter>Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="AModel.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ATexture.h">
       <Filter>Assets</Filter>
     </ClInclude>
   </ItemGroup>
@@ -345,10 +351,16 @@
     <ClCompile Include="AssimpModelLoader.cpp">
       <Filter>Assets</Filter>
     </ClCompile>
-    <ClCompile Include="Texture.cpp">
+    <ClCompile Include="Level.cpp">
       <Filter>Assets</Filter>
     </ClCompile>
-    <ClCompile Include="Level.cpp">
+    <ClCompile Include="AMaterial.cpp">
+      <Filter>Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="AModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ATexture.cpp">
       <Filter>Assets</Filter>
     </ClCompile>
   </ItemGroup>

@@ -6,6 +6,7 @@
 #include "GMesh.h"
 #include "GModel.h"
 #include "Transform.h"
+#include "GTexture.h"
 
 namespace PEPEngine::Common
 {

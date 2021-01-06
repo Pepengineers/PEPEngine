@@ -5,6 +5,7 @@
 #include "Camera.h"
 #include "MathHelper.h"
 #include "RenderPass.h"
+#include "GTexture.h"
 
 namespace PEPEngine::Common
 {

@@ -1,0 +1,16 @@
+{
+"Mode":1,
+ "DiffuseColor" : {
+   "x": 1,
+   "y": 1,
+   "z": 1,
+   "w": 1
+   },
+  "AlphaThreshold": 0.1,
+  "SpecularPower" : 1,
+  "TextureCount"  : 2,
+  "Textures" : [
+		 {"id": 1}, {"id": 2} ],
+  "MaterialMapSlots" : [
+                 {"Index":0, "SlotType":0}, {"Index":1, "SlotType":1} ]
+}

@@ -122,7 +122,14 @@ namespace SimpleRender
 		//scene = AssetDatabase;
 
 		
+		json tmp;
+
 		auto seamless = std::make_shared<Material>(L"seamless", RenderMode::Opaque);
+		seamless->Serialize(tmp);
+
+		auto str = tmp.dump(4);
+		OutputDebugStringA(str.c_str());
+
 		//auto tex = assetLoader.GetTextureIndex(L"seamless");
 		//seamless->SetMaterialMap(Material::DiffuseMap, assetLoader.GetTexture(tex));
 		//tex = assetLoader.GetTextureIndex(L"defaultNormalMap");

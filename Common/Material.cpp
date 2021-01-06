@@ -3,6 +3,8 @@
 #include "d3dApp.h"
 #include "GDescriptor.h"
 #include "GraphicPSO.h"
+#include "ATexture.h"
+#include "AssetDatabase.h"
 
 namespace PEPEngine::Common
 {
@@ -28,15 +30,15 @@ namespace PEPEngine::Common
 
 	void Material::SetRenderMode(RenderMode::Mode pso)
 	{
-		this->type = pso;
+		this->renderMode = pso;
 	}
 
 	RenderMode::Mode Material::GetRenderMode() const
 	{
-		return type;
+		return renderMode;
 	}
 
-	void Material::SetMaterialMap(MaterialTypes type, std::shared_ptr<GTexture> texture)
+	void Material::SetMaterialMap(MaterialSlotTypes type, std::shared_ptr<ATexture> texture)
 	{
 		const auto it = slots.find(type);
 
@@ -55,7 +57,7 @@ namespace PEPEngine::Common
 		SetDirty();
 	}
 
-	Material::Material(std::wstring name, RenderMode::Mode pso) : Name(std::move(name)), type(pso), AlphaThreshold(0.1)
+	Material::Material(std::wstring name, RenderMode::Mode pso) : Name(std::move(name)), renderMode(pso), AlphaThreshold(0.1)
 	{
 	}
 
@@ -69,7 +71,7 @@ namespace PEPEngine::Common
 
 		for (auto&& slotPair : slots)
 		{
-			auto map = materialMaps[slotPair.second];
+			auto map = materialMaps[slotPair.second]->GetGTexture();
 			auto desc = map->GetD3D12ResourceDesc();
 
 			if (slotPair.first == BaseColor)
@@ -115,8 +117,8 @@ namespace PEPEngine::Common
 		if (NumFramesDirty > 0)
 		{
 			matConstants.DiffuseColor = DiffuseColor;
-			matConstants.SpecularColor = SpecularColor;
 			matConstants.AlphaThreshold = AlphaThreshold;
+			matConstants.SpecularPower = SpecularPower;
 
 			for (auto& [type, Index] : slots)
 			{
@@ -125,9 +127,7 @@ namespace PEPEngine::Common
 				case BaseColor: matConstants.DiffuseMapIndex = Index;
 					break;
 				case NormalMap: matConstants.NormalMapIndex = Index;
-					break;			
-				case RoughnessMap: matConstants.RounghessMapIndex = Index;
-					break;				
+					break;	
 				default: assert("WTF? Is it Material?");
 				}
 			}
@@ -140,4 +140,97 @@ namespace PEPEngine::Common
 	{
 		return Name;
 	}
+
+	void Material::Serialize(json& j)
+	{
+
+		j["Mode"] = renderMode;
+		auto jDiffuseColor = json();
+		jDiffuseColor["x"] = DiffuseColor.x;
+		jDiffuseColor["y"] = DiffuseColor.y;
+		jDiffuseColor["z"] = DiffuseColor.z;
+		jDiffuseColor["w"] = DiffuseColor.w;
+
+		j["DiffuseColor"] = jDiffuseColor;
+
+		j["AlphaThreshold"] = AlphaThreshold;
+
+		j["SpecularPower"] = SpecularPower;
+
+		j["TexturesCount"] = materialMaps.size();
+
+		auto jTextureArray = json::array();
+
+		for(auto& materialMap : materialMaps){
+			json jTexture;
+			jTexture["id"] = materialMap->GetID();
+			jTextureArray.push_back(jTexture);
+		}
+
+		j["Textures"] = jTextureArray;
+
+		auto jTextureSlots = json::array();
+
+		for(auto& slot : slots){
+			json jSlot;
+			jSlot["Index"] = slot.second;
+			jSlot["SlotType"] = slot.first;
+			jTextureSlots.push_back(jSlot);
+		}
+
+		j["MaterialMapSlots"] = jTextureSlots;
+	}
+
+	void Material::Deserialize(json& j)
+	{
+		assert(Asset::TryReadVariable<RenderMode::Mode>(j, "Mode", &renderMode));
+		float x, y, z, w;
+		auto jcolor = j["DiffuseColor"];
+		assert(Asset::TryReadVariable<float>(jcolor, "x", &x));
+		assert(Asset::TryReadVariable<float>(jcolor, "y", &y));
+		assert(Asset::TryReadVariable<float>(jcolor, "z", &z));
+		assert(Asset::TryReadVariable<float>(jcolor, "w", &w));
+		DiffuseColor = Vector4{ x, y, z, w };
+		assert(Asset::TryReadVariable<float>(j, "AlphaThreshold", &AlphaThreshold));
+		assert(Asset::TryReadVariable<float>(j, "SpecularPower", &SpecularPower));
+		uint32_t count = 0u;
+		assert(Asset::TryReadVariable<uint32_t>(j, "TextureCount", &count));
+
+
+		auto jTextureSlots = j["MaterialMapSlots"];
+
+		std::unordered_map<uint32_t, MaterialSlotTypes> tempSlots;
+
+		for(auto& jSlot : jTextureSlots){
+			MaterialSlotTypes slotType;
+			uint32_t index;
+			assert(Asset::TryReadVariable<MaterialSlotTypes>(jSlot, "SlotType", &slotType));
+			assert(Asset::TryReadVariable<uint32_t>(jSlot, "Index", &index));
+
+			tempSlots[index] = slotType;
+		}
+
+
+		auto jTextures = j["Textures"];
+
+		for(uint32_t i = 0u; i < count; ++i){
+			uint64_t textureId;
+			assert(Asset::TryReadVariable<uint64_t>(jTextures[i], "id", &textureId));
+			auto textureAsset = std::static_pointer_cast<ATexture>(AssetDatabase::FindAssetByID(textureId));
+			if(textureAsset){
+				materialMaps.push_back(textureAsset);
+			}
+			else{
+				tempSlots.erase(i);
+			}
+		}
+
+		for(auto& slot : tempSlots){
+			slots[slot.second] = slot.first;
+		}
+
+		tempSlots.clear();
+
+	}
+
 }

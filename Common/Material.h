@@ -6,22 +6,25 @@
 #include "GDescriptor.h"
 #include "GraphicPSO.h"
 #include "ShaderBuffersData.h"
-#include "GTexture.h"
+#include "GCommandList.h"
+
+#include "nlohmann/json.hpp"
+using json = nlohmann::json;
 
 namespace PEPEngine
 {
 	namespace Common
 	{
 		using namespace Microsoft::WRL;
-		using namespace Allocator;
 		using namespace Utils;
 		using namespace Graphics;
 
-
+		class ATexture;
 		class Material
 		{
 		public:
-			enum MaterialTypes : UINT
+			Material() = default;
+			enum MaterialSlotTypes : UINT
 			{
 				DiffuseMap = 0,
 				BaseColor = DiffuseMap,
@@ -29,6 +32,9 @@ namespace PEPEngine
 				RoughnessMap = NormalMap + 1
 			};
 
+		public:
+			void Serialize(json& j);
+			void Deserialize(json& j);
 		private:
 		
 
@@ -36,15 +42,16 @@ namespace PEPEngine
 
 			std::wstring Name;
 
-			RenderMode::Mode type = RenderMode::Opaque;
+			RenderMode::Mode renderMode = RenderMode::Opaque;
 
 			MaterialData matConstants{};
 
 			UINT NumFramesDirty = globalCountFrameResources;
 
-			std::vector<std::shared_ptr<GTexture>> materialMaps;
+			std::vector<std::shared_ptr<ATexture>> materialMaps;
 
-			std::unordered_map<MaterialTypes, UINT> slots;
+
+			std::unordered_map<MaterialSlotTypes, UINT> slots;
 
 			GDescriptor textureMapsSRVMemory;
 
@@ -54,9 +61,9 @@ namespace PEPEngine
 
 			static const UINT MaxMaterialTexturesMaps = 3;
 			
-			Vector4 DiffuseColor;
-			Vector4 SpecularColor;			
+			Vector4 DiffuseColor;		
 			float AlphaThreshold;
+			float SpecularPower = 1.0f;
 
 			UINT GetMaterialIndex() const;
 
@@ -68,7 +75,7 @@ namespace PEPEngine
 
 			RenderMode::Mode GetRenderMode() const;
 
-			void SetMaterialMap(MaterialTypes type, std::shared_ptr<GTexture> texture);
+			void SetMaterialMap(MaterialSlotTypes type, std::shared_ptr<ATexture> texture);
 
 			void SetRenderMode(RenderMode::Mode pso);
 

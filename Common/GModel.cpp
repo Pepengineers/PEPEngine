@@ -1,18 +1,20 @@
 #include "pch.h"
 #include "GModel.h"
+#include "AMaterial.h"
 
 #include "DirectXBuffers.h"
 #include "GMesh.h"
 #include "NativeModel.h"
+#include "AssetDatabase.h"
 
 namespace PEPEngine::Common
 {
-	void GModel::SetMaterial(std::shared_ptr<Material> material, UINT slot)
+	void GModel::SetMaterial(std::shared_ptr<AMaterial> material, UINT slot)
 	{
 		materials[slot] = material;
 	}
 
-	std::vector<std::shared_ptr<Material>>& GModel::GetMaterials()
+	std::vector<std::shared_ptr<AMaterial>>& GModel::GetMaterials()
 	{
 		return materials;
 	}
@@ -75,4 +77,39 @@ namespace PEPEngine::Common
 		dublciate->scaleMatrix = scaleMatrix;
 		return dublciate;
 	}
+
+	void GModel::Serialize(json& j)
+	{
+		j["MaterialCount"] = materials.size();
+		auto jMaterials = json::array();
+		for(auto& material : materials){
+			json jMaterial;
+			jMaterial["id"] = material->GetID();
+			jMaterials.push_back(jMaterial);
+		}
+		j["Materials"] = jMaterials;
+	}
+
+	void GModel::Deserialize(json& j)
+	{
+		uint32_t materialCount;
+		assert(Asset::TryReadVariable<uint32_t>(j, "MaterialCount", &materialCount));
+
+		auto jMaterials = j["Materials"];
+
+		for(uint32_t i = 0u; i < materialCount; ++i){
+			uint64_t materialId;
+			assert(Asset::TryReadVariable<uint64_t>(jMaterials, "id", &materialId));
+
+			auto aMaterial = std::static_pointer_cast<AMaterial>(AssetDatabase::FindAssetByID(materialId));
+
+			if (aMaterial) {
+				materials.push_back(aMaterial);
+			}
+			else{
+
+			}
+		}
+	}
+
 }

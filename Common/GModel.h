@@ -2,6 +2,10 @@
 #include "d3d12.h"
 #include <SimpleMath.h>
 
+#include "nlohmann/json.hpp"
+
+using json = nlohmann::json;
+
 #include "DirectXBuffers.h"
 #include "MemoryAllocator.h"
 #include "GCommandList.h"
@@ -14,8 +18,8 @@ namespace PEPEngine
 		using namespace Graphics;
 
 		class NativeModel;
-		class Material;
 		class GMesh;
+		class AMaterial;
 
 		class GModel
 		{
@@ -25,13 +29,16 @@ namespace PEPEngine
 
 			std::shared_ptr<GDevice> device;
 
-			std::vector<std::shared_ptr<Material>> materials;
+			std::vector<std::shared_ptr<AMaterial>> materials;
 			
 		public:
 
-			void SetMaterial(std::shared_ptr<Material> material, UINT slot = 0);
+			void Serialize(json& j);
+			void Deserialize(json& j);
 
-			std::vector<std::shared_ptr<Material>>& GetMaterials();
+			void SetMaterial(std::shared_ptr<AMaterial> material, UINT slot = 0);
+
+			std::vector<std::shared_ptr<AMaterial>>& GetMaterials();
 
 			std::shared_ptr<GDevice> GetDevice() const;;
 			
