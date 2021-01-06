@@ -20,8 +20,8 @@ namespace PEPEngine::Common
 		{
 		}
 
-		void Serialize(std::filesystem::path pathToFile) override;
+		void Serialize(json& j) override;
 
-		void Deserialize(std::filesystem::path pathToFile) override;
+		void Deserialize(json& pathToFile) override;
 	};
 }

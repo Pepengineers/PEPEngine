@@ -88,6 +88,21 @@ namespace PEPEngine::Common
 		lightPass->Render(cmdList);
 	}
 
+	const D3D12_VIEWPORT Camera::GetViewPort() const
+	{
+		return viewport;
+	}
+
+	const D3D12_RECT Camera::GetRect() const
+	{
+		return rect;
+	}
+
+	CameraConstants& Camera::GetCameraData()
+	{
+		return cameraData;
+	}
+
 	ConstantUploadBuffer<CameraConstants>& Camera::GetCameraDataBuffer() const
 	{
 		return *CameraConstantBuffers[currentFrameResourceIndex].get();
@@ -137,7 +152,7 @@ namespace PEPEngine::Common
 		return focusPosition;
 	}
 
-	Camera::Camera(float aspect, const std::shared_ptr<GRenderTexture> target) : Component(), aspectRatio(aspect)
+	void Camera::InitializeCamera(const std::shared_ptr<GRenderTexture> target)
 	{
 		const auto MainWindow = D3DApp::GetApp().GetMainWindow();
 
@@ -158,6 +173,11 @@ namespace PEPEngine::Common
 
 
 		SetRenderTarget(target);
+	}
+
+	Camera::Camera(float aspect, const std::shared_ptr<GRenderTexture> target) : Component(), aspectRatio(aspect)
+	{
+		InitializeCamera(target);
 	}
 
 	void Camera::ChangeRenderSize(UINT height, UINT width) const

@@ -1,12 +1,16 @@
 #include "Asset.h"
 
+
+#include <cassert>
 #include <fstream>
 
 namespace PEPEngine::Common
 {
-	void Asset::CreateMetaFile()
+	void Asset::CreateMetaInfoFile()
 	{
-		Serialize(pathToFile);
+		json j;		
+		Serialize(j);
+		WriteToFile(pathToFile, j);
 	}
 
 	void Asset::SerializeIDAndType(json& serializer)
@@ -28,7 +32,6 @@ namespace PEPEngine::Common
 	Asset::Asset(unsigned long long ID, std::filesystem::path pathToFile,
 	             AssetType::Type type) : pathToFile(pathToFile), ID(ID), type(type)
 	{
-		CreateMetaFile();
 	}
 
 	Asset::~Asset() = default;

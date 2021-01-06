@@ -113,7 +113,7 @@ namespace PEPEngine::Common
 		cmdList->SetRootConstantBufferView(WorldDataBuffer,
 		                                   *currentScene->GetCurrentFrameResource()->WorldBuffer.get());
 		cmdList->SetRootConstantBufferView(CameraDataBuffer, Camera::mainCamera->GetCameraDataBuffer());
-		cmdList->SetRootShaderResourceView(MaterialsBuffer,
+		cmdList->SetRootShaderResourceView(MaterialsDataBuffer,
 		                                   *currentScene->GetCurrentFrameResource()->MaterialsBuffer.get());
 
 		currentScene->RenderTypedObjects(RenderMode::Opaque, cmdList);

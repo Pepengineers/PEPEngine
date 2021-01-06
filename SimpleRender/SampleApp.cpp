@@ -134,6 +134,18 @@ namespace SimpleRender
 		cameraGO->AddComponent(std::make_shared<Camera>(AspectRatio()));
 		cameraGO->AddComponent(std::make_shared<CameraController>());
 
+		json j;
+
+		cameraGO->Serialize(j);
+
+		std::string s = j.dump(4);
+		
+		OutputDebugStringA(s.c_str());
+
+
+		auto testGO = std::make_shared < GameObject>();
+		testGO->Deserialize(j);
+		
 		scene->AddGameObject(std::move(cameraGO));
 
 		auto sun = std::make_unique<GameObject>("Directional Light");

@@ -15,6 +15,8 @@ namespace PEPEngine
 
 		class ModelRenderer : public Renderer
 		{
+			
+
 		protected:
 			ObjectConstants modelWorldData{};
 			std::shared_ptr<ConstantUploadBuffer<ObjectConstants>> modelDataBuffer = nullptr;
@@ -24,12 +26,25 @@ namespace PEPEngine
 
 			void Update() override;
 
+			std::vector<std::shared_ptr<Material>> materials;
+			
+			void Serialize(json& j) override;
+
+			void Deserialize(json& j) override;
+
+
+		
+
 		public:
 
+			SERIALIZE_FROM_JSON(ModelRenderer, Renderer)
+			
+			void SetMaterial(std::shared_ptr<Material> material, UINT slot);
 			ModelRenderer(std::shared_ptr<GModel> model);
 			void SetModel(std::shared_ptr<GModel> asset);
 			UINT GetMeshCount() override;
 			std::shared_ptr<GMesh> GetMesh(UINT index) override;
+			std::vector<std::shared_ptr<Material>>& GetSharedMaterials() override;
 		};
 	}
 }

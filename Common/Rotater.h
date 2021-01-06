@@ -17,9 +17,12 @@ namespace PEPEngine
 			{
 			}
 
+
+			SERIALIZE_FROM_JSON(Rotater)
+			
 		private:
 			void Update() override;;
-			
+
 
 			const float time = 2;
 			float currentTime = 0;
@@ -27,6 +30,24 @@ namespace PEPEngine
 
 
 			float speed;
+
+
+			void Serialize(json& j) override
+			{
+				j["Type"] = ComponentID;
+
+				auto jPos = json(); 
+				jPos["speed"] = speed;
+
+				j["Variables"] = jPos;
+			};
+
+			void Deserialize(json& j) override
+			{
+				auto jPos = j["Variables"];
+				assert(TryReadVariable<float>(jPos, "speed", &speed));
+				
+			};
 		};
 	}
 }

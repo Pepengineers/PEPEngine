@@ -116,10 +116,10 @@ namespace PEPEngine::Common
 
 		const auto currentFrameResource = Scene::currentScene->GetCurrentFrameResource();
 
-		cmdList->SetRootShaderResourceView(MaterialsBuffer, *currentFrameResource->MaterialsBuffer);
+		cmdList->SetRootShaderResourceView(MaterialsDataBuffer, *currentFrameResource->MaterialsBuffer);
 		cmdList->SetRootConstantBufferView(WorldDataBuffer, *currentFrameResource->WorldBuffer);
 		cmdList->SetRootConstantBufferView(CameraDataBuffer, Camera::mainCamera->GetCameraDataBuffer());
-		cmdList->SetRootShaderResourceView(LightBuffer, *currentFrameResource->LightsBuffer);
+		cmdList->SetRootShaderResourceView(LightDataBuffer, *currentFrameResource->LightsBuffer);
 
 		cmdList->SetDescriptorsHeap(gpass.GetSRV());
 		cmdList->SetRootDescriptorTable(NormalMap, gpass.GetSRV(), GPass::NormalMap);
@@ -135,7 +135,6 @@ namespace PEPEngine::Common
 
 		cmdList->ClearRenderTarget(*target, DirectX::Colors::Black);
 		cmdList->SetRenderTarget(*target);
-
 
 		quadModel->Render(cmdList);
 	}

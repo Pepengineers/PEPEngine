@@ -110,7 +110,10 @@ namespace PEPEngine::Common
 
 	void AssetDatabase::DeserializeAssetData(std::shared_ptr<Asset> asset, const std::filesystem::path& pathToFile)
 	{
-		asset->Deserialize(pathToFile);
+		json j;
+		Asset::ReadFromFile(pathToFile, j);
+		
+		asset->Deserialize(j);
 	}
 
 	std::shared_ptr<Asset> AssetDatabase::FindAssetByID(const UINT64 id)

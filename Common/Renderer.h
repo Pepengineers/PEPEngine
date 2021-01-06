@@ -9,15 +9,16 @@ namespace PEPEngine
 	{
 		class Renderer : public Component
 		{
+
 		protected:
-			std::vector < std::shared_ptr<Material>> materials{};
+
+			Renderer(json& json):Component(json)
+			{
+			}
 			
 		public:
 
-			std::vector<std::shared_ptr<Material>>& GetSharedMaterials()
-			{
-				return materials;
-			};
+			virtual std::vector<std::shared_ptr<Material>>& GetSharedMaterials() = 0;
 
 			UINT virtual GetMeshCount() = 0;
 

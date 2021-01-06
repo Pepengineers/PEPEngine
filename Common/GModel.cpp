@@ -1,10 +1,22 @@
 #include "pch.h"
 #include "GModel.h"
+
+#include "DirectXBuffers.h"
 #include "GMesh.h"
 #include "NativeModel.h"
 
 namespace PEPEngine::Common
 {
+	void GModel::SetMaterial(std::shared_ptr<Material> material, UINT slot)
+	{
+		materials[slot] = material;
+	}
+
+	std::vector<std::shared_ptr<Material>>& GModel::GetMaterials()
+	{
+		return materials;
+	}
+
 	std::shared_ptr<GDevice> GModel::GetDevice() const
 	{
 		return device;
@@ -33,6 +45,9 @@ namespace PEPEngine::Common
 			gmeshes.push_back(std::make_shared<GMesh>(nativeMesh, uploadCmdList));
 		}
 
+		materials.resize(model->GetMeshesCount());
+
+		
 		device = uploadCmdList->GetDevice();
 	}
 
@@ -49,12 +64,9 @@ namespace PEPEngine::Common
 
 	GModel::~GModel() = default;
 
-	void GModel::Render(std::shared_ptr<GCommandList> cmdList)
-	{
-		for (auto&& mesh : gmeshes)
-		{
-			mesh->Render(cmdList);
-		}
+	void GModel::Render(std::shared_ptr<GCommandList> cmdList, UINT meshIndex)
+	{		
+		gmeshes[meshIndex]->Render(cmdList);		
 	}
 
 	std::shared_ptr<GModel> GModel::Dublicate(std::shared_ptr<GCommandList> otherDeviceCmdList) const

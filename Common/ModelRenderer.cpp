@@ -1,5 +1,7 @@
 #include "pch.h"
 #include "ModelRenderer.h"
+
+#include "AssetDatabase.h"
 #include "GameObject.h"
 #include "GCommandList.h"
 #include "GMesh.h"
@@ -8,11 +10,32 @@
 
 namespace PEPEngine::Common
 {
+	void ModelRenderer::Serialize(json& j)
+	{
+		j["Type"] = ComponentID;
+
+		auto jPos = json(); 
+		jPos["ModelID"] = model->GetName().size();
+
+		j["RendererData"] = jPos;
+	};
+
+	void ModelRenderer::Deserialize(json& j)
+	{
+		auto jPos =  j["RendererData"];
+
+		UINT64 name = jPos["ModelID"];
+
+		auto asset = AssetDatabase::FindAssetByID(name);
+
+		//SetModel(asset);		
+	};
+	
 	void ModelRenderer::PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList, UINT meshIndex)
 	{
-		cmdList->SetRootConstantBufferView(ObjectDataBuffer, *modelDataBuffer.get(), meshIndex);
-		const auto mesh = model->GetMesh(meshIndex);
-		mesh->Render(cmdList);
+		cmdList->SetRootConstantBufferView(ObjectWorldDataBuffer, *modelDataBuffer.get(), meshIndex);
+		
+		model->Render(cmdList, meshIndex);		
 	}
 
 	void ModelRenderer::Update()
@@ -37,6 +60,12 @@ namespace PEPEngine::Common
 		}
 	}
 
+	void ModelRenderer::SetMaterial(std::shared_ptr<Material> material, UINT slot)
+	{
+		assert(slot < materials.size());
+		materials[slot] = material;
+	}
+
 	ModelRenderer::ModelRenderer(std::shared_ptr<GModel> model) : Renderer()
 	{
 		SetModel(model);
@@ -50,11 +79,7 @@ namespace PEPEngine::Common
 		{
 			modelDataBuffer.reset();
 			modelDataBuffer = std::make_shared<ConstantUploadBuffer<ObjectConstants>>(asset->GetDevice(), asset->GetMeshesCount(), asset->GetName());
-
-			if (materials.size() < asset->GetMeshesCount())
-			{
-				materials.resize(asset->GetMeshesCount());
-			}
+			materials = asset->GetMaterials();			
 		}
 
 		model = asset;
@@ -68,5 +93,10 @@ namespace PEPEngine::Common
 	std::shared_ptr<GMesh> ModelRenderer::GetMesh(UINT index)
 	{
 		return model->GetMesh(index);
+	}
+
+	std::vector<std::shared_ptr<Material>>& ModelRenderer::GetSharedMaterials()
+	{
+		return materials;
 	}
 }

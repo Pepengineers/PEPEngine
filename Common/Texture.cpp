@@ -3,26 +3,21 @@
 
 namespace PEPEngine::Common
 {
-	void Texture::Serialize(std::filesystem::path pathToFile)
+	void Texture::Serialize(json& j)
 	{
-		json j;
-
 		SerializeIDAndType(j);
-		WriteToFile(pathToFile, j);
 	}
 
 
-	void Texture::Deserialize(std::filesystem::path pathToFile)
+	void Texture::Deserialize(json& j)
 	{
-		json j;
-		ReadFromFile(pathToFile, j);
 		DeserializeIDAndType(j);
 
 		const auto file = FindNativeFile(pathToFile);
 
 		if (file.has_filename())
 		{
-			//texture = AssetDatabase::LoadTextureFromFile(file);
+			texture = AssetDatabase::LoadTextureFromFile(file);
 		}
 		else
 		{

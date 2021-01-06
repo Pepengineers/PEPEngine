@@ -22,8 +22,23 @@ class AIComponent : public PEPEngine::Common::Component
 
 	FSMState currentState_;
 
+	
+
+	void Serialize(json& j) override
+	{
+		j["Type"] = ComponentID;
+	};
+
+	void Deserialize(json& j) override
+	{		
+		Initialize();
+	};
+
 public:
 
+	SERIALIZE_FROM_JSON(AIComponent)
+	
+	void Initialize();
 	AIComponent();
 	void SetActionList();
 	void SetWorldState();

@@ -9,12 +9,17 @@ namespace PEPEngine::Common
 	using namespace Allocator;
 	using namespace Graphics;
 
-	CameraController::CameraController()
+	void CameraController::Initialize()
 	{
 		auto& app = static_cast<D3DApp&>(D3DApp::GetApp());
 		keyboard = app.GetKeyboard();
 		mouse = app.GetMouse();
 		timer = app.GetTimer();
+	}
+
+	CameraController::CameraController()
+	{
+		Initialize();
 	}
 
 	void CameraController::Update()

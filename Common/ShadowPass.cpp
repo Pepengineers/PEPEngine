@@ -160,7 +160,7 @@ namespace PEPEngine::Common
 		const auto scene = Scene::currentScene;
 		const auto currentFrameResource = Scene::currentScene->GetCurrentFrameResource();
 
-		cmdList->SetRootShaderResourceView(MaterialsBuffer, *currentFrameResource->MaterialsBuffer);
+		cmdList->SetRootShaderResourceView(MaterialsDataBuffer, *currentFrameResource->MaterialsBuffer);
 		cmdList->SetRootConstantBufferView(WorldDataBuffer, *currentFrameResource->WorldBuffer);
 		cmdList->SetRootConstantBufferView(CameraDataBuffer, *LightCameraBuffer.get());
 

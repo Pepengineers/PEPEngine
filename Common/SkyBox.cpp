@@ -36,7 +36,7 @@ namespace PEPEngine::Common
 		{
 			const auto mesh = model->GetMesh(i);
 
-			cmdList->SetRootConstantBufferView(ObjectDataBuffer,
+			cmdList->SetRootConstantBufferView(ObjectWorldDataBuffer,
 			                                   *modelDataBuffer, i);
 			mesh->Render(cmdList);
 		}

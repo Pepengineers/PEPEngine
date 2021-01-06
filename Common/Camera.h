@@ -24,6 +24,7 @@ namespace PEPEngine
 		class Camera : public Component
 		{
 			
+			
 			void Update() override;
 
 			void CreateProjection();
@@ -37,7 +38,6 @@ namespace PEPEngine
 			float farZ = 10000;
 
 			Vector3 focusPosition = Vector3::Zero;
-
 
 			int NumFramesDirty = globalCountFrameResources;
 
@@ -59,17 +59,43 @@ namespace PEPEngine
 			std::shared_ptr<SSAOPass> ambiantPass;
 			std::shared_ptr<ShadowPass> shadowPass;
 
+
+			void Serialize(json& j) override
+			{
+				j["Type"] = ComponentID;
+
+				auto jPos = json();
+				jPos["aspect"] = aspectRatio;
+				jPos["nearZ"] = nearZ;
+				jPos["farZ"] = farZ;
+				jPos["fov"] = fov;
+				
+				j["CameraData"] = jPos;
+			};
+
+			void Deserialize(json& j) override
+			{
+				auto jPos = j["CameraData"];
+				assert(TryReadVariable<float>(jPos, "aspect", &aspectRatio));
+				assert(TryReadVariable<float>(jPos, "nearZ", &nearZ));
+				assert(TryReadVariable<float>(jPos, "farZ", &farZ));
+				assert(TryReadVariable<float>(jPos, "fov", &fov));
+
+				InitializeCamera(nullptr);				
+			};
+			
 		public:
 
+			SERIALIZE_FROM_JSON(Camera)
 			
 			void Render(std::shared_ptr<GCommandList> cmdList);
 
 			inline static Camera* mainCamera = nullptr;
 
-			const D3D12_VIEWPORT GetViewPort() const { return viewport; }
-			const D3D12_RECT GetRect() const { return rect; }
+			const D3D12_VIEWPORT GetViewPort() const;
+			const D3D12_RECT GetRect() const;
 
-			CameraConstants& GetCameraData() { return cameraData; }
+			CameraConstants& GetCameraData();
 
 			ConstantUploadBuffer<CameraConstants>& GetCameraDataBuffer() const;;
 
@@ -80,6 +106,7 @@ namespace PEPEngine
 			GRenderTexture* GetRenderTarget() const;
 
 			const Vector3& GetFocusPosition() const;
+			void InitializeCamera(std::shared_ptr<GRenderTexture> target);
 
 			Camera(float aspect, std::shared_ptr<GRenderTexture> target = nullptr);
 

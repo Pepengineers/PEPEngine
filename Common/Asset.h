@@ -4,10 +4,11 @@
 
 #define SCHEMA_VERSION 1.0f
 
+using json = nlohmann::json;
 
 namespace PEPEngine::Common
 {
-	using json = nlohmann::json;
+	
 
 	struct AssetType
 	{
@@ -26,7 +27,7 @@ namespace PEPEngine::Common
 	{
 		friend class AssetDatabase;
 
-		void CreateMetaFile();
+		
 
 	protected:
 		std::wstring name;
@@ -40,6 +41,8 @@ namespace PEPEngine::Common
 
 		void DeserializeIDAndType(const json& json);
 
+		void virtual CreateMetaInfoFile();
+		
 		Asset()
 		{
 		};
@@ -53,10 +56,10 @@ namespace PEPEngine::Common
 		virtual ~Asset();
 
 		//TODO: В идеале тут должен принматься сериализатор, чтобы написать код один раз и забыть на всю жизнь, но не в этот раз
-		virtual void Serialize(std::filesystem::path pathToFile) = 0;
+		virtual void Serialize(json& json) = 0;
 
 		//TODO: В идеале тут должен принматься сериализатор, чтобы написать код один раз и забыть на всю жизнь, но не в этот раз
-		virtual void Deserialize(std::filesystem::path pathToFile) = 0;
+		virtual void Deserialize(json& json) = 0;
 
 
 		static void WriteToFile(const std::filesystem::path& pathToFile, const json& j);

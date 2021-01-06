@@ -17,8 +17,9 @@ namespace PEPEngine
 		class AssetDatabase
 		{
 			friend class AssimpModelLoader;
+			friend class Asset;
 
-			const std::wstring ASSET_EXTENSION_NAME = L".pepe";
+		
 
 			inline static GeometryGenerator geoGen;
 
@@ -33,19 +34,20 @@ namespace PEPEngine
 				MemoryAllocator::CreateUnorderedMap<std::wstring, std::shared_ptr<GModel>>();
 
 			inline static custom_unordered_map<UINT64, std::shared_ptr<Asset>> loadedAssets =
-				MemoryAllocator::CreateUnorderedMap<UINT64, std::shared_ptr<Asset>>();
+				MemoryAllocator::CreateUnorderedMap<UINT64, std::shared_ptr<Asset>>();			
 
+		public:
 
+			static UINT64 GenerateID();
+			
+			inline const static std::wstring ASSET_EXTENSION_NAME = L".pepe";
+			
 			static std::shared_ptr<GTexture> LoadTextureFromFile(const std::filesystem::path& pathToFile);
 
 			static std::shared_ptr<GModel> LoadModelFromFile(const std::filesystem::path& pathToFile);
 
-			static UINT64 GenerateID();
-
 			static void DeserializeAssetData(std::shared_ptr<Asset> asset, const std::filesystem::path& pathToFile);
-
-		public:
-
+			
 			template <class T = Asset>
 			static std::shared_ptr<T> LoadAssetFromFile(const std::filesystem::path& pathToFile)
 			{
@@ -64,7 +66,8 @@ namespace PEPEngine
 			{
 				auto id = GenerateID();
 				auto asset = std::make_shared<T>(id, pathToFile);
-
+				asset->CreateMetaInfoFile();
+				
 				loadedAssets[id] = asset;
 
 				return asset;

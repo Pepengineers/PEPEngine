@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "GameObject.h"
 #include <utility>
+
+#include "AssetDatabase.h"
 #include "Component.h"
 #include "ModelRenderer.h"
 #include "Transform.h"
@@ -22,9 +24,11 @@ namespace PEPEngine::Common
 	}
 
 	GameObject::
-	GameObject(std::string name, Vector3 position, Vector3 scale, Quaternion rotate) : name(
+	GameObject(std::string name, Vector3 position, Vector3 scale, Quaternion rotate) :  name(
 		std::move(name))
 	{
+		
+		
 		transform = std::make_shared<Transform>(position, rotate, scale);
 
 		AddComponent(transform);
@@ -71,4 +75,59 @@ namespace PEPEngine::Common
 	{
 		transform->SetScale(scale);
 	}
+
+	std::string& GameObject::GetName()
+	{
+		return name;
+	}
+
+	void GameObject::Serialize(json& j)
+	{
+		type = AssetType::None;
+		ID = AssetDatabase::GenerateID();
+		
+		SerializeIDAndType(j);
+		
+		j["ComponentCount"] = components.size();
+
+		auto componentsArray = json::array();
+
+		for (int i = 0; i < components.size(); ++i)
+		{
+			json componentData;
+			components[i]->Serialize(componentData);
+			componentsArray.push_back(componentData);
+		}
+
+		j["Components"] = componentsArray;
+		
+	};
+
+	void GameObject::Deserialize(json& j)
+	{
+		DeserializeIDAndType(j);
+		
+		UINT size;
+		assert(TryReadVariable<UINT>(j, "ComponentCount", &size));
+		
+		std::vector<UINT> componentID;
+
+		json array = j["Components"];
+		
+		for (int i = 0; i < size; ++i)
+		{
+			std::wstring id;
+			assert(TryReadVariable<std::wstring>(array[i], "Type", &id));
+
+			if(id == Transform::ComponentID)
+			{
+				transform->Deserialize(array[i]);
+			}
+			else
+			{
+				auto component = Component::CreateFromFile(array[i], id);
+				AddComponent(std::move(component));
+			}
+		}		
+	};
 }

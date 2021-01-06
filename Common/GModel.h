@@ -1,6 +1,8 @@
 #pragma once
 #include "d3d12.h"
 #include <SimpleMath.h>
+
+#include "DirectXBuffers.h"
 #include "MemoryAllocator.h"
 #include "GCommandList.h"
 
@@ -22,8 +24,14 @@ namespace PEPEngine
 			std::vector<std::shared_ptr<GMesh>> gmeshes{};
 
 			std::shared_ptr<GDevice> device;
+
+			std::vector<std::shared_ptr<Material>> materials;
 			
 		public:
+
+			void SetMaterial(std::shared_ptr<Material> material, UINT slot = 0);
+
+			std::vector<std::shared_ptr<Material>>& GetMaterials();
 
 			std::shared_ptr<GDevice> GetDevice() const;;
 			
@@ -41,7 +49,7 @@ namespace PEPEngine
 
 			~GModel();
 
-			void Render(std::shared_ptr<GCommandList> cmdList);
+			void Render(std::shared_ptr<GCommandList> cmdList, UINT meshIndex = 0);
 
 			std::shared_ptr<GModel> Dublicate(std::shared_ptr<GCommandList> otherDeviceCmdList) const;
 		};

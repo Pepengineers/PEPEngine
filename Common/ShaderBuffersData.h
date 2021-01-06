@@ -19,12 +19,12 @@ namespace PEPEngine
 
 		enum DeferredPassSlots : UINT
 		{
-			ObjectDataBuffer = 0,
+			ObjectWorldDataBuffer = 0,
 			MaterialTextures,
 			CameraDataBuffer,
 			WorldDataBuffer,
-			MaterialsBuffer,
-			LightBuffer,
+			MaterialsDataBuffer,
+			LightDataBuffer,
 			NormalMap,
 			BaseColorMap,
 			PositionMap,

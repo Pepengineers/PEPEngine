@@ -8,11 +8,16 @@
 
 enum test { TARGET_ACQUIRED, TARGET_DEAD, IN_LOCATION };
 
-AIComponent::AIComponent()
+void AIComponent::Initialize()
 {
 	this->SetWorldState();
 	this->SetActionList();
 	this->currentState_ = FSMState::Idle;
+}
+
+AIComponent::AIComponent()
+{
+	Initialize();
 }
 
 void AIComponent::SetActionList()
