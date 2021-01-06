@@ -12,8 +12,10 @@ namespace PEPEngine::Common
 	class Material;
 	class Camera;
 
-	class Scene : public Asset
+	class Scene
 	{
+		friend class Level;
+		
 		custom_vector<std::shared_ptr<GameObject>> objects = MemoryAllocator::CreateVector<std::shared_ptr<GameObject>
 		>();
 
@@ -27,10 +29,10 @@ namespace PEPEngine::Common
 
 		std::set<Material*> typedMaterials[RenderMode::Count];
 
-		std::unordered_map<Material*, std::unordered_map<Renderer*, std::vector<UINT>>> typedRenderers;
+		std::unordered_map<Material*, std::unordered_map<Renderer*, std::vector<UINT>>> typedRenderers{};
 		
 		
-		std::set<Camera*> cameras;
+		std::set<Camera*> cameras{};
 
 		WorldData worldData = {};
 
@@ -70,7 +72,7 @@ namespace PEPEngine::Common
 
 		void UpdateGameObjects(std::shared_ptr<GameObject> gameObject);
 
-		void Serialize(json& j) override;;
-		void Deserialize(json& j) override;;
+		void Serialize(json& j) ;
+		void Deserialize(json& j) ;
 	};
 }

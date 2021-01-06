@@ -18,7 +18,7 @@ namespace PEPEngine::Common
 			Image,
 			Mesh,
 			Material,
-			Scene
+			Level
 		};
 	};
 
@@ -46,10 +46,10 @@ namespace PEPEngine::Common
 
 	public:
 
-		Asset()
+		Asset(AssetType::Type type = AssetType::Type::None) : type(type)
 		{
-		};
-		
+		}
+
 		Asset(unsigned long long ID, std::filesystem::path pathToFile, AssetType::Type type = AssetType::None);
 
 

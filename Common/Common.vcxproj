@@ -204,6 +204,7 @@
     <ClInclude Include="goap\Planner.h" />
     <ClInclude Include="goap\WorldState.h" />
     <ClInclude Include="GPass.h" />
+    <ClInclude Include="Level.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="KeyboardDevice.h" />
     <ClInclude Include="Light.h" />
@@ -256,6 +257,7 @@
     <ClCompile Include="goap\Planner.cpp" />
     <ClCompile Include="goap\WorldState.cpp" />
     <ClCompile Include="GPass.cpp" />
+    <ClCompile Include="Level.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="KeyboardDevice.cpp" />
     <ClCompile Include="Light.cpp" />

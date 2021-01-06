@@ -187,14 +187,6 @@ namespace PEPEngine::Common
 
 	void Scene::Serialize(json& j)
 	{
-		if(type == AssetType::None)		
-			type = AssetType::Scene;
-
-		if(ID == UINT64_MAX)
-			ID = AssetDatabase::GenerateID();
-
-		SerializeIDAndType(j);
-
 		j["GameObjectsCount"] = objects.size();
 
 		auto array = json::array();
@@ -210,10 +202,8 @@ namespace PEPEngine::Common
 
 	void Scene::Deserialize(json& j)
 	{
-		DeserializeIDAndType(j);
-
 		UINT count;
-		assert(TryReadVariable<UINT>(j, "GameObjectsCount", &count));
+		assert(Asset::TryReadVariable<UINT>(j, "GameObjectsCount", &count));
 
 		json array = j["GameObjects"];
 		

@@ -42,7 +42,7 @@ namespace SimpleRender
 
 		UINT64 fenceValues[globalCountFrameResources];
 
-		std::shared_ptr<Scene> scene = nullptr;
+		std::shared_ptr<Level> level = nullptr;
 
 		std::vector<Camera*> cameras;
 

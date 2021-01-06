@@ -11,7 +11,9 @@
 #include "GModel.h"
 #include "GTexture.h"
 #include "IDGenerator.hpp"
+#include "Level.h"
 #include "NativeModel.h"
+#include "Texture.h"
 
 
 namespace PEPEngine::Common
@@ -65,6 +67,19 @@ namespace PEPEngine::Common
 		return CreateModelFromGenerated(cmdList, genMesh, L"quad");
 	}
 
+
+	void AssetDatabase::UpdateAsset(std::shared_ptr<Asset> asset)
+	{
+		assert(asset->ID != UINT64_MAX);
+
+		const auto it = loadedAssets.find(asset->ID);
+
+		assert(it != loadedAssets.end());
+
+		SaveToFile(asset, asset->pathToFile);
+
+		//actualPathToLoadedAssets[asset->pathToFile] = asset;
+	}
 
 	void AssetDatabase::RemoveAsset(const UINT64 id)
 	{
@@ -141,7 +156,26 @@ namespace PEPEngine::Common
 			{
 				if(file.path().filename().extension() == ASSET_EXTENSION_NAME)
 				{
-					LoadAssetFromFile(file.path());
+					auto path = file.path();
+
+					json j;
+					Asset::ReadFromFile(path, j);
+
+					AssetType::Type type;
+					assert(Asset::TryReadVariable< AssetType::Type>(j, "Type", &type));
+
+					std::shared_ptr<Asset> asset;
+					
+					switch (type)
+					{
+					case AssetType::Image: asset = std::make_shared<Texture>(); break;
+					case AssetType::Mesh: break;
+					case AssetType::Material: break;
+					case AssetType::Level: asset = std::make_shared<Level>(); break;
+					default: asset = std::make_shared<Asset>(); ;
+					}					
+
+					CreatePEPEFile(asset, path);
 				}
 			}
 		}		
@@ -150,14 +184,6 @@ namespace PEPEngine::Common
 	UINT64 AssetDatabase::GenerateID()
 	{
 		return IDGenerator::Generate();
-	}
-
-	void AssetDatabase::DeserializeAssetData(std::shared_ptr<Asset> asset, const std::filesystem::path& pathToFile)
-	{
-		json j;
-		Asset::ReadFromFile(pathToFile, j);
-		
-		asset->Deserialize(j);
 	}
 
 	std::shared_ptr<Asset> AssetDatabase::FindAssetByID(const UINT64 id)
@@ -169,30 +195,62 @@ namespace PEPEngine::Common
 		return nullptr;
 	}
 
-	
-	
+	std::shared_ptr<Asset> AssetDatabase::FindAssetByPath(std::filesystem::path& assetPath)
+	{
+		if (assetPath.wstring().find(AssetFolderPath) == std::string::npos)
+		{
+			assetPath = AssetFolderPath.concat(L"\\").concat(assetPath.filename().wstring());
+		}
+
+		if (assetPath.wstring().find(ASSET_EXTENSION_NAME) == std::wstring::npos)
+		{
+			assetPath = assetPath.concat(ASSET_EXTENSION_NAME);
+		}		
+		
+		auto it = actualPathToLoadedAssets.find(assetPath);
+		if (it != actualPathToLoadedAssets.end()) return it->second;
+		return nullptr;
+	}
+
+
+	void AssetDatabase::SaveToFile(std::shared_ptr<Asset> asset, const std::filesystem::path& saveAssetPath)
+	{
+		json json;
+		asset->Serialize(json);
+		Asset::WriteToFile( saveAssetPath, json);
+	}
+
+	void AssetDatabase::LoadFromFile(std::shared_ptr<Asset> asset, const std::filesystem::path& saveAssetPath)
+	{
+		json json;
+		Asset::ReadFromFile(saveAssetPath, json);		
+		asset->Deserialize(json);
+	}
+
 	void AssetDatabase::CreatePEPEFile(std::shared_ptr<Asset> asset, const std::filesystem::path& saveAssetPath)
 	{
 		CheckOrCreateFolder(saveAssetPath);
-
-		json json;
+		
+		asset->pathToFile = saveAssetPath;
+		
+		
 		if(std::filesystem::exists(saveAssetPath))
 		{
-			Asset::ReadFromFile(saveAssetPath, json);		
-			asset->Deserialize(json);
+			LoadFromFile(asset, saveAssetPath);
 			
-			asset->pathToFile = saveAssetPath;
 			IDGenerator::AddLoadedID(asset->ID);			
 		}
 		else
 		{
 			asset->ID = GenerateID();
-			asset->pathToFile = saveAssetPath;
-			
-			asset->Serialize(json);
-			Asset::WriteToFile( saveAssetPath, json);
+
+			SaveToFile(asset, saveAssetPath);
 		}
 
+		actualPathToLoadedAssets[saveAssetPath] = asset;
 		loadedAssets[asset->ID] = asset;
+		
+		typedAssets[asset->type].push_back(asset->ID);
+		
 	}
 }

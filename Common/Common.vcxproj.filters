@@ -199,6 +199,9 @@
     <ClInclude Include="Texture.h">
       <Filter>Assets</Filter>
     </ClInclude>
+    <ClInclude Include="Level.h">
+      <Filter>Assets</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -343,6 +346,9 @@
       <Filter>Assets</Filter>
     </ClCompile>
     <ClCompile Include="Texture.cpp">
+      <Filter>Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="Level.cpp">
       <Filter>Assets</Filter>
     </ClCompile>
   </ItemGroup>

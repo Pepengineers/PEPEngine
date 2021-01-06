@@ -23,7 +23,6 @@
 	type(json& json): parent(json) { InitializeFromJson(json); }
 
 
-
 #define INVOKE_SERIALIZE_(ARGS) SERIALIZE_FROM_JSON_ ARGS
 
 #define SERIALIZE_FROM_JSON(...) INVOKE_SERIALIZE_((__VA_ARGS__, Component))
@@ -36,36 +35,27 @@ namespace PEPEngine
 
 		class Component : public Asset
 		{
-			
-			
 		protected:
 
-			inline static std::unordered_map<std::wstring, std::function<std::shared_ptr<Component>(json&)>> componentsFactory{};
+			inline static std::unordered_map<std::wstring, std::function<std::shared_ptr<Component>(json&)>>
+			componentsFactory{};
 
-			
-			
-			
-			
-			Component(json& json)	{			}			
-			
+
+			Component(json& json);
+
 		public:
 
-			static std::shared_ptr<Component> CreateFromFile(json& json, std::wstring type)
-			{
-				return (componentsFactory[type](json));
-			}
-			
-			virtual ~Component() = default;
+			static std::shared_ptr<Component> CreateFromFile(json& json, const std::wstring& componentGUID);
+
+			virtual ~Component();
 
 			GameObject* gameObject = nullptr;
 
-			
 
 			Component();
 
 			virtual void Update() = 0;
 		public:
-			
 		};
 	}
 }

@@ -16,6 +16,7 @@
 #include "Transform.h"
 #include "Window.h"
 #include "AssetDatabase.h"
+#include "Level.h"
 
 namespace SimpleRender
 {
@@ -33,9 +34,7 @@ namespace SimpleRender
 			return false;
 		}
 
-		MainWindow->SetVSync(true);
-
-		
+		MainWindow->SetVSync(true);		
 		
 		uiPass = std::make_shared<UILayer>(MainWindow->GetClientWidth(), MainWindow->GetClientHeight(), MainWindow->GetWindowHandle());
 		
@@ -110,8 +109,17 @@ namespace SimpleRender
 			computeList->TransitionBarrier(texture->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON);
 		computeList->FlushResourceBarriers();
 		computeQueue->WaitForFenceValue(computeQueue->ExecuteCommandList(computeList));		
+
+		level = std::static_pointer_cast<Level>( AssetDatabase::Get(AssetType::Level));
+
+		if(level == nullptr)
+		{
+			level = std::static_pointer_cast<Level>(AssetDatabase::CreateAsset<Level>(std::filesystem::path("MainScene")));
+		}
+
+		auto scene = level->GetScene();
 		
-		scene = std::make_shared<Scene>();
+		//scene = AssetDatabase;
 
 		
 		auto seamless = std::make_shared<Material>(L"seamless", RenderMode::Opaque);
@@ -192,6 +200,8 @@ namespace SimpleRender
 		}		
 
 		scene->Prepare();
+
+		AssetDatabase::UpdateAsset(level);
 	}
 
 
@@ -206,7 +216,7 @@ namespace SimpleRender
 			renderQueue->WaitForFenceValue(values);
 		}
 
-		scene->Update();
+		level->GetScene()->Update();
 		
 
 		static bool spawned = false;
@@ -220,7 +230,7 @@ namespace SimpleRender
 				rModel->AddComponent(renderer);
 				rModel->GetTransform()->SetPosition(Camera::mainCamera->gameObject->GetTransform()->GetWorldPosition());
 
-				scene->AddGameObject(std::move(rModel));
+				level->GetScene()->AddGameObject(std::move(rModel));
 
 				spawned = true;
 			}
@@ -240,7 +250,7 @@ namespace SimpleRender
 		auto cmdList = renderQueue->GetCommandList();
 
 		
-		scene->Render(cmdList);
+		level->GetScene()->Render(cmdList);
 
 		uiPass->Render(cmdList);
 
