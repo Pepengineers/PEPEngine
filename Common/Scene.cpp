@@ -146,6 +146,11 @@ namespace PEPEngine::Common
 				}
 			}
 		}
+		auto ai = gameObject->GetComponent<AIComponent>();
+		if(ai != nullptr)
+		{
+			ai->addGlobalState(objects);
+		}
 	}
 
 	FrameResource* Scene::GetCurrentFrameResource() const

@@ -6,6 +6,12 @@ namespace PEPEngine
 {
 	namespace Common
 	{
+		class ModelRenderer;
+		class Component;
+		class Transform;
+		class Renderer;
+		class AiComponent;
+		
 		class Renderer : public Component
 		{
 		public:

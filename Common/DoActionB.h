@@ -1,8 +1,9 @@
 #pragma once
-#include "goap/Action.h"
+#include "Action.h"
+
 
 class DoActionB :
-	public PEPEngine::goap::Action
+	public Action
 {
 public:
 	DoActionB() : Action()
@@ -22,5 +23,6 @@ public:
 		setCost(cost);
 		
 	}
-	void prePerform() override;
+	void prePerform(PEPEngine::Common::GameObject*) override;
+	void postPerform(PEPEngine::Common::GameObject*) override;
 };

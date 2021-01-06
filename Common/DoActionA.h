@@ -1,8 +1,8 @@
 #pragma once
-#include "goap/Action.h"
+#include "Action.h"
 
 class DoActionA :
-	public PEPEngine::goap::Action
+	public Action
 {
 public:
 	DoActionA() : Action()
@@ -10,7 +10,7 @@ public:
 		setRequiresInRange(true);
 		target->SetPosition(Vector3(1, 1, 1));
 		setCost(1);
-		setEffect(POKE_A, true);
+		setPrecondition(POKE_B, true);
 	}
 
 	DoActionA(std::string name, int cost) : Action(name, cost)
@@ -21,5 +21,6 @@ public:
 		setEffect(POKE_A, true);
 		
 	}
-	void prePerform() override;
+	void prePerform(PEPEngine::Common::GameObject*) override;
+	void postPerform(PEPEngine::Common::GameObject*) override;
 };

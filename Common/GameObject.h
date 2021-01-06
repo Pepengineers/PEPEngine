@@ -18,6 +18,7 @@ namespace PEPEngine
 		class Transform;
 		class Renderer;
 
+
 		class GameObject
 		{
 		public:

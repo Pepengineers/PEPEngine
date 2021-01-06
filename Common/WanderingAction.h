@@ -1,13 +1,15 @@
 #pragma once
-#include "goap/Action.h"
+#include "Action.h"
 
 class WanderingAction :
-    public PEPEngine::goap::Action
+    public Action
 {
 public:
 	WanderingAction();
 	WanderingAction(std::string name, int cost);
-	 void prePerform() override ;
+	
+	 void prePerform(PEPEngine::Common::GameObject*) override;
+	 void postPerform(PEPEngine::Common::GameObject*) override;
 	
 };
 

@@ -1,36 +1,54 @@
 #pragma once
-#include "Component.h"
-#include "goap/Planner.h"
-#include "goap/WorldState.h"
+#include "WorldState.h"
+#include "GameObject.h"
+#include "Planner.h"
 
 
 class AIComponent : public PEPEngine::Common::Component
-{
-	enum class FSMState
-	{
-		Idle,
-		MoveTo,
-		PerformAction,
-	};
+		{
+			enum class FSMState
+			{
+				Idle,
+				MoveTo,
+				PerformAction,
+			};
+			enum class AIType
+			{
+				Aggressive,
+				Passive,
+				Frightened
 
-	PEPEngine::goap::WorldState worldState;
-	PEPEngine::goap::WorldState goal;
-	PEPEngine::goap::Planner planner;
+			};
 
-	std::vector<PEPEngine::goap::Action*> currentActions;
-	std::vector<PEPEngine::goap::Action*> availableActions;
+			WorldState worldState;
+			WorldState goal;
+			Planner planner;
 
-	FSMState currentState_;
+			std::vector<Action*> currentActions;
+			std::vector<Action*> availableActions;
+			PEPEngine::Allocator::custom_vector<std::shared_ptr<PEPEngine::Common::GameObject>>* otherObjects;
 
-public:
+			FSMState currentState_;
+			AIType currentAIType;
+			bool idleWandering = true;
 
-	AIComponent();
-	void SetActionList();
-	void SetWorldState();
-	void Update() override;
-	void PopulateDrawCommand(std::shared_ptr<PEPEngine::Graphics::GCommandList> cmdList) override;
+		public:
+			AIComponent();
+			void SetActionList();
+			void SetStartWorldState();
+			void setWorldState(int, bool);
+			void setGoalState(int, bool);
+			float getDistanceToPlayer();
+			void addGlobalState(PEPEngine::Allocator::custom_vector<std::shared_ptr<PEPEngine::Common::GameObject>>& objects);
+			PEPEngine::Common::GameObject* getPlayer();
+			void Update() override;;
+			void preUpdate();
+			void PopulateDrawCommand(std::shared_ptr<PEPEngine::Graphics::GCommandList> cmdList) override;;
 
-private:
-	float dt;
-	Vector3 dumpTarget;
-};
+		private:
+			float dt;
+			float rotationSpeed;
+			float movementSpeed;
+			Vector3 dumpTarget;
+			float getDelta(Vector3);
+		};

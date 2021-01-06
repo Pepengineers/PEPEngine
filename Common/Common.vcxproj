@@ -186,20 +186,23 @@
     <ClInclude Include="..\ThirdPerson\imgui\imstb_truetype.h" />
     <ClInclude Include="AIComponent.h" />
     <ClInclude Include="AssetsLoader.h" />
+    <ClInclude Include="AttackAction.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraController.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="d3dApp.h" />
     <ClInclude Include="DoActionA.h" />
     <ClInclude Include="DoActionB.h" />
+    <ClInclude Include="FleeAction.h" />
     <ClInclude Include="FrameResource.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GeometryGenerator.h" />
-    <ClInclude Include="goap\Action.h" />
-    <ClInclude Include="goap\Node.h" />
-    <ClInclude Include="goap\Planner.h" />
-    <ClInclude Include="goap\WorldState.h" />
+    <ClInclude Include="Action.h" />
+    <ClInclude Include="Node.h" />
+    <ClInclude Include="Planner.h" />
+    <ClInclude Include="WorldState.h" />
+    <ClInclude Include="GoToAction.h" />
     <ClInclude Include="GPass.h" />
     <ClInclude Include="KeyboardDevice.h" />
     <ClInclude Include="Light.h" />
@@ -212,6 +215,7 @@
     <ClInclude Include="NativeModel.h" />
     <ClInclude Include="ObjectMover.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="PickupAction.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RenderPass.h" />
     <ClInclude Include="Rotater.h" />
@@ -236,19 +240,22 @@
     <ClCompile Include="..\ThirdPerson\imgui\imgui_widgets.cpp" />
     <ClCompile Include="AIComponent.cpp" />
     <ClCompile Include="AssetsLoader.cpp" />
+    <ClCompile Include="AttackAction.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CameraController.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="d3dApp.cpp" />
     <ClCompile Include="DoActionA.cpp" />
     <ClCompile Include="DoActionB.cpp" />
+    <ClCompile Include="FleeAction.cpp" />
     <ClCompile Include="FrameResource.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GeometryGenerator.cpp" />
-    <ClCompile Include="goap\Action.cpp" />
-    <ClCompile Include="goap\Node.cpp" />
-    <ClCompile Include="goap\Planner.cpp" />
-    <ClCompile Include="goap\WorldState.cpp" />
+    <ClCompile Include="Action.cpp" />
+    <ClCompile Include="Node.cpp" />
+    <ClCompile Include="Planner.cpp" />
+    <ClCompile Include="WorldState.cpp" />
+    <ClCompile Include="GoToAction.cpp" />
     <ClCompile Include="GPass.cpp" />
     <ClCompile Include="KeyboardDevice.cpp" />
     <ClCompile Include="Light.cpp" />
@@ -266,6 +273,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="PickupAction.cpp" />
     <ClCompile Include="RenderPass.cpp" />
     <ClCompile Include="Rotater.cpp" />
     <ClCompile Include="Scene.cpp" />

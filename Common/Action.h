@@ -1,30 +1,16 @@
-/**
- * @class Action
- * @brief Operates on the world state.
- *
- * @date  July 2014
- * @copyright (c) 2014 Prylis Inc.. All rights reserved.
- */
-
 #pragma once
-
+#include "Transform.h"
+#include "WorldState.h"
+#include "GameObject.h"
+#include <memory>
 #include <string>
 #include <unordered_map>
 
-#include "../Transform.h"
-
-// To support Google Test for private members
-#ifndef TEST_FRIENDS
-#define TEST_FRIENDS
-#endif
-namespace PEPEngine
-{
-	namespace goap
-	{
-		struct WorldState;
 
 		class Action
 		{
+
+
 		protected:
 			std::string name_; // The human-readable action name
 			int cost_; // The numeric cost of this action
@@ -39,7 +25,7 @@ namespace PEPEngine
 			bool inRange = false;
 			bool isDone = false;
 
-		
+
 		public:
 			Action();
 			Action(std::string name, int cost);
@@ -50,7 +36,18 @@ namespace PEPEngine
 				POKE_B,
 				POKE_C,
 				WANDERING,
+				PICK_UP,
+				ATTACK,
 			};
+			enum Conditions
+			{
+				HAS_WEAPON,
+				NEED_ATTACK,
+				NEED_FLEE,
+				NEED_WANDERING,
+				TARGET_ALIVE,
+			};
+
 
 			bool perform(WorldState& ws);
 
@@ -60,10 +57,13 @@ namespace PEPEngine
 			void setInRange(bool);
 			void setRequiresInRange(bool);
 			void setCost(int);
-			virtual void prePerform() = 0;
-			void postPerform();
+			
+
+
+			virtual void prePerform(PEPEngine::Common::GameObject*) =0;
+			virtual void postPerform(PEPEngine::Common::GameObject*) =0;
 			Vector3 getSteering();
-			std::shared_ptr<Common::Transform> target;
+			std::shared_ptr<PEPEngine::Common::Transform> target;
 			float range = 2;
 
 			/**
@@ -105,7 +105,5 @@ namespace PEPEngine
 
 			std::string name() const { return name_; }
 
-			TEST_FRIENDS;
+
 		};
-	}
-}

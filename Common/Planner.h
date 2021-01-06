@@ -1,29 +1,13 @@
-/**
- * @class Planner
- * @brief Implements an A* algorithm for searching the action space
- *
- * @date July 2014
- * @copyright (c) 2014 Prylis Inc. All rights reserved.
- */
 
 #pragma once
-
 #include "Action.h"
 #include "Node.h"
 #include "WorldState.h"
-
-#include <ostream>
-#include <unordered_map>
 #include <vector>
 
 // To support Google Test for private members
-#ifndef TEST_FRIENDS
-#define TEST_FRIENDS
-#endif
-namespace PEPEngine
-{
-	namespace goap
-	{
+
+		
 		class Planner
 		{
 		private:
@@ -92,9 +76,8 @@ namespace PEPEngine
 			 @exception std::runtime_error if no plan could be made with the available actions and states
 			 */
 			std::vector<Action*> plan(const WorldState& start, const WorldState& goal,
-			                         const std::vector<Action*>& actions);
+			                                             const std::vector<Action*>& actions);
 
-			TEST_FRIENDS;
+			
 		};
-	}
-}
+

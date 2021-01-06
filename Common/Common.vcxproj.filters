@@ -97,18 +97,6 @@
     <ClInclude Include="ShaderFactory.h">
       <Filter>Render</Filter>
     </ClInclude>
-    <ClInclude Include="goap\Planner.h">
-      <Filter>GOAP</Filter>
-    </ClInclude>
-    <ClInclude Include="goap\Action.h">
-      <Filter>GOAP</Filter>
-    </ClInclude>
-    <ClInclude Include="goap\WorldState.h">
-      <Filter>GOAP</Filter>
-    </ClInclude>
-    <ClInclude Include="goap\Node.h">
-      <Filter>GOAP</Filter>
-    </ClInclude>
     <ClInclude Include="AIComponent.h">
       <Filter>Components</Filter>
     </ClInclude>
@@ -184,6 +172,30 @@
     <ClInclude Include="WanderingAction.h">
       <Filter>GOAP\Actions</Filter>
     </ClInclude>
+    <ClInclude Include="GoToAction.h">
+      <Filter>GOAP\Actions</Filter>
+    </ClInclude>
+    <ClInclude Include="PickupAction.h">
+      <Filter>GOAP\Actions</Filter>
+    </ClInclude>
+    <ClInclude Include="AttackAction.h">
+      <Filter>GOAP\Actions</Filter>
+    </ClInclude>
+    <ClInclude Include="FleeAction.h">
+      <Filter>GOAP\Actions</Filter>
+    </ClInclude>
+    <ClInclude Include="WorldState.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Action.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Node.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Planner.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -237,16 +249,16 @@
     <ClCompile Include="Transform.cpp">
       <Filter>Components</Filter>
     </ClCompile>
-    <ClCompile Include="goap\Action.cpp">
+    <ClCompile Include="Action.cpp">
       <Filter>GOAP</Filter>
     </ClCompile>
-    <ClCompile Include="goap\Node.cpp">
+    <ClCompile Include="Node.cpp">
       <Filter>GOAP</Filter>
     </ClCompile>
-    <ClCompile Include="goap\Planner.cpp">
+    <ClCompile Include="Planner.cpp">
       <Filter>GOAP</Filter>
     </ClCompile>
-    <ClCompile Include="goap\WorldState.cpp">
+    <ClCompile Include="WorldState.cpp">
       <Filter>GOAP</Filter>
     </ClCompile>
     <ClCompile Include="AIComponent.cpp">
@@ -319,6 +331,18 @@
       <Filter>IMGUI</Filter>
     </ClCompile>
     <ClCompile Include="WanderingAction.cpp">
+      <Filter>GOAP\Actions</Filter>
+    </ClCompile>
+    <ClCompile Include="GoToAction.cpp">
+      <Filter>GOAP\Actions</Filter>
+    </ClCompile>
+    <ClCompile Include="PickupAction.cpp">
+      <Filter>GOAP\Actions</Filter>
+    </ClCompile>
+    <ClCompile Include="AttackAction.cpp">
+      <Filter>GOAP\Actions</Filter>
+    </ClCompile>
+    <ClCompile Include="FleeAction.cpp">
       <Filter>GOAP\Actions</Filter>
     </ClCompile>
   </ItemGroup>

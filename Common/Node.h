@@ -1,20 +1,8 @@
-/**
- * @class Node
- * @brief A node is any point on the path between staring point and ending point (inclusive)
- *
- * @date July 2014
- * @copyright (c) 2014 Prylis Inc. All rights reserved.
- */
-
 #pragma once
-
 #include "Action.h"
 #include "WorldState.h"
 
-namespace PEPEngine
-{
-	namespace goap
-	{
+
 		struct Node
 		{
 			static int last_id_; // a static that lets us assign incrementing, unique IDs to nodes
@@ -24,7 +12,7 @@ namespace PEPEngine
 			int parent_id_; // the ID of this node's immediate predecessor
 			int g_; // The A* cost from 'start' to 'here'
 			int h_; // The estimated remaining cost to 'goal' form 'here'
-			 Action* action_; // The action that got us here (for replay purposes)
+			Action* action_; // The action that got us here (for replay purposes)
 
 			Node();
 			Node(WorldState state, int g, int h, int parent_id, Action* action);
@@ -58,5 +46,4 @@ namespace PEPEngine
 			out << ", " << n.ws_ << "}";
 			return out;
 		}
-	}
-}
+

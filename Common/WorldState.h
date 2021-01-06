@@ -12,10 +12,7 @@
 #include <string>
 #include <map>
 
-namespace PEPEngine
-{
-	namespace goap
-	{
+
 		struct WorldState
 		{
 			float priority_; // useful if this is a goal state, to distinguish from other possible goals
@@ -79,5 +76,3 @@ namespace PEPEngine
 			out << "}";
 			return out;
 		}
-	}
-}

@@ -1,5 +1,7 @@
 #include "WanderingAction.h"
 
+#include "AIComponent.h"
+
 WanderingAction::WanderingAction() : Action()
 {
 	setEffect(WANDERING, false);
@@ -16,7 +18,22 @@ WanderingAction::WanderingAction(std::string name, int cost) : Action(name, cost
 	target->SetPosition(Vector3(100, 100, 0));
 }
 
-void WanderingAction::prePerform()
+void WanderingAction::prePerform(PEPEngine::Common::GameObject* g)
 {
-	target->SetPosition(Vector3(rand() % 200, 1, rand() %200));
+
+	auto x = g->GetTransform()->GetWorldPosition().x;
+	auto z = g->GetTransform()->GetWorldPosition().x;
+  target->SetPosition(Vector3( x + rand() % 200 - 100, 1, z + rand() % 200 - 100));
 }
+
+void WanderingAction::postPerform(PEPEngine::Common::GameObject* g)
+{
+	
+
+	
+
+}
+
+
+
+

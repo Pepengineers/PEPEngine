@@ -154,8 +154,8 @@ namespace SimpleRender
 				rModel->GetTransform()->SetPosition(
 					Vector3::Right * -30 * j + Vector3::Forward * 10 * i);
 
-				/*	auto ai = std::make_shared<AIComponent>();
-					rModel->AddComponent(ai);*/
+					auto ai = std::make_shared<AIComponent>();
+					rModel->AddComponent(ai);
 
 
 				auto pos = rModel->GetTransform()->GetWorldPosition() + (Vector3::Up * 1 * 10);

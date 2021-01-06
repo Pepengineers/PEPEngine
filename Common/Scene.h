@@ -2,6 +2,7 @@
 #include "GameObject.h"
 #include "FrameResource.h"
 #include "GraphicPSO.h"
+#include "AIComponent.h"
 
 namespace PEPEngine::Common
 {
