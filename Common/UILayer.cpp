@@ -72,6 +72,29 @@ namespace PEPEngine::Common
 		ImGui::DestroyContext();
 	}
 
+	static void ShowDockingDisabledMessage()
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		ImGui::Text("ERROR: Docking is not enabled! See Demo > Configuration.");
+		ImGui::Text("Set io.ConfigFlags |= ImGuiConfigFlags_DockingEnable in your code, or ");
+		ImGui::SameLine(0.0f, 0.0f);
+		if (ImGui::SmallButton("click here"))
+			io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	}
+
+	void UILayer::RenderMainWindowAsDockPanel()
+	{
+		auto& io = ImGui::GetIO();
+		if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
+		{
+			ImGui::DockSpaceOverViewport(ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+		}
+		else
+		{
+			ShowDockingDisabledMessage();
+		}
+	}
+
 	void UILayer::Render(std::shared_ptr<GCommandList> cmdList)
 	{
 		cmdList->SetDescriptorsHeap(&srvMemory);
@@ -80,6 +103,11 @@ namespace PEPEngine::Common
 		ImGui_ImplDX12_NewFrame();
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
+
+
+		RenderMainWindowAsDockPanel();
+
+		
 		ImGui::ShowDemoWindow();
 
 

@@ -27,5 +27,9 @@ namespace PEPEngine::Common
 
 		std::shared_ptr<StructuredUploadBuffer<MaterialData>> MaterialsBuffer = nullptr;
 		std::shared_ptr<StructuredUploadBuffer<LightData>> LightsBuffer = nullptr;
+
+		void UpdateLightBufferSize(UINT size);
+
+		void UpdateMaterialBufferSizer(UINT size);
 	};
 }

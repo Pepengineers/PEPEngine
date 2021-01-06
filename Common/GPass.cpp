@@ -96,9 +96,9 @@ namespace PEPEngine::Common
 		cmdList->TransitionBarrier(gbuffers[DepthMap], D3D12_RESOURCE_STATE_DEPTH_WRITE);
 		cmdList->FlushResourceBarriers();
 
-		cmdList->ClearRenderTarget(&deferredRTVDescriptor, NormalMap, DirectX::Colors::Blue);
+		cmdList->ClearRenderTarget(&deferredRTVDescriptor, NormalMap, DirectX::Colors::Black);
 		cmdList->ClearRenderTarget(&deferredRTVDescriptor, ColorMap, DirectX::Colors::Black);
-		cmdList->ClearRenderTarget(&deferredRTVDescriptor, PositionMap, DirectX::Colors::Blue);
+		cmdList->ClearRenderTarget(&deferredRTVDescriptor, PositionMap, DirectX::Colors::Black);
 		cmdList->ClearDepthStencil(&deferredDSVDescriptor, 0);
 
 
@@ -130,28 +130,20 @@ namespace PEPEngine::Common
 		desc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
 		desc.MipLevels = 1;
 
-		CD3DX12_CLEAR_VALUE optClear(NormalMapFormat, DirectX::Colors::Blue);
 			
-		gbuffers.push_back((GTexture(device, desc, L"Normal Roughness GMap", TextureUsage::RenderTarget, &optClear)));
+		gbuffers.push_back((GTexture(device, desc, L"Normal Roughness GMap", TextureUsage::RenderTarget)));
 
 		desc.Format = BaseColorMapFormat;
-
-		optClear = CD3DX12_CLEAR_VALUE(desc.Format, DirectX::Colors::Black);
 			
-		gbuffers.push_back((GTexture(device, desc, L"BaseColor Metalnes GMAP", TextureUsage::RenderTarget, &optClear)));
+		gbuffers.push_back((GTexture(device, desc, L"BaseColor Metalnes GMAP", TextureUsage::RenderTarget)));
 
 		desc.Format = PositionMapFormat;
 
-		optClear = CD3DX12_CLEAR_VALUE(desc.Format, DirectX::Colors::Black);
+		
 			
-		gbuffers
-			.push_back((GTexture(device, desc, L"Position GMAP", TextureUsage::RenderTarget, &optClear)));
+		gbuffers.push_back((GTexture(device, desc, L"Position GMAP", TextureUsage::RenderTarget)));
 
-			
-		optClear.Format = DepthMapFormat;
-		optClear.DepthStencil.Depth = 1.0f;
-		optClear.DepthStencil.Stencil = 0;
-
+		auto optClear = CD3DX12_CLEAR_VALUE(DepthMapFormat, 1.0f, 0);
 		desc.Format = DepthMapFormat;
 		desc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
 

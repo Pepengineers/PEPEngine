@@ -52,6 +52,8 @@ namespace PEPEngine
 
 			GDescriptor textureMapsSRVMemory;
 
+			bool IsInited = false;
+			
 		public:
 
 			Vector4 AmbientColor;
@@ -82,6 +84,7 @@ namespace PEPEngine
 			void SetRenderMode(RenderMode::Mode pso);
 
 			Material(std::wstring name, RenderMode::Mode pso = RenderMode::Opaque);
+			void UpdateDescriptors();
 
 			void InitMaterial(std::shared_ptr<GDevice> device);
 

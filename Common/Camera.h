@@ -1,4 +1,6 @@
 #pragma once
+#include <array>
+
 #include "Component.h"
 #include "d3dUtil.h"
 #include "DirectXBuffers.h"
@@ -35,7 +37,9 @@ namespace PEPEngine
 
 			CameraConstants cameraData;
 
-			std::shared_ptr<ConstantUploadBuffer<CameraConstants>> CameraConstantBuffer = nullptr;
+			UINT currentFrameResourceIndex = 0;
+			
+			std::array<std::shared_ptr<ConstantUploadBuffer<CameraConstants>>,globalCountFrameResources> CameraConstantBuffers;
 
 
 			std::shared_ptr<GRenderTexture> renderTarget = nullptr;

@@ -20,6 +20,8 @@ namespace PEPEngine::Common
 
 	void Camera::Update()
 	{
+		currentFrameResourceIndex = (currentFrameResourceIndex + 1) % globalCountFrameResources;
+		
 		auto transform = gameObject->GetTransform();
 
 		if (transform->IsDirty())
@@ -56,7 +58,7 @@ namespace PEPEngine::Common
 			cameraData.NearZ = nearZ;
 			cameraData.FarZ = farZ;
 
-			CameraConstantBuffer->CopyData(0, cameraData);
+			CameraConstantBuffers[currentFrameResourceIndex]->CopyData(0, cameraData);
 
 			NumFramesDirty--;
 		}
@@ -71,7 +73,7 @@ namespace PEPEngine::Common
 
 	ConstantUploadBuffer<CameraConstants>& Camera::GetCameraDataBuffer() const
 	{
-		return *CameraConstantBuffer.get();
+		return *CameraConstantBuffers[currentFrameResourceIndex].get();
 	}
 
 	void Camera::SetRenderTarget(std::shared_ptr<GTexture> target, GDescriptor* rtv)
@@ -121,9 +123,15 @@ namespace PEPEngine::Common
 	Camera::Camera(float aspect,const  std::shared_ptr<GRenderTexture> target) : Component(), aspectRatio(aspect)
 	{
 		mainCamera = this;
-		CameraConstantBuffer = std::make_shared<ConstantUploadBuffer<CameraConstants>>(
-			GDeviceFactory::GetDevice(), 1, L"Camera Data Buffer");
 
+
+		for (int i = 0; i < globalCountFrameResources; ++i)
+		{
+			CameraConstantBuffers[i] = std::make_shared<ConstantUploadBuffer<CameraConstants>>(
+				GDeviceFactory::GetDevice(), 1, L"Camera Data Buffer" + std::to_wstring(i));
+		}
+		
+		
 		SetRenderTarget(target);
 	}
 

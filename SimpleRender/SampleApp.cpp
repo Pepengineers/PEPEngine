@@ -47,6 +47,9 @@ namespace SimpleRender
 		auto atlas = assetLoader.CreateModelFromFile(cmdList, "Data\\Objects\\Atlas\\Atlas.obj");
 		models[L"atlas"] = std::move(atlas);
 
+		auto PBody = assetLoader.CreateModelFromFile(cmdList, "Data\\Objects\\P-Body\\P-Body.obj");
+		models[L"PBody"] = std::move(PBody);
+
 		auto quad = assetLoader.GenerateQuad(cmdList);
 		models[L"quad"] = std::move(quad);
 
@@ -198,6 +201,27 @@ namespace SimpleRender
 		ambiantPass->Update();
 		shadowPass->Update();
 		lightPass->Update();
+
+		static bool spawned = false;
+
+		if(keyboard.KeyIsPressed('P'))
+		{
+			if(!spawned)
+			{
+				auto rModel = std::make_shared<GameObject>();
+				auto renderer = std::make_shared<ModelRenderer>(device, models[L"PBody"]);
+				rModel->AddComponent(renderer);
+				rModel->GetTransform()->SetPosition(Camera::mainCamera->gameObject->GetTransform()->GetWorldPosition());
+
+				scene->AddGameObject(std::move(rModel));
+
+				spawned = true;
+			}
+		}
+		else
+		{
+			spawned = false;
+		}
 		
 	}
 

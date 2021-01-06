@@ -11,3 +11,16 @@ PEPEngine::Common::FrameResource::FrameResource(std::shared_ptr<GDevice> device,
 	LightsBuffer = std::make_shared<StructuredUploadBuffer<LightData>>(
 		device, lights, L"lights dat upload buffer");
 }
+
+void PEPEngine::Common::FrameResource::UpdateLightBufferSize(UINT size)
+{
+	LightsBuffer = std::make_shared<StructuredUploadBuffer<LightData>>(
+		LightsBuffer->GetDevice(), size, L"lights dat upload buffer");
+}
+
+void PEPEngine::Common::FrameResource::UpdateMaterialBufferSizer(UINT size)
+{
+	MaterialsBuffer = std::make_shared<StructuredUploadBuffer<MaterialData>>(
+		MaterialsBuffer->GetDevice(), size, L"Materials Data UploadBuffer");
+
+}
