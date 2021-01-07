@@ -38,7 +38,8 @@ namespace SimpleRender
 
 		UINT currentFrameResourceIndex = 0;
 
-		UINT64 fenceValues[globalCountFrameResources];
+		UINT64 renderFenceValues[globalCountFrameResources];
+		UINT64 computeFenceValues[globalCountFrameResources];
 
 		std::shared_ptr<AScene> level = nullptr;
 

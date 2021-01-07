@@ -91,7 +91,7 @@
       <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)ThirdPerson\imgui;$(SolutionDir)ThirdPerson\imgui\backends;$(SolutionDir)\Core\Utils;$(SolutionDir)Assimp\include;$(SolutionDir)\Core\Graphics;$(SolutionDir)\Core\Allocator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ThirdPerson\json\single_include;$(SolutionDir)ThirdPerson\imgui;$(SolutionDir)ThirdPerson\imgui\backends;$(SolutionDir)\Core\Utils;$(SolutionDir)Assimp\include;$(SolutionDir)\Core\Graphics;$(SolutionDir)\Core\Allocator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -114,7 +114,7 @@
       <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)ThirdPerson\imgui;$(SolutionDir)ThirdPerson\imgui\backends;$(SolutionDir)\Core\Utils;$(SolutionDir)Assimp\include;$(SolutionDir)\Core\Graphics;$(SolutionDir)\Core\Allocator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ThirdPerson\json\single_include;$(SolutionDir)ThirdPerson\imgui;$(SolutionDir)ThirdPerson\imgui\backends;$(SolutionDir)\Core\Utils;$(SolutionDir)Assimp\include;$(SolutionDir)\Core\Graphics;$(SolutionDir)\Core\Allocator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -139,7 +139,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <AdditionalIncludeDirectories>$(SolutionDir)ThirdPerson\imgui;$(SolutionDir)ThirdPerson\imgui\backends;$(SolutionDir)\Core\Utils;$(SolutionDir)Assimp\include;$(SolutionDir)\Core\Graphics;$(SolutionDir)\Core\Allocator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ThirdPerson\json\single_include;$(SolutionDir)ThirdPerson\imgui;$(SolutionDir)ThirdPerson\imgui\backends;$(SolutionDir)\Core\Utils;$(SolutionDir)Assimp\include;$(SolutionDir)\Core\Graphics;$(SolutionDir)\Core\Allocator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>
@@ -160,7 +160,7 @@
       <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)ThirdPerson\imgui;$(SolutionDir)ThirdPerson\imgui\backends;$(SolutionDir)\Core\Utils;$(SolutionDir)Assimp\include;$(SolutionDir)\Core\Graphics;$(SolutionDir)\Core\Allocator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)ThirdPerson\json\single_include;$(SolutionDir)ThirdPerson\imgui;$(SolutionDir)ThirdPerson\imgui\backends;$(SolutionDir)\Core\Utils;$(SolutionDir)Assimp\include;$(SolutionDir)\Core\Graphics;$(SolutionDir)\Core\Allocator;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -185,27 +185,27 @@
     <ClInclude Include="..\ThirdPerson\imgui\imstb_textedit.h" />
     <ClInclude Include="..\ThirdPerson\imgui\imstb_truetype.h" />
     <ClInclude Include="..\ThirdPerson\json\single_include\nlohmann\json.hpp" />
+    <ClInclude Include="Action.h" />
     <ClInclude Include="AIComponent.h" />
     <ClInclude Include="AMaterial.h" />
     <ClInclude Include="AModel.h" />
     <ClInclude Include="Asset.h" />
     <ClInclude Include="AssetDatabase.h" />
     <ClInclude Include="AssimpModelLoader.h" />
+    <ClInclude Include="AttackAction.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraController.h" />
+    <ClInclude Include="CloudGenerator.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="d3dApp.h" />
     <ClInclude Include="DoActionA.h" />
     <ClInclude Include="DoActionB.h" />
+    <ClInclude Include="Emitter.h" />
     <ClInclude Include="FleeAction.h" />
     <ClInclude Include="FrameResource.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="GeometryGenerator.h" />
-    <ClInclude Include="Action.h" />
-    <ClInclude Include="Node.h" />
-    <ClInclude Include="Planner.h" />
-    <ClInclude Include="WorldState.h" />
     <ClInclude Include="GoToAction.h" />
     <ClInclude Include="GPass.h" />
     <ClInclude Include="AScene.h" />
@@ -219,9 +219,12 @@
     <ClInclude Include="ModelRenderer.h" />
     <ClInclude Include="Mousepad.h" />
     <ClInclude Include="NativeModel.h" />
+    <ClInclude Include="Node.h" />
     <ClInclude Include="ObjectMover.h" />
+    <ClInclude Include="ParticleEmitter.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PickupAction.h" />
+    <ClInclude Include="Planner.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RenderPass.h" />
     <ClInclude Include="Rotater.h" />
@@ -235,6 +238,7 @@
     <ClInclude Include="UILayer.h" />
     <ClInclude Include="WanderingAction.h" />
     <ClInclude Include="Window.h" />
+    <ClInclude Include="WorldState.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\ThirdPerson\imgui\backends\imgui_impl_dx12.cpp" />
@@ -244,6 +248,7 @@
     <ClCompile Include="..\ThirdPerson\imgui\imgui_draw.cpp" />
     <ClCompile Include="..\ThirdPerson\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\ThirdPerson\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="Action.cpp" />
     <ClCompile Include="AIComponent.cpp" />
     <ClCompile Include="AMaterial.cpp" />
     <ClCompile Include="AModel.cpp" />
@@ -253,18 +258,16 @@
     <ClCompile Include="AttackAction.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CameraController.cpp" />
+    <ClCompile Include="CloudGenerator.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="d3dApp.cpp" />
     <ClCompile Include="DoActionA.cpp" />
     <ClCompile Include="DoActionB.cpp" />
+    <ClCompile Include="Emitter.cpp" />
     <ClCompile Include="FleeAction.cpp" />
     <ClCompile Include="FrameResource.cpp" />
     <ClCompile Include="GameObject.cpp" />
     <ClCompile Include="GeometryGenerator.cpp" />
-    <ClCompile Include="Action.cpp" />
-    <ClCompile Include="Node.cpp" />
-    <ClCompile Include="Planner.cpp" />
-    <ClCompile Include="WorldState.cpp" />
     <ClCompile Include="GoToAction.cpp" />
     <ClCompile Include="GPass.cpp" />
     <ClCompile Include="AScene.cpp" />
@@ -278,7 +281,9 @@
     <ClCompile Include="ModelRenderer.cpp" />
     <ClCompile Include="Mousepad.cpp" />
     <ClCompile Include="NativeModel.cpp" />
+    <ClCompile Include="Node.cpp" />
     <ClCompile Include="ObjectMover.cpp" />
+    <ClCompile Include="ParticleEmitter.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -286,6 +291,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="PickupAction.cpp" />
+    <ClCompile Include="Planner.cpp" />
     <ClCompile Include="RenderPass.cpp" />
     <ClCompile Include="Rotater.cpp" />
     <ClCompile Include="Scene.cpp" />
@@ -297,6 +303,7 @@
     <ClCompile Include="UILayer.cpp" />
     <ClCompile Include="WanderingAction.cpp" />
     <ClCompile Include="Window.cpp" />
+    <ClCompile Include="WorldState.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

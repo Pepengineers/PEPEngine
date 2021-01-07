@@ -3,6 +3,8 @@
 #define SPOT_LIGHT 1
 #define DIRECTIONAL_LIGHT 2
 
+#include "ParticleCommon.hlsl"
+
 struct ObjectData
 {
 	float4x4 World;

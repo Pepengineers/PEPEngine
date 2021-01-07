@@ -196,6 +196,39 @@
     <ClInclude Include="AScene.h">
       <Filter>Assets</Filter>
     </ClInclude>
+    <ClInclude Include="Action.h">
+      <Filter>GOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="AttackAction.h">
+      <Filter>GOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="CloudGenerator.h">
+      <Filter>GOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="FleeAction.h">
+      <Filter>GOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="GoToAction.h">
+      <Filter>GOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="Node.h">
+      <Filter>GOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="PickupAction.h">
+      <Filter>GOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="Planner.h">
+      <Filter>GOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="WorldState.h">
+      <Filter>GOAP</Filter>
+    </ClInclude>
+    <ClInclude Include="Emitter.h">
+      <Filter>Render</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleEmitter.h">
+      <Filter>Render</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -242,18 +275,6 @@
     </ClCompile>
     <ClCompile Include="Transform.cpp">
       <Filter>Components</Filter>
-    </ClCompile>
-    <ClCompile Include="Action.cpp">
-      <Filter>GOAP</Filter>
-    </ClCompile>
-    <ClCompile Include="Node.cpp">
-      <Filter>GOAP</Filter>
-    </ClCompile>
-    <ClCompile Include="Planner.cpp">
-      <Filter>GOAP</Filter>
-    </ClCompile>
-    <ClCompile Include="WorldState.cpp">
-      <Filter>GOAP</Filter>
     </ClCompile>
     <ClCompile Include="AIComponent.cpp">
       <Filter>Components</Filter>
@@ -323,18 +344,12 @@
     </ClCompile>
     <ClCompile Include="AssetDatabase.cpp">
       <Filter>Assets</Filter>
-    <ClCompile Include="GoToAction.cpp">
-      <Filter>GOAP\Actions</Filter>
     </ClCompile>
     <ClCompile Include="FrameResource.cpp">
       <Filter>Render</Filter>
-    <ClCompile Include="PickupAction.cpp">
-      <Filter>GOAP\Actions</Filter>
     </ClCompile>
     <ClCompile Include="GeometryGenerator.cpp">
       <Filter>Assets</Filter>
-    <ClCompile Include="AttackAction.cpp">
-      <Filter>GOAP\Actions</Filter>
     </ClCompile>
     <ClCompile Include="Asset.cpp">
       <Filter>Assets</Filter>
@@ -356,8 +371,39 @@
     </ClCompile>
     <ClCompile Include="AScene.cpp">
       <Filter>Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="Action.cpp">
+      <Filter>GOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="AttackAction.cpp">
+      <Filter>GOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="CloudGenerator.cpp">
+      <Filter>GOAP</Filter>
+    </ClCompile>
     <ClCompile Include="FleeAction.cpp">
-      <Filter>GOAP\Actions</Filter>
+      <Filter>GOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="GoToAction.cpp">
+      <Filter>GOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="Node.cpp">
+      <Filter>GOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="PickupAction.cpp">
+      <Filter>GOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="Planner.cpp">
+      <Filter>GOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="WorldState.cpp">
+      <Filter>GOAP</Filter>
+    </ClCompile>
+    <ClCompile Include="Emitter.cpp">
+      <Filter>Render</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleEmitter.cpp">
+      <Filter>Render</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

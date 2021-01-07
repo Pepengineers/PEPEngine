@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "AIComponent.h"
 
 #include "AttackAction.h"
@@ -6,55 +7,61 @@
 #include "FleeAction.h"
 #include "PickupAction.h"
 #include "WanderingAction.h"
-#include "GameObject.h"
-#include "Transform.h"
 
-enum test { TARGET_ACQUIRED, TARGET_DEAD, IN_LOCATION };
 
 using namespace PEPEngine::Common;
-	
-
-	AIComponent::AIComponent() : Component()
-	{
-		this->SetStartWorldState();
-		this->SetActionList();
-		this->currentState_ = FSMState::Idle;
-		this->currentAIType = AIType::Aggressive;
-		rotationSpeed = 0.02;
-		movementSpeed =0.5+ (float(rand()) / float((RAND_MAX)) * 0.2);
-
-	}
-
-	void AIComponent::SetActionList()
-	{
-
-		availableActions.push_back(new DoActionA);
-		availableActions.push_back(new DoActionB);
-		availableActions.push_back(new WanderingAction);
-		availableActions.push_back(new AttackAction);
-		availableActions.push_back(new PickupAction);
-		availableActions.push_back(new FleeAction);
 
 
+void AIComponent::Serialize(json& j)
+{
+	j["Type"] = ComponentID;
+}
 
-	}
+void AIComponent::Deserialize(json& j)
+{
+	Initialize();
+}
+
+void AIComponent::Initialize()
+{
+	this->SetStartWorldState();
+	this->SetActionList();
+	this->currentState_ = FSMState::Idle;
+	this->currentAIType = AIType::Aggressive;
+	rotationSpeed = 0.02;
+	movementSpeed = 0.5 + (static_cast<float>(rand()) / static_cast<float>((RAND_MAX)) * 0.2);
+}
+
+AIComponent::AIComponent() : Component()
+{
+	Initialize();
+}
+
+void AIComponent::SetActionList()
+{
+	availableActions.push_back(new DoActionA);
+	availableActions.push_back(new DoActionB);
+	availableActions.push_back(new WanderingAction);
+	availableActions.push_back(new AttackAction);
+	availableActions.push_back(new PickupAction);
+	availableActions.push_back(new FleeAction);
+}
 
 
-	void AIComponent::SetStartWorldState()
-	{
-		worldState.setVariable(Action::HAS_WEAPON, false);
-		worldState.setVariable(Action::NEED_ATTACK, false);
-		worldState.setVariable(Action::NEED_FLEE, false);
-		worldState.setVariable(Action::NEED_WANDERING, false);
-		worldState.setVariable(Action::TARGET_ALIVE, true);
-		
-	}
+void AIComponent::SetStartWorldState()
+{
+	worldState.setVariable(Action::HAS_WEAPON, false);
+	worldState.setVariable(Action::NEED_ATTACK, false);
+	worldState.setVariable(Action::NEED_FLEE, false);
+	worldState.setVariable(Action::NEED_WANDERING, false);
+	worldState.setVariable(Action::TARGET_ALIVE, true);
+}
 
 void AIComponent::setWorldState(int id, bool state)
 {
 	auto currentValue = worldState.getVariable(id);
 	if (currentValue == state) return;
-		
+
 	worldState.setVariable(id, state);
 	currentActions = planner.plan(worldState, goal, availableActions);
 }
@@ -65,7 +72,6 @@ void AIComponent::setGoalState(int id, bool state)
 	if (currentValue == state) return;
 	goal.setVariable(id, state);
 	currentActions = planner.plan(worldState, goal, availableActions);
-
 }
 
 float AIComponent::getDistanceToPlayer()
@@ -77,53 +83,47 @@ float AIComponent::getDistanceToPlayer()
 }
 
 void AIComponent::addGlobalState(
-		PEPEngine::Allocator::custom_vector<std::shared_ptr<PEPEngine::Common::GameObject>>& objects)
-	{
-		otherObjects = &objects;
-
-	}
+	custom_vector<std::shared_ptr<GameObject>>& objects)
+{
+	otherObjects = &objects;
+}
 
 
 void AIComponent::preUpdate()
 {
-	switch (currentAIType) {
+	switch (currentAIType)
+	{
 	case AIType::Passive:
 		{
 			break;
-		};
-	case AIType::Frightened :
-		{
-		
-		if (this->getDistanceToPlayer() < 50)
-		{
-			setGoalState(Action::NEED_FLEE, false);
-			setWorldState(Action::NEED_FLEE, true);
 		}
+	case AIType::Frightened:
+		{
+			if (this->getDistanceToPlayer() < 50)
+			{
+				setGoalState(Action::NEED_FLEE, false);
+				setWorldState(Action::NEED_FLEE, true);
+			}
 			break;
-		};
+		}
 	case AIType::Aggressive:
 		{
-		if (this->getDistanceToPlayer() < 200)
-		{
-			setWorldState(Action::NEED_ATTACK, true);
-			setGoalState(Action::TARGET_ALIVE, false);
-			
-		}
+			if (this->getDistanceToPlayer() < 200)
+			{
+				setWorldState(Action::NEED_ATTACK, true);
+				setGoalState(Action::TARGET_ALIVE, false);
+			}
 			break;
-			
 		}
 	}
 }
 
 void AIComponent::Update()
 {
-	/*if (worldState.getVariable(PEPEngine::goap::Action::POKE_A) && worldState.
-		getVariable(PEPEngine::goap::Action::POKE_B))
-	{
 	this->preUpdate();
-		switch (currentState_)
-		{
-		case FSMState::Idle:
+	switch (currentState_)
+	{
+	case FSMState::Idle:
 		{
 			auto plan = planner.plan(worldState, goal, availableActions);
 
@@ -143,15 +143,14 @@ void AIComponent::Update()
 			}
 			break;
 		}
-		case FSMState::MoveTo:
+	case FSMState::MoveTo:
 		{
 			if (currentActions.empty())
 			{
 				currentState_ = FSMState::Idle;
 				break;
-				
 			}
-				
+
 			auto action = currentActions.back();
 			auto transform = gameObject->GetTransform();
 			auto current = gameObject->GetTransform()->GetWorldPosition();
@@ -161,7 +160,8 @@ void AIComponent::Update()
 
 			auto distanceTo = (target - current).Length();
 			auto lookAt = Matrix::CreateLookAt(current, target, gameObject->GetTransform()->GetUpVector()).Transpose();
-			auto q = Quaternion::Slerp(gameObject->GetTransform()->GetQuaternionRotate(), Quaternion::CreateFromRotationMatrix(lookAt), dt);
+			auto q = Quaternion::Slerp(gameObject->GetTransform()->GetQuaternionRotate(),
+			                           Quaternion::CreateFromRotationMatrix(lookAt), dt);
 
 			gameObject->GetTransform()->SetQuaternionRotate(q);
 
@@ -177,71 +177,64 @@ void AIComponent::Update()
 
 			break;
 		}
-		case FSMState::PerformAction:
+	case FSMState::PerformAction:
 		{
 			if (currentActions.empty())
 			{
 				currentState_ = FSMState::Idle;
 				break;
-				
 			}
-			else
-			{
-				auto action = currentActions.back();
-				auto current = gameObject->GetTransform()->GetWorldPosition();
-				auto target = action->target.get()->GetWorldPosition();
-				action->prePerform(gameObject);
+			auto action = currentActions.back();
+			auto current = gameObject->GetTransform()->GetWorldPosition();
+			auto target = action->target.get()->GetWorldPosition();
+			action->prePerform(gameObject);
 
-				if (action->IsRequiresInRange() && (target - current).Length() < action->range || !action->IsRequiresInRange())
+			if (action->IsRequiresInRange() && (target - current).Length() < action->range || !action->
+				IsRequiresInRange())
+			{
+				bool result = action->perform(worldState);
+				if (result)
 				{
-					bool result = action->perform(worldState);
-					if (result)
-					{
-						action->postPerform(gameObject);
-						currentActions.pop_back();
-					}
-					else
-					{
-						if (currentActions.empty())
-							currentState_ = FSMState::Idle;
-					}
+					action->postPerform(gameObject);
+					currentActions.pop_back();
 				}
 				else
 				{
-					currentState_ = FSMState::MoveTo;
+					if (currentActions.empty())
+						currentState_ = FSMState::Idle;
 				}
+			}
+			else
+			{
+				currentState_ = FSMState::MoveTo;
 			}
 
 			break;
 		}
-		}
 	}
 }
 
-void AIComponent::PopulateDrawCommand(std::shared_ptr<PEPEngine::Graphics::GCommandList> cmdList)
-	{
-	}
 
-	float AIComponent::getDelta(Vector3 target)
+float AIComponent::getDelta(Vector3 target)
+{
+	if (dumpTarget != target) dt = 0;
+	dt += rotationSpeed;
+	if (dt > 1) dt = 0;
+	dumpTarget = target;
+	return dt;
+}
+
+GameObject* AIComponent::getPlayer()
+{
+	GameObject* player = nullptr;
+	for (auto it = otherObjects->begin(); it != otherObjects->end(); ++it)
 	{
-		if (dumpTarget != target) dt = 0;
-		dt += rotationSpeed;
-		if (dt > 1) dt = 0;
-		dumpTarget = target;
-		return dt;
-	}
-PEPEngine::Common::GameObject* AIComponent::getPlayer()
-	{
-		PEPEngine::Common::GameObject* player = nullptr;
-		for (auto it = otherObjects->begin(); it != otherObjects->end(); ++it)
+		auto yay = it;
+		if (it->get()->GetName() == "MainCamera")
 		{
-			auto yay = it;
-			if (it->get()->GetName() == "MainCamera")
-			{
-				player = it->get();
-				break;
-				;
-			}
+			player = it->get();
+			break;
 		}
-		return player;
 	}
+	return player;
+}

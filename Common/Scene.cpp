@@ -8,6 +8,7 @@
 #include "Camera.h"
 #include "AModel.h"
 #include "AMaterial.h"
+#include "Emitter.h"
 
 
 namespace PEPEngine::Common
@@ -78,6 +79,14 @@ namespace PEPEngine::Common
 		}
 	}
 
+	void Scene::Dispatch(std::shared_ptr<GCommandList> cmdList)
+	{
+		for (auto && emitter : emitters)
+		{
+			emitter->Dispatch(cmdList);
+		}		
+	}
+
 	void Scene::Update()
 	{
 		SpawnNewGO();
@@ -107,9 +116,17 @@ namespace PEPEngine::Common
 		for (auto camera : cameras)
 		{
 			camera->Render(cmdList);
-		}
+		}		
 	}
 
+	void Scene::RenderParticle(std::shared_ptr<GCommandList> cmdList)
+	{
+		for (auto && emitter : emitters)
+		{
+			emitter->PopulateDrawCommand(cmdList);
+		}
+	}
+	
 	void Scene::RenderTypedObjects(RenderMode::Mode mode, std::shared_ptr<GCommandList> cmdList)
 	{
 		auto materials = typedMaterials[mode];
@@ -186,6 +203,12 @@ namespace PEPEngine::Common
 					typedRenderers[gMaterial.get()][renderer.get()].push_back(i);
 				}
 			}			
+		}
+
+		auto emitter = gameObject->GetComponent<Emitter>();
+		if(emitter != nullptr)
+		{
+			emitters.insert(emitter.get());
 		}
 
 		const auto camera = gameObject->GetComponent<Camera>();

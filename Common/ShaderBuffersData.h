@@ -179,5 +179,72 @@ namespace PEPEngine
 				D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0
 			},
 		};
+
+
+		struct alignas(sizeof(Vector4)) ParticleData
+		{
+			Vector3 Position;
+			float LiveTime;
+
+			Vector3 Velocity;
+			float TotalLifeTime;
+
+			DWORD TextureIndex;
+			DWORD PD2;
+			DWORD PD3;
+			DWORD PD4;
+		};
+
+		struct alignas(sizeof(Vector4)) EmitterData
+		{
+			Vector4 Color;
+
+			Vector3 Force;
+			float DeltaTime;
+
+			Vector2 Size;
+			DWORD ParticlesTotalCount;
+			DWORD SimulatedGroupCount;
+
+			DWORD ParticleInjectCount;
+			DWORD InjectedGroupCount;
+			DWORD ParticlesAliveCount;
+			DWORD AtlasTextureCount;
+
+			bool UseTexture = false;
+			bool Padding;
+			bool Padding1;
+			bool Padding2;
+			Vector3 Padding3;
+		};
+		class ParticleRenderSlot
+		{
+		public:
+			enum Slots
+			{
+				ObjectData,
+				CameraData,
+				EmitterData,
+				ParticlesPool,
+				ParticlesAliveIndex,
+				Atlas,
+				Count
+			};
+		};
+
+		class ParticleComputeSlot
+		{
+		public:
+			enum Slots
+			{
+				EmitterData,
+				ParticlesPool,
+				ParticleDead,
+				ParticleAlive,
+				ParticleInjection,
+				Count
+			};
+		};
+
 	}
 }

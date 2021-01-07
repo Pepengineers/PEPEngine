@@ -12,6 +12,7 @@ namespace PEPEngine::Common
 	class Light;
 	class Material;
 	class Camera;
+	class Emitter;
 
 	class Scene
 	{
@@ -31,7 +32,8 @@ namespace PEPEngine::Common
 		std::set<Material*> typedMaterials[RenderMode::Count];
 
 		std::unordered_map<Material*, std::unordered_map<Renderer*, std::vector<UINT>>> typedRenderers{};
-		
+
+		std::set<Emitter*> emitters;
 		
 		std::set<Camera*> cameras{};
 
@@ -59,9 +61,12 @@ namespace PEPEngine::Common
 		void Prepare();
 		void SpawnNewGO();
 
+		void Dispatch(std::shared_ptr<GCommandList> cmdList);
+		
 		void Update();
 
 		void Render(std::shared_ptr<GCommandList> cmdList);
+		void RenderParticle(std::shared_ptr<GCommandList> cmdList);
 
 		void RenderTypedObjects(RenderMode::Mode mode, std::shared_ptr<GCommandList> cmdList);
 

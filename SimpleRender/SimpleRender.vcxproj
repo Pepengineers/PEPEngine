@@ -177,6 +177,15 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shaders\ComputeParticle.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\ParticleCommon.hlsl">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="Shaders\ParticleDraw.hlsl">
+      <FileType>Document</FileType>
+    </None>
     <FxCompile Include="Shaders\Quad.hlsl">
       <EntryPointName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">VS</EntryPointName>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>

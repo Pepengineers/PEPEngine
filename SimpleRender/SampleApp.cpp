@@ -123,7 +123,7 @@ namespace SimpleRender
 	{
 		auto renderQueue = device->GetCommandQueue();
 
-		auto values = fenceValues[currentFrameResourceIndex];
+		auto values = renderFenceValues[currentFrameResourceIndex];
 
 		if (values != 0 && !renderQueue->IsFinish(values))
 		{
@@ -160,8 +160,17 @@ namespace SimpleRender
 	{
 		if (isResizing) return;
 
+		auto computeQueue = device->GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COMPUTE);
+		auto cmdList = computeQueue->GetCommandList();
+
+		level->GetScene()->Dispatch(cmdList);
+
+		computeFenceValues[currentFrameResourceIndex] = computeQueue->ExecuteCommandList(cmdList);
+		
+
+		
 		auto renderQueue = device->GetCommandQueue();
-		auto cmdList = renderQueue->GetCommandList();
+		cmdList = renderQueue->GetCommandList();
 
 		
 		level->GetScene()->Render(cmdList);
@@ -171,7 +180,8 @@ namespace SimpleRender
 		cmdList->TransitionBarrier(MainWindow->GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT);
 		cmdList->FlushResourceBarriers();
 
-		fenceValues[currentFrameResourceIndex] = renderQueue->ExecuteCommandList(cmdList);
+		renderQueue->Wait(computeQueue->GetFence(), computeFenceValues[currentFrameResourceIndex]);
+		renderFenceValues[currentFrameResourceIndex] = renderQueue->ExecuteCommandList(cmdList);
 
 		currentFrameResourceIndex = MainWindow->Present();
 	}
