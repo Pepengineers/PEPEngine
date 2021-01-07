@@ -138,5 +138,6 @@ namespace PEPEngine::Common
 		cmdList->SetRenderTarget(*target);
 
 		quadModel->Render(cmdList);
+		Scene::currentScene->RenderParticle(cmdList);
 	}
 }

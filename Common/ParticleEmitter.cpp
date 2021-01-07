@@ -90,10 +90,11 @@ namespace PEPEngine::Common
 
 		{
 			std::vector<UINT> deadIndex;
-
+			deadIndex.resize(emitterData.ParticlesTotalCount);
+			
 			for (int i = 0; i < emitterData.ParticlesTotalCount; ++i)
 			{
-				deadIndex.push_back(i);
+				deadIndex[i] = i;
 			}
 
 			auto queue = device->GetCommandQueue();
@@ -160,6 +161,8 @@ namespace PEPEngine::Common
 
 	void ParticleEmitter::Serialize(json& j)
 	{
+		j["Type"] = ComponentID;
+		
 		auto jPos = json();
 
 		jPos["ParticlesTotalCount"] = emitterData.ParticlesTotalCount;
@@ -170,6 +173,7 @@ namespace PEPEngine::Common
 		{
 			auto tex = json();
 			tex["id"] = texture->GetID();
+			atlasMaps.push_back(tex);
 		}
 
 		jPos["Atlas"] = atlasMaps;
@@ -234,13 +238,10 @@ namespace PEPEngine::Common
 						std::filesystem::path("ParticleAtlas").concat("\\tile (" + std::to_string(i) + ").png"));
 				}
 				
-				Atlas[i] = (image);
+				Atlas[i-1] = (image);
 			}
-
-			emitterData.AtlasTextureCount = Atlas.size();
-
 		}
-
+		emitterData.AtlasTextureCount = Atlas.size();
 
 		
 		this->device = GDeviceFactory::GetDevice();

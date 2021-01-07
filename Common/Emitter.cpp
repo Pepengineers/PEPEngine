@@ -85,13 +85,19 @@ namespace PEPEngine::Common
 			renderPSODesc.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 			renderPSODesc.BlendState = CD3DX12_BLEND_DESC(D3D12_DEFAULT);
 			renderPSODesc.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+			auto depthStencilDesc = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
+			depthStencilDesc.DepthEnable = false;
+			depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ZERO;
+
+			renderPSODesc.DepthStencilState  = (depthStencilDesc);
 			renderPSODesc.SampleMask = UINT_MAX;
 			renderPSODesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;
 			renderPSODesc.NumRenderTargets = 1;
 			renderPSODesc.RTVFormats[0] = Utils::GetSRGBFormat(BackBufferFormat);
 			renderPSODesc.SampleDesc.Count = 1;
 			renderPSODesc.SampleDesc.Quality = 0;
-			renderPSODesc.DSVFormat = DepthStencilFormat;
+			//renderPSODesc.DSVFormat = DepthStencilFormat;
+			renderPSODesc.DSVFormat = DXGI_FORMAT_UNKNOWN;
 
 			renderPSO = std::make_shared<GraphicPSO>(RenderMode::Particle);
 			renderPSO->SetPsoDesc(renderPSODesc);
@@ -109,6 +115,7 @@ namespace PEPEngine::Common
 				blendDesc.RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
 				renderPSO->SetRenderTargetBlendState(0, blendDesc);
 			}
+			
 			renderPSO->Initialize(device);
 		}
 

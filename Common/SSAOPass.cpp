@@ -468,6 +468,8 @@ namespace PEPEngine::Common
 		cmdList->SetRootDescriptorTable(2, gpass.GetSRV(), GPass::NormalMap);
 		cmdList->SetRootDescriptorTable(3, gpass.GetSRV(), GPass::DepthMap);
 
+		cmdList->SetDescriptorsHeap(&ambientMapMapSrvMemory);
+		
 		cmdList->SetRootDescriptorTable(4, &ambientMapMapSrvMemory, inputSrv);
 
 		// Draw fullscreen quad.

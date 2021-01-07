@@ -24,14 +24,14 @@ namespace PEPEngine::Common
 	using namespace Utils;
 	using namespace Graphics;
 
-	void CheckOrCreateFolder(const std::filesystem::path fileRelativePath)
+	void CheckOrCreateFolder(const std::filesystem::path& fileRelativePath)
 	{
-		if (exists(fileRelativePath.parent_path()))
+		if (exists(fileRelativePath))
 			return;
 
 		CheckOrCreateFolder(fileRelativePath.parent_path());
 
-		create_directories(fileRelativePath.parent_path());
+		create_directories(fileRelativePath);
 	}
 
 
@@ -93,6 +93,11 @@ namespace PEPEngine::Common
 
 		if (savePathInAssetFolder != L"")
 		{
+			if(savePathInAssetFolder.wstring().find(AssetFolderPath) == std::wstring::npos)
+			{
+				savePathInAssetFolder = std::filesystem::path(AssetFolderPath.wstring()).concat("\\").concat(savePathInAssetFolder.wstring());
+			}			
+			
 			CheckOrCreateFolder(savePathInAssetFolder.parent_path());
 		}
 		else
@@ -439,7 +444,7 @@ namespace PEPEngine::Common
 
 	void AssetDatabase::CreatePEPEFile(std::shared_ptr<Asset> asset, const std::filesystem::path& saveAssetPath)
 	{
-		CheckOrCreateFolder(saveAssetPath);
+		CheckOrCreateFolder(saveAssetPath.parent_path());
 
 		asset->pathToFile = saveAssetPath;
 

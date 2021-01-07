@@ -224,6 +224,7 @@ namespace PEPEngine
 			{
 				ObjectData,
 				CameraData,
+				WorldBuffer,
 				EmitterData,
 				ParticlesPool,
 				ParticlesAliveIndex,

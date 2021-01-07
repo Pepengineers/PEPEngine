@@ -42,7 +42,9 @@ namespace SimpleRender
 		UINT64 computeFenceValues[globalCountFrameResources];
 
 		std::shared_ptr<AScene> level = nullptr;
+		std::shared_ptr<AModel> pbody = nullptr;
 
+		
 		std::vector<Camera*> cameras;
 
 		std::shared_ptr<UILayer> uiPass;

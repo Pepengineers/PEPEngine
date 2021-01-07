@@ -118,7 +118,6 @@ namespace PEPEngine::Common
 		                                   *currentScene->GetCurrentFrameResource()->MaterialsBuffer.get());
 
 		currentScene->RenderTypedObjects(RenderMode::Opaque, cmdList);
-		currentScene->RenderParticle(cmdList);
 
 		for (int i = 0; i < GBufferMapsCount; ++i)
 		{

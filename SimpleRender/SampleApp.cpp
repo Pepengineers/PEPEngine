@@ -17,6 +17,7 @@
 #include "Window.h"
 #include "AssetDatabase.h"
 #include "AScene.h"
+#include "ParticleEmitter.h"
 
 namespace SimpleRender
 {
@@ -76,6 +77,11 @@ namespace SimpleRender
 
 			for (int i = 0; i < 12; ++i)
 			{
+				auto particleEmitter = std::make_unique<GameObject>("Particle " + std::to_string(i));
+				particleEmitter->AddComponent(std::make_shared<ParticleEmitter>(1500));
+				particleEmitter->GetTransform()->SetPosition(
+					Vector3::Right * -30  + Vector3::Forward * 10 * i);
+				scene->AddGameObject(std::move(particleEmitter));
 				for (int j = 0; j < 3; ++j)
 				{
 					auto rModel = std::make_unique<GameObject>();
@@ -111,11 +117,18 @@ namespace SimpleRender
 			AssetDatabase::UpdateAsset(level);
 		}
 		else
-		{
+		{		
+			
 			auto scene = level->GetScene();
 			scene->Prepare();
 			scene->Update();
-		}		
+		}
+
+		pbody = AssetDatabase::Get<AModel>(L"P-Body");
+		if (pbody == nullptr)
+		{
+			pbody = AssetDatabase::AddModel("Data\\Objects\\P-Body\\P-Body.obj");
+		}
 	}
 
 
@@ -140,8 +153,8 @@ namespace SimpleRender
 			if(!spawned)
 			{
 				auto rModel = std::make_shared<GameObject>();
-			/*	auto renderer = std::make_shared<ModelRenderer>(models[L"PBody"]);
-				rModel->AddComponent(renderer);*/
+				auto renderer = std::make_shared<ModelRenderer>(pbody);
+				rModel->AddComponent(renderer);
 				rModel->GetTransform()->SetPosition(Camera::mainCamera->gameObject->GetTransform()->GetWorldPosition());
 
 				level->GetScene()->AddGameObject(std::move(rModel));
@@ -153,6 +166,17 @@ namespace SimpleRender
 		{
 			spawned = false;
 		}
+
+		static bool sceneSaved = false;
+		if (keyboard.KeyIsPressed('I'))
+		{
+			if(!sceneSaved)
+			{
+				sceneSaved = true;
+				AssetDatabase::UpdateAsset(level);
+			}
+		}
+		else sceneSaved = false;
 		
 	}
 
@@ -160,16 +184,20 @@ namespace SimpleRender
 	{
 		if (isResizing) return;
 
+		auto renderQueue = device->GetCommandQueue();
+		
 		auto computeQueue = device->GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COMPUTE);
 		auto cmdList = computeQueue->GetCommandList();
 
 		level->GetScene()->Dispatch(cmdList);
 
+		computeQueue->Wait(renderQueue);
+		
 		computeFenceValues[currentFrameResourceIndex] = computeQueue->ExecuteCommandList(cmdList);
 		
 
 		
-		auto renderQueue = device->GetCommandQueue();
+		
 		cmdList = renderQueue->GetCommandList();
 
 		
@@ -180,7 +208,7 @@ namespace SimpleRender
 		cmdList->TransitionBarrier(MainWindow->GetCurrentBackBuffer(), D3D12_RESOURCE_STATE_PRESENT);
 		cmdList->FlushResourceBarriers();
 
-		renderQueue->Wait(computeQueue->GetFence(), computeFenceValues[currentFrameResourceIndex]);
+		renderQueue->Wait(computeQueue);
 		renderFenceValues[currentFrameResourceIndex] = renderQueue->ExecuteCommandList(cmdList);
 
 		currentFrameResourceIndex = MainWindow->Present();
