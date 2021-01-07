@@ -6,6 +6,9 @@
 #include "MathHelper.h"
 #include "RenderPass.h"
 #include "GTexture.h"
+#include "GDescriptor.h"
+#include "GraphicPSO.h"
+#include "GShader.h"
 
 namespace PEPEngine::Common
 {

@@ -7,10 +7,11 @@
 #include "GModel.h"
 #include "Transform.h"
 #include "GTexture.h"
+#include "AModel.h"
 
 namespace PEPEngine::Common
 {
-	SkyBox::SkyBox(const std::shared_ptr<GModel>& model,
+	SkyBox::SkyBox(const std::shared_ptr<AModel>& model,
 	               GTexture& skyMapTexture,
 	               GDescriptor* srvMemory, UINT offset) : ModelRenderer(model)
 	{
@@ -33,9 +34,12 @@ namespace PEPEngine::Common
 		cmdList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(
 			SkyMap, gpuTextureHandle);
 
-		for (int i = 0; i < model->GetMeshesCount(); ++i)
+
+		auto gmodel = model->GetGModel();
+		
+		for (int i = 0; i < gmodel->GetMeshesCount(); ++i)
 		{
-			const auto mesh = model->GetMesh(i);
+			const auto mesh = gmodel->GetMesh(i);
 
 			cmdList->SetRootConstantBufferView(ObjectWorldDataBuffer,
 			                                   *modelDataBuffer, i);
@@ -49,9 +53,10 @@ namespace PEPEngine::Common
 
 		if (transform->IsDirty())
 		{
+			auto gmodel = model->GetGModel();
 			modelWorldData.TextureTransform = transform->TextureTransform.Transpose();
-			modelWorldData.World = (transform->GetWorldMatrix() * model->scaleMatrix).Transpose();
-			for (int i = 0; i < model->GetMeshesCount(); ++i)
+			modelWorldData.World = (transform->GetWorldMatrix() * gmodel->scaleMatrix).Transpose();
+			for (int i = 0; i < gmodel->GetMeshesCount(); ++i)
 			{
 				modelDataBuffer->CopyData(i, modelWorldData);
 			}

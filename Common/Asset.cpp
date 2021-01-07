@@ -23,6 +23,40 @@ namespace PEPEngine::Common
 		assert(TryReadVariable<AssetType::Type>(json, "Type", &type));
 	}
 
+	void Asset::Remove()
+	{
+		std::filesystem::remove(pathToFile);
+	}
+
+	std::wstring Asset::GetName() const
+	{
+		return pathToFile.stem().stem();
+	}
+
+	std::filesystem::path Asset::GetPepeFilePath() const
+	{
+		return pathToFile;
+	}
+
+	Asset::Asset(AssetType::Type type): type(type)
+	{
+	}
+
+	void Asset::Serialize(json& json)
+	{
+	}
+
+	void Asset::Deserialize(json& json)
+	{
+	}
+
+	uint64_t Asset::GetID() const
+	{
+		return ID;
+	}
+
+	
+
 	Asset::Asset(unsigned long long ID, std::filesystem::path pathToFile,
 	             AssetType::Type type) : pathToFile(pathToFile), ID(ID), type(type)
 	{
@@ -41,33 +75,7 @@ namespace PEPEngine::Common
 		std::ifstream file(pathToFile);
 		file >> j;
 	}
-
-	std::filesystem::path Asset::FindNativeFile(std::filesystem::path pathToFile)
-	{
-		const auto folder = pathToFile.parent_path();
-
-		const auto fileName = pathToFile.filename().wstring();
-
-		const auto fileNameWithoutExtension = fileName.substr(0, fileName.find(pathToFile.extension()));
-
-		std::filesystem::directory_iterator it(folder);
-
-		std::filesystem::path nativeDataFile;
-
-		for (auto&& file : it)
-		{
-			auto folderFileName = file.path().filename().wstring();
-			if (folderFileName.find(fileNameWithoutExtension) != std::wstring::npos && file.path().extension() !=
-				pathToFile.extension())
-			{
-				nativeDataFile = file.path();
-				break;
-			}
-		}
-
-		return nativeDataFile;
-	}
-
+	
 	bool replace(std::wstring& str, const std::wstring& from, const std::wstring& to) {
 		size_t start_pos = str.find(from);
 		if (start_pos == std::wstring::npos)
@@ -76,6 +84,16 @@ namespace PEPEngine::Common
 		return true;
 	}
 
+	
+
+	std::filesystem::path Asset::FindNativeFile(std::filesystem::path pathToFile)
+	{
+		auto path = pathToFile.wstring();
+		replace(path, AssetDatabase::ASSET_EXTENSION_NAME, L"");
+		return path;
+	}
+
+	
 	std::filesystem::path Asset::GetFilePath(const Asset& asset, std::wstring extension)
 	{
 		auto file = asset.pathToFile.filename().wstring();

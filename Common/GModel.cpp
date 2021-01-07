@@ -34,7 +34,12 @@ namespace PEPEngine::Common
 		return gmeshes[index];
 	}
 
-	std::wstring GModel::GetName() const
+	std::vector<std::shared_ptr<GMesh>> GModel::GetMeshes() const
+	{
+		return gmeshes;
+	}
+
+	std::string GModel::GetName() const
 	{
 		return model->GetName();
 	}
@@ -99,7 +104,7 @@ namespace PEPEngine::Common
 
 		for(uint32_t i = 0u; i < materialCount; ++i){
 			uint64_t materialId;
-			assert(Asset::TryReadVariable<uint64_t>(jMaterials, "id", &materialId));
+			assert(Asset::TryReadVariable<uint64_t>(jMaterials[i], "id", &materialId));
 
 			auto aMaterial = std::static_pointer_cast<AMaterial>(AssetDatabase::FindAssetByID(materialId));
 

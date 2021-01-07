@@ -7,7 +7,7 @@ namespace PEPEngine::Common
 	{
 	}
 
-	std::shared_ptr<Component> Component::CreateFromFile(json& json, const std::wstring& componentGUID)
+	std::shared_ptr<Component> Component::CreateFromFile(json& json, const std::string& componentGUID)
 	{
 		return (componentsFactory[componentGUID](json));
 	}

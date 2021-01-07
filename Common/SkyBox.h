@@ -15,7 +15,7 @@ namespace PEPEngine
 			CD3DX12_CPU_DESCRIPTOR_HANDLE cpuTextureHandle{};
 
 		public:
-			SkyBox(const std::shared_ptr<GModel>& model,
+			SkyBox(const std::shared_ptr<AModel>& model,
 			       GTexture& skyMapTexture,
 			       GDescriptor* srvMemory, UINT offset = 0);
 

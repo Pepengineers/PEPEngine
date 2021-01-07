@@ -118,8 +118,8 @@ namespace PEPEngine::Common
 		
 		for (int i = 0; i < size; ++i)
 		{
-			std::wstring id;
-			assert(TryReadVariable<std::wstring>(array[i], "Type", &id));
+			std::string id;
+			assert(TryReadVariable<std::string>(array[i], "Type", &id));
 
 			if(id == Transform::ComponentID)
 			{

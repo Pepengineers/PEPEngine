@@ -28,7 +28,6 @@ namespace PEPEngine::Common
 	{
 		friend class AssetDatabase;
 	protected:
-		std::wstring name;
 		std::filesystem::path pathToFile;
 
 		uint64_t ID = UINT64_MAX;
@@ -40,9 +39,13 @@ namespace PEPEngine::Common
 		void DeserializeIDAndType(const json& json);
 	public:
 
-		Asset(AssetType::Type type = AssetType::Type::None) : type(type)
-		{
-		}
+		virtual void Remove();
+
+		std::wstring GetName() const;
+
+		std::filesystem::path GetPepeFilePath() const;
+
+		Asset(AssetType::Type type = AssetType::Type::None);
 
 		Asset(uint64_t ID, std::filesystem::path pathToFile, AssetType::Type type = AssetType::None);
 
@@ -50,10 +53,10 @@ namespace PEPEngine::Common
 		virtual ~Asset();
 
 		//TODO: В идеале тут должен принматься сериализатор, чтобы написать код один раз и забыть на всю жизнь, но не в этот раз
-		virtual void Serialize(json& json) {};
+		virtual void Serialize(json& json);
 
 		//TODO: В идеале тут должен принматься сериализатор, чтобы написать код один раз и забыть на всю жизнь, но не в этот раз
-		virtual void Deserialize(json& json) {};
+		virtual void Deserialize(json& json);
 
 
 		static void WriteToFile(const std::filesystem::path& pathToFile, const json& j);
@@ -64,9 +67,7 @@ namespace PEPEngine::Common
 
 		static std::filesystem::path FindNativeFile(std::filesystem::path pathToFile);
 
-		inline uint64_t GetID() const {
-			return ID;
-		}
+		uint64_t GetID() const;
 
 		template <typename T>
 		static bool TryReadVariable(const json& json, std::string varName, T* variable)

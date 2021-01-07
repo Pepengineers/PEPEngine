@@ -1,6 +1,7 @@
 #include "GPass.h"
 #include "Scene.h"
 #include "d3dApp.h"
+#include "Material.h"
 #include "Window.h"
 
 namespace PEPEngine::Common

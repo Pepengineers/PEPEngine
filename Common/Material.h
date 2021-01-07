@@ -40,7 +40,7 @@ namespace PEPEngine
 
 			UINT materialIndex = -1;
 
-			std::wstring Name;
+			std::string Name;
 
 			RenderMode::Mode renderMode = RenderMode::Opaque;
 
@@ -61,8 +61,8 @@ namespace PEPEngine
 
 			static const UINT MaxMaterialTexturesMaps = 3;
 			
-			Vector4 DiffuseColor;		
-			float AlphaThreshold;
+			Vector4 DiffuseColor = DirectX::Colors::White;		
+			float AlphaThreshold = 0.1;
 			float SpecularPower = 1.0f;
 
 			UINT GetMaterialIndex() const;
@@ -79,7 +79,7 @@ namespace PEPEngine
 
 			void SetRenderMode(RenderMode::Mode pso);
 
-			Material(std::wstring name, RenderMode::Mode pso = RenderMode::Opaque);
+			Material(std::string name, RenderMode::Mode pso = RenderMode::Opaque);
 			void UpdateDescriptors();
 
 			void Init(std::shared_ptr<GDevice> device);
@@ -89,7 +89,7 @@ namespace PEPEngine
 
 			void Update();
 
-			std::wstring& GetName();
+			std::string& GetName();
 		};
 	}
 }

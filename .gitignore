@@ -590,3 +590,6 @@ references/*
 !**/Data/
 
 **LogData*.txt
+
+**Assets/**
+**Assets/

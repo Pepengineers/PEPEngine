@@ -39,7 +39,7 @@ namespace PEPEngine
 
 			void Render(std::shared_ptr<GCommandList> cmdList) const;
 
-			std::wstring GetName() const;
+			std::string GetName() const;
 		};
 	}
 }

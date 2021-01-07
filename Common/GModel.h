@@ -48,7 +48,9 @@ namespace PEPEngine
 
 			std::shared_ptr<GMesh> GetMesh(UINT index);
 
-			std::wstring GetName() const;
+			std::vector<std::shared_ptr<GMesh>> GetMeshes() const;;
+
+			std::string GetName() const;
 
 			GModel(std::shared_ptr<NativeModel> model, std::shared_ptr<GCommandList> uploadCmdList);
 

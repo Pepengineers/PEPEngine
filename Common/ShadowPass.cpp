@@ -1,5 +1,7 @@
 #include "ShadowPass.h"
 
+
+#include "Material.h"
 #include "Transform.h"
 
 namespace PEPEngine::Common

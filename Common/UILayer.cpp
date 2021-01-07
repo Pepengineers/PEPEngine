@@ -1,6 +1,9 @@
 #include "UILayer.h"
 
+
+#include "d3dUtil.h"
 #include "GDescriptorHeap.h"
+#include "GDevice.h"
 
 
 #include "imgui.h"

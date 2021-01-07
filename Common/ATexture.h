@@ -17,6 +17,11 @@ namespace PEPEngine::Common
 		void Serialize(json& j) override;
 
 		void Deserialize(json& pathToFile) override;
+
+		static std::shared_ptr<ATexture> GetDefaultAlbedo();
+
+		static std::shared_ptr<ATexture> GetDefaultNormal();
+
 	public:
 		inline std::shared_ptr<Graphics::GTexture> GetGTexture() const{
 			return texture;

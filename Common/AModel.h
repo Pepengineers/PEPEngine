@@ -9,14 +9,18 @@ namespace PEPEngine::Common {
 	class AModel : public Asset
 	{
 	public:
-		inline AModel() noexcept : Asset(AssetType::Model) {}
+		AModel() noexcept;
+
+		AModel(uint64_t id, std::shared_ptr<GModel> model);
 
 	public:
 		void Serialize(json& j) override;
 		void Deserialize(json& j) override;
-		std::shared_ptr<GModel> GetGModel();
+		std::shared_ptr<GModel> GetGModel() const;
 	private:
 		std::shared_ptr<GModel> gModel;
+
+		friend class AssetDatabase;
 	};
 
 }

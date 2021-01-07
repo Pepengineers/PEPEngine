@@ -1,6 +1,8 @@
 #pragma once
 #include "RenderPass.h"
 #include "GRootSignature.h"
+#include "GShader.h"
+#include "GraphicPSO.h"
 
 namespace PEPEngine::Common
 {

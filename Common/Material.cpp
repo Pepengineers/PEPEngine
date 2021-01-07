@@ -57,7 +57,7 @@ namespace PEPEngine::Common
 		SetDirty();
 	}
 
-	Material::Material(std::wstring name, RenderMode::Mode pso) : Name(std::move(name)), renderMode(pso), AlphaThreshold(0.1)
+	Material::Material(std::string name, RenderMode::Mode pso) : Name(std::move(name)), renderMode(pso), AlphaThreshold(0.1)
 	{
 	}
 
@@ -136,14 +136,14 @@ namespace PEPEngine::Common
 		}
 	}
 
-	std::wstring& Material::GetName()
+	std::string& Material::GetName()
 	{
-		return Name;
+		return (Name);
 	}
 
 	void Material::Serialize(json& j)
 	{
-
+		j["Name"] = Name;
 		j["Mode"] = renderMode;
 		auto jDiffuseColor = json();
 		jDiffuseColor["x"] = DiffuseColor.x;
@@ -182,8 +182,10 @@ namespace PEPEngine::Common
 	}
 
 	void Material::Deserialize(json& j)
-	{
+	{		
 		assert(Asset::TryReadVariable<RenderMode::Mode>(j, "Mode", &renderMode));
+		assert(Asset::TryReadVariable<std::string>(j, "Name", &Name));
+		
 		float x, y, z, w;
 		auto jcolor = j["DiffuseColor"];
 		assert(Asset::TryReadVariable<float>(jcolor, "x", &x));
@@ -193,19 +195,19 @@ namespace PEPEngine::Common
 		DiffuseColor = Vector4{ x, y, z, w };
 		assert(Asset::TryReadVariable<float>(j, "AlphaThreshold", &AlphaThreshold));
 		assert(Asset::TryReadVariable<float>(j, "SpecularPower", &SpecularPower));
-		uint32_t count = 0u;
-		assert(Asset::TryReadVariable<uint32_t>(j, "TextureCount", &count));
+		UINT count = 0u;
+		assert(Asset::TryReadVariable<UINT>(j, "TexturesCount", &count));
 
 
 		auto jTextureSlots = j["MaterialMapSlots"];
 
-		std::unordered_map<uint32_t, MaterialSlotTypes> tempSlots;
+		std::unordered_map<UINT, MaterialSlotTypes> tempSlots;
 
 		for(auto& jSlot : jTextureSlots){
 			MaterialSlotTypes slotType;
-			uint32_t index;
+			UINT index;
 			assert(Asset::TryReadVariable<MaterialSlotTypes>(jSlot, "SlotType", &slotType));
-			assert(Asset::TryReadVariable<uint32_t>(jSlot, "Index", &index));
+			assert(Asset::TryReadVariable<UINT>(jSlot, "Index", &index));
 
 			tempSlots[index] = slotType;
 		}

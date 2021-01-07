@@ -2,6 +2,9 @@
 #include "Camera.h"
 #include "RenderPass.h"
 #include "GRootSignature.h"
+#include "GShader.h"
+#include "GDescriptor.h"
+#include "GraphicPSO.h"
 
 namespace PEPEngine::Common
 {

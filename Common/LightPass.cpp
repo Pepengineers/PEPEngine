@@ -4,6 +4,7 @@
 #include "GDeviceFactory.h"
 #include "GModel.h"
 #include "GPass.h"
+#include "Material.h"
 #include "Scene.h"
 #include "ShadowPass.h"
 #include "Window.h"

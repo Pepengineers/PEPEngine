@@ -36,8 +36,6 @@ namespace SimpleRender
 		std::shared_ptr<GDevice> device;
 		AssetDatabase assetLoader;
 
-		std::unordered_map<std::wstring, std::shared_ptr<GModel>> models;
-
 		UINT currentFrameResourceIndex = 0;
 
 		UINT64 fenceValues[globalCountFrameResources];

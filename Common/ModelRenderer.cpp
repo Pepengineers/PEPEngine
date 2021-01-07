@@ -7,6 +7,9 @@
 #include "GMesh.h"
 #include "GModel.h"
 #include "Transform.h"
+#include "AModel.h"
+#include "AMaterial.h"
+#include "Material.h"
 
 namespace PEPEngine::Common
 {
@@ -15,7 +18,7 @@ namespace PEPEngine::Common
 		j["Type"] = ComponentID;
 
 		auto jPos = json(); 
-		jPos["ModelID"] = model->GetName().size();
+		jPos["ModelID"] = model->GetID();
 
 		j["RendererData"] = jPos;
 	};
@@ -24,18 +27,18 @@ namespace PEPEngine::Common
 	{
 		auto jPos =  j["RendererData"];
 
-		UINT64 name = jPos["ModelID"];
+		const UINT64 id = jPos["ModelID"];
 
-		auto asset = AssetDatabase::FindAssetByID(name);
+		const auto asset = AssetDatabase::FindAssetByID<AModel>(id);
 
-		//SetModel(asset);		
+		SetModel(asset);		
 	};
 	
 	void ModelRenderer::PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList, UINT meshIndex)
 	{
 		cmdList->SetRootConstantBufferView(ObjectWorldDataBuffer, *modelDataBuffer.get(), meshIndex);
 		
-		model->Render(cmdList, meshIndex);		
+		model->GetGModel()->Render(cmdList, meshIndex);		
 	}
 
 	void ModelRenderer::Update()
@@ -45,7 +48,7 @@ namespace PEPEngine::Common
 		if (transform->IsDirty())
 		{
 			modelWorldData.TextureTransform = transform->TextureTransform.Transpose();
-			modelWorldData.World = (transform->GetWorldMatrix() * model->scaleMatrix).Transpose();
+			modelWorldData.World = (transform->GetWorldMatrix() * model->GetGModel()->scaleMatrix).Transpose();
 						
 			for (int i = 0; i < materials.size(); ++i)
 			{
@@ -53,33 +56,33 @@ namespace PEPEngine::Common
 
 				if (material != nullptr)
 				{
-					modelWorldData.MaterialIndex = material->GetMaterialIndex();
+					modelWorldData.MaterialIndex = material->GetMaterial()->GetMaterialIndex();
 					modelDataBuffer->CopyData(i, modelWorldData);
 				}
 			}
 		}
 	}
 
-	void ModelRenderer::SetMaterial(std::shared_ptr<Material> material, UINT slot)
+	void ModelRenderer::SetMaterial(std::shared_ptr<AMaterial> material, UINT slot)
 	{
 		assert(slot < materials.size());
 		materials[slot] = material;
 	}
 
-	ModelRenderer::ModelRenderer(std::shared_ptr<GModel> model) : Renderer()
+	ModelRenderer::ModelRenderer(std::shared_ptr<AModel> model) : Renderer()
 	{
 		SetModel(model);
 	}
 
-	void ModelRenderer::SetModel(std::shared_ptr<GModel> asset)
+	void ModelRenderer::SetModel(std::shared_ptr<AModel> asset)
 	{
 		assert(asset != nullptr);
 		
-		if (modelDataBuffer == nullptr || modelDataBuffer->GetElementCount() < asset->GetMeshesCount())
+		if (modelDataBuffer == nullptr || modelDataBuffer->GetElementCount() < asset->GetGModel()->GetMeshesCount())
 		{
 			modelDataBuffer.reset();
-			modelDataBuffer = std::make_shared<ConstantUploadBuffer<ObjectConstants>>(asset->GetDevice(), asset->GetMeshesCount(), asset->GetName());
-			/*materials = asset->GetMaterials();	*/		
+			modelDataBuffer = std::make_shared<ConstantUploadBuffer<ObjectConstants>>(asset->GetGModel()->GetDevice(), asset->GetGModel()->GetMeshesCount(), AnsiToWString( asset->GetGModel()->GetName()));
+			materials = asset->GetGModel()->GetMaterials();	
 		}
 
 		model = asset;
@@ -87,16 +90,17 @@ namespace PEPEngine::Common
 
 	UINT ModelRenderer::GetMeshCount()
 	{
-		return model->GetMeshesCount();
+		return model->GetGModel()->GetMeshesCount();
 	}
 
 	std::shared_ptr<GMesh> ModelRenderer::GetMesh(UINT index)
 	{
-		return model->GetMesh(index);
+		return model->GetGModel()->GetMesh(index);
 	}
 
-	std::vector<std::shared_ptr<Material>>& ModelRenderer::GetSharedMaterials()
+	std::vector<std::shared_ptr<AMaterial>>& ModelRenderer::GetSharedMaterials()
 	{
+		
 		return materials;
 	}
 }

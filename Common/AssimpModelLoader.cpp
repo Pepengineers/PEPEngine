@@ -1,7 +1,10 @@
 #include "AssimpModelLoader.h"
 
 
+
+#include "AMaterial.h"
 #include "AssetDatabase.h"
+#include "ATexture.h"
 #include "GeometryGenerator.h"
 #include "GMesh.h"
 #include "assimp/Importer.hpp"
@@ -9,13 +12,13 @@
 
 #include "GModel.h"
 #include "GTexture.h"
+#include "Material.h"
 #include "NativeModel.h"
 #include "ShaderBuffersData.h"
 
 namespace PEPEngine::Common
 {
 	using namespace Graphics;
-	static Assimp::Importer importer;
 
 
 	std::vector<Vertex> AssimpModelLoader::GetVertices(aiMesh* mesh)
@@ -67,125 +70,10 @@ namespace PEPEngine::Common
 			}
 		}
 		return data;
-	}
-
-	std::shared_ptr<GTexture> AssimpModelLoader::LoadTextureByAiMaterial(
-		const aiMaterial* material, const aiTextureType type, const std::wstring
-		& directory,
-		const std::shared_ptr<GCommandList>& cmdList)
-	{
-		aiString str;
-		material->GetTexture(type, 0, &str);
-
-		std::wstring modelTexturePath(AnsiToWString(str.C_Str()));
-
-		if (modelTexturePath.find(L"\\") != std::wstring::npos)
-		{
-			auto fileName = modelTexturePath.substr(modelTexturePath.find_last_of('\\'),
-			                                        modelTexturePath.size() - modelTexturePath.find_last_of('\\'));
-
-			modelTexturePath = fileName.replace(fileName.find(L"\\"), 1, L"");
-		}
-
-		std::wstring textureName = modelTexturePath;
-		std::wstring texturePath = directory + L"\\" + textureName;
-
-		return LoadTextureByPath(textureName, texturePath, cmdList);
-	}
-
-	std::shared_ptr<GTexture> AssimpModelLoader::LoadTextureByPath(
-		const std::wstring& name, const std::wstring& fullPath, const std::shared_ptr<GCommandList>& cmdList)
-	{
-		OutputDebugStringW((name + L"\n").c_str());
-
-		auto texture = GTexture::LoadTextureFromFile(fullPath, cmdList);
-		texture->SetName(name);
-
-		return texture;
-	}
-
-	void AssimpModelLoader::LoadTextureForModel(std::shared_ptr<GModel> model, const std::shared_ptr<GCommandList>&
-	                                            cmdList)
-	{
-		/*for (int i = 0; i < model->GetMeshesCount(); ++i)
-		{
-			auto nativeMesh = model->GetMesh(i)->GetMeshData();
-
-			auto aiMaterial = loadedAiMaterialForMesh[nativeMesh];
-
-			assert(aiMaterial != nullptr);
-
-			aiString name;
-			aiMaterial->Get(AI_MATKEY_NAME, name);
-
-			auto materialName = model->GetName() + L" " + AnsiToWString(name.C_Str());
-
-			auto it = materialsMap.find(materialName);
-
-			std::shared_ptr<Material> material;
-
-			if (it == materialsMap.end())
-			{
-				material = std::make_shared<Material>(materialName);
-
-				const auto modelDirectory = model->GetName().substr(0, model->GetName().find_last_of('\\'));
-
-				auto textureCount = aiMaterial->GetTextureCount(aiTextureType_DIFFUSE);
-
-				std::shared_ptr<GTexture> texture;
-
-				if (textureCount > 0)
-				{
-					texture = LoadTextureByAiMaterial(aiMaterial.get(), aiTextureType_DIFFUSE, modelDirectory,
-						cmdList);
-				}
-				else
-				{
-					texture = LoadTextureByPath(L"seamless", L"Data\\Textures\\seamless_grass.jpg", cmdList);
-				}
-
-				loadedTexturesForMesh[nativeMesh].push_back(texturesMap[texture->GetName()]);
-
-				material->SetMaterialMap(Material::BaseColor, texture);
-
-				textureCount = aiMaterial->GetTextureCount(aiTextureType_HEIGHT);
-
-				if (textureCount > 0)
-				{
-					texture = LoadTextureByAiMaterial(aiMaterial.get(), aiTextureType_HEIGHT, modelDirectory,
-						cmdList);
-				}
-				else
-				{
-					textureCount = aiMaterial->GetTextureCount(aiTextureType_NORMALS);
-
-					if (textureCount > 0)
-					{
-						texture = LoadTextureByAiMaterial(aiMaterial.get(), aiTextureType_NORMALS, modelDirectory,
-							cmdList);
-					}
-					else
-					{
-						texture = LoadTextureByPath(L"defaultNormalMap", L"Data\\Textures\\default_nmap.dds",
-						                            cmdList);
-					}
-				}
-
-				loadedTexturesForMesh[nativeMesh].push_back(texturesMap[texture->GetName()]);
-				material->SetMaterialMap(Material::NormalMap, texture);
-				AddMaterial(material);
-			}
-			else
-			{
-				material = materials[it->second];
-			}
-
-			model->SetMeshMaterial(i, material);
-		}*/
-	}
-
+	}	
+		
 	std::shared_ptr<NativeMesh> AssimpModelLoader::CreateSubMesh(aiMesh* mesh,
-	                                                             const std::wstring& modelName)
+	                                                             const std::string& modelName)
 	{
 		auto vertices = GetVertices(mesh);
 		auto indices = GetIndices(mesh);
@@ -195,7 +83,7 @@ namespace PEPEngine::Common
 		auto nativeMesh = std::make_shared<NativeMesh>(vertices.data(), vertices.size(), indices.data(),
 		                                               indices.size(),
 		                                               D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST,
-		                                               modelName + L" " + AnsiToWString(mesh->mName.C_Str()));
+		                                               modelName + " " + (mesh->mName.C_Str()));
 		vertices.clear();
 		indices.clear();
 
@@ -219,20 +107,215 @@ namespace PEPEngine::Common
 	}
 
 	std::shared_ptr<GModel> AssimpModelLoader::CreateModelFromFile(
-		const std::shared_ptr<GCommandList>& cmdList, const std::string& filePath)
+		const std::shared_ptr<GCommandList>& cmdList, const std::filesystem::path& filePath)
 	{
-		const aiScene* sceneModel = importer.ReadFile(filePath,
-		                                              aiProcess_Triangulate | aiProcess_GenNormals |
+		Assimp::Importer importer;
+		
+		const aiScene* sceneModel = importer.ReadFile(filePath.string(),
+		                                              aiProcess_Triangulate | aiProcess_GenNormals | 
 		                                              aiProcess_ConvertToLeftHanded);
 
 		assert(sceneModel != nullptr && "Model Path dosen't exist or wrong file");
 
-		auto modelFromFile = std::make_shared<NativeModel>(AnsiToWString(filePath));
+		auto modelFromFile = std::make_shared<NativeModel>(filePath.stem().string());
 
 		RecursivlyLoadMeshes(modelFromFile, sceneModel->mRootNode, sceneModel);
 
 		auto renderModel = std::make_shared<GModel>(modelFromFile, cmdList);
 
+		for (int i = 0; i < renderModel->GetMeshesCount(); ++i)
+		{
+			renderModel->SetMaterial(AMaterial::GetDefaultMaterial(), i);
+		}		
+		
 		return renderModel;
+	}
+
+	void  RecursivlyFindMaterialPerMesh(aiNode* node, const aiScene* scene, std::unordered_map<aiMaterial*, std::vector<aiMesh*>>& materialPerMesh)
+	{
+		for (UINT i = 0; i < node->mNumMeshes; i++)
+		{
+			auto mesh = scene->mMeshes[node->mMeshes[i]];
+			auto aiMaterial = scene->mMaterials[mesh->mMaterialIndex];			
+			
+			materialPerMesh[aiMaterial].push_back(mesh);
+		}
+
+		for (UINT i = 0; i < node->mNumChildren; i++)
+		{
+			RecursivlyFindMaterialPerMesh(node->mChildren[i], scene, materialPerMesh);
+		}
+	}
+
+	bool HasTextures(aiMaterial* material, aiTextureType type)
+	{
+		auto textureCount = material->GetTextureCount(aiTextureType_DIFFUSE);
+		return textureCount > 0;
+	}
+
+	std::shared_ptr<ATexture> AssimpModelLoader::LoadTextureFromAiMaterial(const aiMaterial* material, const aiTextureType type,
+		const std::filesystem::path& directory, std::shared_ptr<AModel> model)
+	{
+		aiString str;
+		material->GetTexture(type, 0, &str);
+
+		auto dirPath = directory;
+		
+		std::wstring modelTexturePath(AnsiToWString(str.C_Str()));
+
+		if (modelTexturePath.find(L"\\") != std::wstring::npos)
+		{
+			auto fileName = modelTexturePath.substr(modelTexturePath.find_last_of('\\'),
+				modelTexturePath.size() - modelTexturePath.find_last_of('\\'));
+
+			modelTexturePath = fileName.replace(fileName.find(L"\\"), 1, L"");
+		}
+
+		if(modelTexturePath.empty())
+		{
+			return nullptr;
+		}
+		
+
+		std::filesystem::path texturePath;
+		for (auto && iterator : std::filesystem::directory_iterator(directory))
+		{
+			if(iterator.is_regular_file())
+			{
+				if(iterator.path().wstring().find(modelTexturePath) != std::wstring::npos)
+				{
+					texturePath = iterator.path();
+					break;
+				}
+			}
+		}
+
+		if(!texturePath.has_filename())
+		{
+			for (auto&& iterator : std::filesystem::recursive_directory_iterator(directory))
+			{
+				if (iterator.is_regular_file())
+				{
+					if (iterator.path().wstring().find(modelTexturePath) != std::wstring::npos)
+					{
+						texturePath = iterator.path();
+						break;
+					}
+				}
+			}
+		}
+
+		if (!texturePath.has_filename()) return nullptr;
+
+		OutputDebugStringW((texturePath.wstring() + L"\n").c_str());
+
+		auto texture = AssetDatabase::AddTexture(texturePath, model->GetPepeFilePath().parent_path().concat("\\").concat(texturePath.filename().wstring()));
+		return texture;
+	}
+	
+	std::vector<std::shared_ptr<AMaterial>> AssimpModelLoader::FindAndCreateMaterialFromModelFile(
+		const std::shared_ptr<GCommandList>& cmdList, const std::string& filePath, std::shared_ptr<AModel> model)
+	{
+		Assimp::Importer importer;
+
+		const aiScene* sceneModel = importer.ReadFile(filePath, 0);
+
+		assert(sceneModel != nullptr && "Model Path dosen't exist or wrong file");
+
+		std::vector<std::shared_ptr<AMaterial>> materials;
+
+		std::unordered_map<aiMaterial*, std::vector<aiMesh*>> findedMaterialsPerMesh;
+
+		RecursivlyFindMaterialPerMesh(sceneModel->mRootNode, sceneModel, findedMaterialsPerMesh);
+
+		std::unordered_map<aiMaterial*, std::shared_ptr<AMaterial>> createdMaterials;
+
+
+		auto gmodel = model->GetGModel();
+		
+		for (auto && pair : findedMaterialsPerMesh)
+		{
+			auto aiMaterial = pair.first;
+
+			aiString name;
+			aiMaterial->Get(AI_MATKEY_NAME, name);
+
+			auto gmaterial = std::make_shared<Material>(gmodel->GetName() + " " + (name.C_Str()));
+
+			auto modelDir = std::filesystem::path(filePath).parent_path();
+
+			std::shared_ptr<ATexture> texture = nullptr;
+			
+			if(HasTextures(aiMaterial, aiTextureType_DIFFUSE))
+			{
+				texture = LoadTextureFromAiMaterial(aiMaterial, aiTextureType_DIFFUSE, modelDir, model);
+				
+			}
+			else
+			{
+				if(HasTextures(aiMaterial, aiTextureType_BASE_COLOR))
+				{
+					texture = LoadTextureFromAiMaterial(aiMaterial, aiTextureType_BASE_COLOR, modelDir, model);
+				}				
+			}
+
+			if(texture == nullptr)
+			{
+				texture = ATexture::GetDefaultAlbedo();
+			}
+			
+			gmaterial->SetMaterialMap(Material::BaseColor, texture);
+
+
+			texture = nullptr;
+
+			if(HasTextures(aiMaterial, aiTextureType_HEIGHT))
+			{
+				texture = LoadTextureFromAiMaterial(aiMaterial, aiTextureType_HEIGHT, modelDir, model);
+			}
+			else
+			{
+				if(HasTextures(aiMaterial, aiTextureType_NORMALS))
+				{
+					texture = LoadTextureFromAiMaterial(aiMaterial, aiTextureType_NORMALS, modelDir, model);
+				}
+			}
+
+			if (texture == nullptr)
+			{
+				texture = ATexture::GetDefaultNormal();
+			}
+			
+			gmaterial->SetMaterialMap(Material::NormalMap, texture);
+
+
+			auto aMaterial = AssetDatabase::AddMaterial(gmaterial, model->GetPepeFilePath().parent_path().concat("\\").concat(gmaterial->GetName()).concat(AMaterial::DEFAULT_EXTENSION));
+			
+
+			materials.push_back(aMaterial);			
+			createdMaterials[aiMaterial] = aMaterial;
+
+		}		
+
+		auto gMeshes = gmodel->GetMeshes();
+		
+		for (auto && pair : findedMaterialsPerMesh)
+		{
+			for (auto&& mesh : pair.second)
+			{
+				for (int i = 0; i < gmodel->GetMeshesCount(); ++i)
+				{
+					const auto gmesh = gMeshes[i];
+					if(gmesh->GetName().find((mesh->mName.C_Str())) != std::string::npos)
+					{
+						gmodel->SetMaterial(createdMaterials[pair.first], i);
+					}
+				}				
+			}
+		}
+		
+		
+
+		return materials;
 	}
 }

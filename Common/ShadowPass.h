@@ -3,6 +3,7 @@
 #include "Scene.h"
 #include "Light.h"
 #include "GTexture.h"
+#include "GDescriptor.h"
 
 namespace PEPEngine::Common
 {

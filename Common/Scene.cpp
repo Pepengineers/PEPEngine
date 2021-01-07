@@ -6,6 +6,9 @@
 #include "Material.h"
 #include "GDeviceFactory.h"
 #include "Camera.h"
+#include "AModel.h"
+#include "AMaterial.h"
+
 
 namespace PEPEngine::Common
 {
@@ -165,15 +168,17 @@ namespace PEPEngine::Common
 				
 				if (material != nullptr)
 				{
-					const auto it = typedMaterials[material->GetRenderMode()].insert(material.get());
+					auto gMaterial = material->GetMaterial();
+					
+					const auto it = typedMaterials[gMaterial->GetRenderMode()].insert(gMaterial.get());
 
 					if (it.second)
 					{
-						material->Init(device);
-						material->SetMaterialIndex(TotalMaterialCount++);
+						gMaterial->Init(device);
+						gMaterial->SetMaterialIndex(TotalMaterialCount++);
 					}
 
-					typedRenderers[material.get()][renderer.get()].push_back(i);
+					typedRenderers[gMaterial.get()][renderer.get()].push_back(i);
 				}
 			}			
 		}

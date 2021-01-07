@@ -9,13 +9,13 @@
 	{\
 	return std::make_shared<type>(json);\
 	}\
-	static std::wstring GetComponentID()\
+	static std::string GetComponentID()\
 	{\
-	auto id = L#type;\
+	auto id = #type;\
 	componentsFactory[id] = CreateFromJSON;\
 	return id;\
 	}\
-	inline static std::wstring ComponentID = GetComponentID();\
+	inline static std::string ComponentID = GetComponentID();\
 	void InitializeFromJson(json& json)\
 	{\
 	Deserialize(json);\
@@ -37,7 +37,7 @@ namespace PEPEngine
 		{
 		protected:
 
-			inline static std::unordered_map<std::wstring, std::function<std::shared_ptr<Component>(json&)>>
+			inline static std::unordered_map<std::string, std::function<std::shared_ptr<Component>(json&)>>
 			componentsFactory{};
 
 
@@ -45,7 +45,7 @@ namespace PEPEngine
 
 		public:
 
-			static std::shared_ptr<Component> CreateFromFile(json& json, const std::wstring& componentGUID);
+			static std::shared_ptr<Component> CreateFromFile(json& json, const std::string& componentGUID);
 
 			virtual ~Component();
 

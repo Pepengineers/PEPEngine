@@ -1,10 +1,15 @@
 #pragma once
+#include "AModel.h"
+#include "AMaterial.h"
+#include "Level.h"
 #include "Asset.h"
+#include "ATexture.h"
 #include "GeometryGenerator.h"
 #include "MemoryAllocator.h"
 #include "filesystem"
 #include "GModel.h"
 #include "GTexture.h"
+#include "Material.h"
 #include "NativeModel.h"
 
 namespace PEPEngine
@@ -21,39 +26,55 @@ namespace PEPEngine
 
 			inline static GeometryGenerator geoGen;
 
-			inline static custom_unordered_map<std::wstring, std::shared_ptr<Asset>> actualPathToLoadedAssets = MemoryAllocator::CreateUnorderedMap<std::wstring, std::shared_ptr<Asset>>();
+			inline static custom_unordered_map<std::wstring, std::shared_ptr<Asset>> actualPathToLoadedAssets =
+				MemoryAllocator::CreateUnorderedMap<std::wstring, std::shared_ptr<Asset>>();
 
 			inline static custom_unordered_map<std::wstring, std::shared_ptr<NativeModel>> loadedNativeModels =
 				MemoryAllocator::CreateUnorderedMap<std::wstring, std::shared_ptr<NativeModel>>();
 
 			inline static custom_unordered_map<std::wstring, std::shared_ptr<GTexture>> loadedTextures =
-				MemoryAllocator::CreateUnorderedMap<std::wstring, std::shared_ptr<
-					                                    GTexture>>();
+				MemoryAllocator::CreateUnorderedMap<std::wstring, std::shared_ptr<GTexture>>();
 
 			inline static custom_unordered_map<std::wstring, std::shared_ptr<GModel>> loadedModels =
 				MemoryAllocator::CreateUnorderedMap<std::wstring, std::shared_ptr<GModel>>();
 
+			inline static custom_unordered_map<std::wstring, std::shared_ptr<AMaterial>> loadedModelMaterials =
+				MemoryAllocator::CreateUnorderedMap<std::wstring, std::shared_ptr<AMaterial>>();
+
 			inline static custom_unordered_map<UINT64, std::shared_ptr<Asset>> loadedAssets =
 				MemoryAllocator::CreateUnorderedMap<UINT64, std::shared_ptr<Asset>>();
 
-			inline static custom_unordered_map<AssetType::Type, std::vector<UINT64>> typedAssets =
-				MemoryAllocator::CreateUnorderedMap<AssetType::Type, std::vector<UINT64>>();
+			inline static custom_unordered_map<AssetType::Type, std::set<UINT64>> typedAssets =
+				MemoryAllocator::CreateUnorderedMap<AssetType::Type, std::set<UINT64>>();
+
+			inline static custom_unordered_map<std::wstring, UINT64> typedAssetsByName =
+				MemoryAllocator::CreateUnorderedMap<std::wstring, UINT64>();
 
 			static std::filesystem::path GetOrCreateAssetFolderPath();
+			static std::filesystem::path GetOrCreateDefaultAssetFolderPath();;
 
 			static void Initialize();
 
 
 			static void SaveToFile(std::shared_ptr<Asset> asset, const std::filesystem::path& saveAssetPath);
 			static void LoadFromFile(std::shared_ptr<Asset> asset, const std::filesystem::path& saveAssetPath);
+			static void AddAssetInCache(std::shared_ptr<Asset> asset);
 
+			static std::vector<std::shared_ptr<AMaterial>> LoadMaterialsFromModelFile(
+				const std::filesystem::path& saveAssetPath, std::shared_ptr<AModel> model);
+			static void CheckExistFileAndCopyToAssetFolder(std::filesystem::path& loadAssetFile,
+			                                               std::filesystem::path& savePathInAssetFolder);
+
+			static std::shared_ptr<Asset> FindAssetByType(AssetType::Type type);
+
+			static std::shared_ptr<Asset> FindAssetByName(std::wstring name);
 		public:
 
 
 			static UINT64 GenerateID();
 
-			inline static std::filesystem::path AssetFolderPath = GetOrCreateAssetFolderPath();
-			inline static std::filesystem::path DefaultAssetPath = AssetFolderPath.parent_path().concat("\\Default\\");
+			inline static const std::filesystem::path& AssetFolderPath = GetOrCreateAssetFolderPath();
+			inline static const std::filesystem::path& DefaultAssetPath = GetOrCreateDefaultAssetFolderPath();
 
 			inline const static std::wstring ASSET_EXTENSION_NAME = L".pepe";
 
@@ -80,31 +101,46 @@ namespace PEPEngine
 
 			static std::shared_ptr<Asset> FindAssetByID(UINT64 id);
 
-			static std::shared_ptr<Asset> FindAssetByPath(std::filesystem::path& assetPath);
-
-			
-			static std::shared_ptr<Asset> Get(AssetType::Type type)
+			template <class T = Asset>
+			static std::shared_ptr<T> FindAssetByID(UINT64 id)
 			{
-				auto it = typedAssets.find(type);
-
-				if (it != typedAssets.end())
-				{
-					if (it->second.size() > 0)
-					{
-						return (loadedAssets[it->second[0]]);
-					}
-					return nullptr;
-				}
-				return nullptr;
+				return std::static_pointer_cast<T>(FindAssetByID(id));
 			}
 
-			static std::vector<std::shared_ptr<Asset>> GetAll(AssetType::Type type)
+
+			static std::shared_ptr<Asset> FindAssetByPath(std::filesystem::path& assetPath);
+
+			template <class T = Asset>
+			static std::shared_ptr<T> FindAssetByPath(std::filesystem::path& assetPath)
+			{
+				return std::static_pointer_cast<T>(FindAssetByPath(assetPath));
+			}
+
+			
+			
+			template <class T = Asset>
+			static std::shared_ptr<T> Get(AssetType::Type type)
+			{
+				return std::static_pointer_cast<Asset, T>(FindAssetByType(type));
+			}
+
+		
+			
+			template <class T = Asset>
+			static std::shared_ptr<T> Get(std::wstring name)
+			{
+				auto asset = FindAssetByName(name);
+				return std::static_pointer_cast<T>(asset);
+			}
+
+			template <class T = Asset>
+			static std::vector<std::shared_ptr<T>> GetAll(AssetType::Type type)
 			{
 				auto it = typedAssets.find(type);
 
+				std::vector<std::shared_ptr<Asset>> assets;
 				if (it != typedAssets.end())
 				{
-					std::vector<std::shared_ptr<Asset>> assets;
 					if (it->second.size() > 0)
 					{
 						for (auto&& id : it->second)
@@ -114,6 +150,7 @@ namespace PEPEngine
 					}
 					return assets;
 				}
+				return assets;
 			}
 
 
@@ -122,7 +159,7 @@ namespace PEPEngine
 			{
 				if (saveAssetPath.wstring().find(AssetFolderPath) == std::string::npos)
 				{
-					saveAssetPath = AssetFolderPath.concat(L"\\").concat(saveAssetPath.filename().wstring());
+					saveAssetPath = std::filesystem::path(AssetFolderPath.wstring()).concat(L"\\").concat(saveAssetPath.filename().wstring());
 				}
 
 				if (saveAssetPath.wstring().find(ASSET_EXTENSION_NAME) == std::wstring::npos)
@@ -137,6 +174,15 @@ namespace PEPEngine
 				return asset;
 			};
 
+
+			static std::shared_ptr<ATexture> AddTexture(std::filesystem::path loadAssetFile,
+			                                            std::filesystem::path savePathInAssetFolder = L"");
+
+			static std::shared_ptr<AModel> AddModel(std::filesystem::path loadAssetFile,
+			                                        std::filesystem::path savePathInAssetFolder = L"");
+
+			static std::shared_ptr<AMaterial> AddMaterial(std::shared_ptr<Material> material,
+			                                              std::filesystem::path savePathInAssetFolder = L"");
 
 			static void UpdateAsset(std::shared_ptr<Asset> asset);
 

@@ -37,54 +37,30 @@ namespace SimpleRender
 		MainWindow->SetVSync(true);		
 		
 		uiPass = std::make_shared<UILayer>(MainWindow->GetClientWidth(), MainWindow->GetClientHeight(), MainWindow->GetWindowHandle());
+
 		
-		auto copyQueue = device->GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COPY);
+		
 
-		auto cmdList = copyQueue->GetCommandList();
+		auto atlas = AssetDatabase::Get<AModel>(L"Atlas");
+		if(atlas == nullptr)
+		{
+			atlas = AssetDatabase::AddModel("Data\\Objects\\Atlas\\Atlas.obj");
+		}
 
+		
+		
 		//auto atlas = assetLoader.CreateModelFromFile(cmdList, "Data\\Objects\\Atlas\\Atlas.obj");
 		//models[L"atlas"] = std::move(atlas);
 
 		//auto PBody = assetLoader.CreateModelFromFile(cmdList, "Data\\Objects\\P-Body\\P-Body.obj");
 		//models[L"PBody"] = std::move(PBody);
 
-		auto quad = assetLoader.GenerateQuad(cmdList);
-		models[L"quad"] = std::move(quad);
+		
 
-		auto cube = assetLoader.GenerateSphere(cmdList);
-		models[L"cube"] = std::move(cube);
-
-		auto seamlessTex = GTexture::LoadTextureFromFile(L"Data\\Textures\\seamless_grass.jpg", cmdList);
-		seamlessTex->SetName(L"seamless");
+	/*	auto seamlessTex = GTexture::LoadTextureFromFile(L"Data\\Textures\\seamless_grass.jpg", cmdList);
+		seamlessTex->SetName(L"seamless");*/
 		//assetLoader.AddTexture(seamlessTex);
 
-
-		std::vector<std::wstring> texNormalNames =
-		{
-			L"bricksNormalMap",
-			L"tileNormalMap",
-			L"defaultNormalMap"
-		};
-
-		std::vector<std::wstring> texNormalFilenames =
-		{
-			L"Data\\Textures\\bricks2_nmap.dds",
-			L"Data\\Textures\\tile_nmap.dds",
-			L"Data\\Textures\\default_nmap.dds"
-		};
-
-		for (int i = 0; i < texNormalNames.size(); ++i)
-		{
-			auto texture = GTexture::LoadTextureFromFile(texNormalFilenames[i], cmdList, TextureUsage::Normalmap);
-			texture->SetName(texNormalNames[i]);
-			//assetLoader.AddTexture(texture);
-		}
-
-		copyQueue->ExecuteCommandList(cmdList);
-		copyQueue->Flush();
-
-
-		std::vector<GTexture*> noMipMapsTextures;
 
 		//auto allTextures = assetLoader.GetTextures();
 
@@ -99,16 +75,7 @@ namespace SimpleRender
 			{
 				noMipMapsTextures.push_back(texture.get());
 			}
-		}*/
-
-
-		const auto computeQueue = device->GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COMPUTE);
-		auto computeList = computeQueue->GetCommandList();
-		GTexture::GenerateMipMaps(computeList, noMipMapsTextures.data(), noMipMapsTextures.size());
-		for (auto&& texture : noMipMapsTextures)
-			computeList->TransitionBarrier(texture->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON);
-		computeList->FlushResourceBarriers();
-		computeQueue->WaitForFenceValue(computeQueue->ExecuteCommandList(computeList));		
+		}*/		
 
 		level = std::static_pointer_cast<Level>( AssetDatabase::Get(AssetType::Level));
 
@@ -121,14 +88,6 @@ namespace SimpleRender
 		
 		//scene = AssetDatabase;
 
-		
-		json tmp;
-
-		auto seamless = std::make_shared<Material>(L"seamless", RenderMode::Opaque);
-		seamless->Serialize(tmp);
-
-		auto str = tmp.dump(4);
-		OutputDebugStringA(str.c_str());
 
 		//auto tex = assetLoader.GetTextureIndex(L"seamless");
 		//seamless->SetMaterialMap(Material::DiffuseMap, assetLoader.GetTexture(tex));
@@ -136,13 +95,6 @@ namespace SimpleRender
 		//seamless->SetMaterialMap(Material::NormalMap, assetLoader.GetTexture(tex));
 		//assetLoader.AddMaterial(seamless);
 
-
-		auto quadRitem = std::make_unique<GameObject>("Quad");
-		auto renderer = std::make_shared<ModelRenderer>(models[L"quad"]);
-		
-		quadRitem->AddComponent(renderer);
-
-		scene->AddGameObject(std::move(quadRitem));
 
 		auto cameraGO = std::make_unique<GameObject>("MainCamera");
 		cameraGO->GetTransform()->SetEulerRotate(Vector3(-30, 120, 0));
@@ -178,8 +130,8 @@ namespace SimpleRender
 			for (int j = 0; j < 3; ++j)
 			{
 				auto rModel = std::make_unique<GameObject>();
-				auto renderer = std::make_shared<ModelRenderer>(models[L"atlas"]);
-				rModel->AddComponent(renderer);
+				/*auto renderer = std::make_shared<ModelRenderer>(models[L"atlas"]);
+				rModel->AddComponent(renderer);*/
 				rModel->GetTransform()->SetPosition(
 					Vector3::Right * -30 * j + Vector3::Forward * 10 * i);
 
@@ -233,8 +185,8 @@ namespace SimpleRender
 			if(!spawned)
 			{
 				auto rModel = std::make_shared<GameObject>();
-				auto renderer = std::make_shared<ModelRenderer>(models[L"PBody"]);
-				rModel->AddComponent(renderer);
+			/*	auto renderer = std::make_shared<ModelRenderer>(models[L"PBody"]);
+				rModel->AddComponent(renderer);*/
 				rModel->GetTransform()->SetPosition(Camera::mainCamera->gameObject->GetTransform()->GetWorldPosition());
 
 				level->GetScene()->AddGameObject(std::move(rModel));

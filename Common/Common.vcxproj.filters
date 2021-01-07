@@ -148,9 +148,6 @@
     <ClInclude Include="ShadowPass.h">
       <Filter>Render\Pass</Filter>
     </ClInclude>
-    <ClInclude Include="UILayer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\ThirdPerson\imgui\backends\imgui_impl_dx12.h">
       <Filter>ThirdPerson</Filter>
     </ClInclude>
@@ -202,11 +199,14 @@
     <ClInclude Include="AMaterial.h">
       <Filter>Assets</Filter>
     </ClInclude>
-    <ClInclude Include="AModel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ATexture.h">
       <Filter>Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="AModel.h">
+      <Filter>Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="UILayer.h">
+      <Filter>Render\Pass</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -309,9 +309,6 @@
     <ClCompile Include="ShadowPass.cpp">
       <Filter>Render\Pass</Filter>
     </ClCompile>
-    <ClCompile Include="UILayer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\ThirdPerson\imgui\backends\imgui_impl_dx12.cpp">
       <Filter>ThirdPerson</Filter>
     </ClCompile>
@@ -357,11 +354,14 @@
     <ClCompile Include="AMaterial.cpp">
       <Filter>Assets</Filter>
     </ClCompile>
-    <ClCompile Include="AModel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ATexture.cpp">
       <Filter>Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="AModel.cpp">
+      <Filter>Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="UILayer.cpp">
+      <Filter>Render\Pass</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

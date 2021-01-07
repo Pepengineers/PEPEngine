@@ -1,5 +1,7 @@
 #pragma once
 #include "RenderPass.h"
+#include "GDescriptor.h"
+#include "GCommandList.h"
 
 namespace PEPEngine::Common
 {

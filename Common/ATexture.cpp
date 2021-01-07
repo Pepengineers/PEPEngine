@@ -18,10 +18,22 @@ namespace PEPEngine::Common
 		if (file.has_filename())
 		{
 			texture = AssetDatabase::LoadTextureFromFile(file);
+
+			texture->SetName(GetName());
 		}
 		else
 		{
 			AssetDatabase::RemoveAsset(this);
 		}
+	}
+
+	std::shared_ptr<ATexture> ATexture::GetDefaultAlbedo()
+	{
+		return defaultAlbedo;
+	}
+
+	std::shared_ptr<ATexture> ATexture::GetDefaultNormal()
+	{
+		return defaultNormal;
 	}
 }

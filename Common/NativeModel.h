@@ -13,14 +13,14 @@ namespace PEPEngine
 
 		class NativeMesh
 		{
-			std::wstring meshName;
+			std::string meshName;
 			custom_vector<Vertex> vertices = MemoryAllocator::CreateVector<Vertex>();
 			custom_vector<DWORD> indexes = MemoryAllocator::CreateVector<DWORD>();
 
 		public:
 			NativeMesh(const Vertex* vertices, size_t vertexesCount, const DWORD* indices, size_t indexesCount,
 			           D3D12_PRIMITIVE_TOPOLOGY topology = D3D10_PRIMITIVE_TOPOLOGY_UNDEFINED,
-			           std::wstring name = L"") : meshName(
+			           std::string name = "") : meshName(
 				                                      std::move(name)), topology(topology)
 			{
 				std::copy(vertices, vertices + vertexesCount, std::back_inserter(this->vertices));
@@ -42,7 +42,7 @@ namespace PEPEngine
 				return indexes.size();
 			}
 
-			std::wstring& GetName()
+			std::string& GetName()
 			{
 				return meshName;
 			}
@@ -67,11 +67,11 @@ namespace PEPEngine
 			custom_vector<std::shared_ptr<NativeMesh>> meshes = MemoryAllocator::CreateVector<std::shared_ptr<NativeMesh
 			>>();
 
-			std::wstring name;
+			std::string name;
 
 		public:
 
-			NativeModel(std::wstring name) : name(name)
+			NativeModel(std::string name) : name(name)
 			{
 			}
 
@@ -82,7 +82,7 @@ namespace PEPEngine
 
 			UINT GetMeshesCount() const { return meshes.size(); };
 
-			std::wstring GetName() const { return name; };
+			std::string GetName() const { return name; };
 
 			std::shared_ptr<NativeMesh> GetMesh(UINT index)
 			{
