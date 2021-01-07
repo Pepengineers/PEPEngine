@@ -15,12 +15,14 @@ namespace PEPEngine
 			CD3DX12_CPU_DESCRIPTOR_HANDLE cpuTextureHandle{};
 
 		public:
-			SkyBox(const std::shared_ptr<GDevice>& device, const std::shared_ptr<GModel>& model,
+			SkyBox(const std::shared_ptr<AModel>& model,
 			       GTexture& skyMapTexture,
 			       GDescriptor* srvMemory, UINT offset = 0);
 
+
+			void Render(std::shared_ptr<GCommandList> cmdList);
+			
 		protected:
-			void PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList) override;
 			void Update() override;;;
 		};
 	}

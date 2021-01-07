@@ -44,6 +44,16 @@ class AIComponent : public PEPEngine::Common::Component
 			void Update() override;;
 			void preUpdate();
 			void PopulateDrawCommand(std::shared_ptr<PEPEngine::Graphics::GCommandList> cmdList) override;;
+	void Serialize(json& j) override
+	{
+		j["Type"] = ComponentID;
+	};
+void Deserialize(json& j) override
+	{		
+		Initialize();
+	};
+
+
 
 		private:
 			float dt;
@@ -52,3 +62,19 @@ class AIComponent : public PEPEngine::Common::Component
 			Vector3 dumpTarget;
 			float getDelta(Vector3);
 		};
+	
+
+public:
+
+	SERIALIZE_FROM_JSON(AIComponent)
+	
+	void Initialize();
+	AIComponent();
+	void SetActionList();
+	void SetWorldState();
+	void Update() override;
+
+private:
+	float dt;
+	Vector3 dumpTarget;
+};

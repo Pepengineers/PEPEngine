@@ -22,5 +22,4 @@ void PEPEngine::Common::FrameResource::UpdateMaterialBufferSizer(UINT size)
 {
 	MaterialsBuffer = std::make_shared<StructuredUploadBuffer<MaterialData>>(
 		MaterialsBuffer->GetDevice(), size, L"Materials Data UploadBuffer");
-
 }

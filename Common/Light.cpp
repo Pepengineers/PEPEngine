@@ -36,7 +36,7 @@ namespace PEPEngine::Common
 		}
 	}
 
-	void Light::PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList)
+	void Light::Render(std::shared_ptr<GCommandList> cmdList)
 	{
 	}
 
@@ -45,15 +45,15 @@ namespace PEPEngine::Common
 	{
 		Vector3 postiton;
 
-		if(Type == Directional)
+		if (Type == Directional)
 		{
 			postiton = Vector3::One * 150;
 		}
-		else 
+		else
 		{
-			postiton = gameObject->GetTransform()->GetWorldPosition();;
-		}		
-		
+			postiton = gameObject->GetTransform()->GetWorldPosition();
+		}
+
 		return Matrix(XMMatrixLookAtLH(postiton, Vector3::Zero, Vector3::Up));
 	}
 

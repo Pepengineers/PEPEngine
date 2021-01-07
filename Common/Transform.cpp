@@ -4,12 +4,10 @@
 
 namespace PEPEngine::Common
 {
-	UINT Transform::gConstantBufferIndex = 0;
 
 	Transform::Transform(Vector3 pos, Quaternion rot, Vector3 scale) : Component(), localPosition(pos),
 	                                                                   localRotate(rot), localScale(scale)
 	{
-		bufferIndex = gConstantBufferIndex++;
 	}
 
 	Transform::Transform() : Transform(Vector3::Zero, Quaternion::Identity, Vector3::One)
@@ -56,9 +54,6 @@ namespace PEPEngine::Common
 		}
 	}
 
-	void Transform::PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList)
-	{
-	}
 
 	void Transform::SetParent(Transform* transform)
 	{
@@ -155,12 +150,11 @@ namespace PEPEngine::Common
 		localEulerAngles = Vector3(DirectX::XMConvertToDegrees(radianAngl.x),
 		                           DirectX::XMConvertToDegrees(radianAngl.y),
 		                           DirectX::XMConvertToDegrees(radianAngl.z));
-		
+
 
 		localRotate = Quaternion::CreateFromYawPitchRoll(DirectX::XMConvertToRadians(radianAngl.y),
 		                                                 DirectX::XMConvertToRadians(radianAngl.x),
 		                                                 DirectX::XMConvertToRadians(radianAngl.z));
-		
 
 
 		world = CalculateWorldMatrix();
@@ -169,16 +163,14 @@ namespace PEPEngine::Common
 
 	void Transform::SetMatrixRotate(const Matrix& rot)
 	{
-		
 		localRotate = Quaternion::CreateFromRotationMatrix(rot);
-	
+
 		world = CalculateWorldMatrix();
 		NumFramesDirty = globalCountFrameResources;
 	}
 
 	void Transform::SetQuaternionRotate(const Quaternion& quaternion)
 	{
-
 		localRotate = quaternion;
 
 		world = CalculateWorldMatrix();

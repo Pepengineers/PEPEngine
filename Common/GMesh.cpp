@@ -1,10 +1,15 @@
 #include "pch.h"
 #include "GMesh.h"
 #include <DirectXMesh.h>
+
+#include "d3dUtil.h"
 #include "GBuffer.h"
 #include "GCommandList.h"
 #include "GMeshBuffer.h"
 #include "NativeModel.h"
+#include "Utils.h"
+
+using namespace PEPEngine::Utils;
 
 namespace PEPEngine::Common
 {
@@ -32,16 +37,16 @@ namespace PEPEngine::Common
 		std::move(data))
 	{
 		indexBuffer = std::make_shared<GMeshBuffer>(std::move(GMeshBuffer::CreateBuffer(
-			cmdList, mesh->GetIndexes().data(), mesh->GetIndexSize(), mesh->GetIndexes().size(),
-			mesh->GetName() + L" Indexes")));
+			cmdList, mesh->GetIndexes().data(), mesh->GetIndexSize(), mesh->GetIndexes().size(), AnsiToWString(
+			  mesh->GetName() + " Indexes"))));
 
 		vertexBuffer = std::make_shared<GMeshBuffer>(std::move(GMeshBuffer::CreateBuffer(
-			cmdList, mesh->GetVertexes().data(), mesh->GetVertexSize(), mesh->GetVertexes().size(),
-			mesh->GetName() + L" Vertexes")));
+			cmdList, mesh->GetVertexes().data(), mesh->GetVertexSize(), mesh->GetVertexes().size(), AnsiToWString(
+			mesh->GetName() + " Vertexes"))));
 	}
 
 
-	void GMesh::Draw(std::shared_ptr<GCommandList> cmdList) const
+	void GMesh::Render(std::shared_ptr<GCommandList> cmdList) const
 	{
 		cmdList->SetVBuffer(0, 1, vertexBuffer->VertexBufferView());
 		cmdList->SetIBuffer(indexBuffer->IndexBufferView());
@@ -49,7 +54,7 @@ namespace PEPEngine::Common
 		cmdList->DrawIndexed(mesh->GetIndexCount());
 	}
 
-	std::wstring GMesh::GetName() const
+	std::string GMesh::GetName() const
 	{
 		return mesh->GetName();
 	}

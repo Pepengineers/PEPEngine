@@ -4,3 +4,6 @@
 [submodule "ThirdPerson/imgui"]
 	path = ThirdPerson/imgui
 	url = git@github.com:ocornut/imgui.git
+[submodule "ThirdPerson/json"]
+	path = ThirdPerson/json
+	url = git@github.com:nlohmann/json.git

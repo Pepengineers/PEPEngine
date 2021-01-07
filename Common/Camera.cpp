@@ -4,10 +4,14 @@
 #include "d3dApp.h"
 #include "GameObject.h"
 #include "GDeviceFactory.h"
+#include "GPass.h"
 #include "GTexture.h"
 #include "Transform.h"
 #include "Window.h"
 #include "GRenderTarger.h"
+#include "LightPass.h"
+#include "ShadowPass.h"
+#include "SSAOPass.h"
 
 namespace PEPEngine::Common
 {
@@ -21,7 +25,7 @@ namespace PEPEngine::Common
 	void Camera::Update()
 	{
 		currentFrameResourceIndex = (currentFrameResourceIndex + 1) % globalCountFrameResources;
-		
+
 		auto transform = gameObject->GetTransform();
 
 		if (transform->IsDirty())
@@ -62,6 +66,11 @@ namespace PEPEngine::Common
 
 			NumFramesDirty--;
 		}
+
+		gpass->Update();
+		ambiantPass->Update();
+		shadowPass->Update();
+		lightPass->Update();
 	}
 
 	void Camera::CreateProjection()
@@ -71,6 +80,29 @@ namespace PEPEngine::Common
 	}
 
 
+	void Camera::Render(std::shared_ptr<GCommandList> cmdList)
+	{
+		gpass->Render(cmdList);
+		ambiantPass->Render(cmdList);
+		shadowPass->Render(cmdList);
+		lightPass->Render(cmdList);
+	}
+
+	const D3D12_VIEWPORT Camera::GetViewPort() const
+	{
+		return viewport;
+	}
+
+	const D3D12_RECT Camera::GetRect() const
+	{
+		return rect;
+	}
+
+	CameraConstants& Camera::GetCameraData()
+	{
+		return cameraData;
+	}
+
 	ConstantUploadBuffer<CameraConstants>& Camera::GetCameraDataBuffer() const
 	{
 		return *CameraConstantBuffers[currentFrameResourceIndex].get();
@@ -79,7 +111,7 @@ namespace PEPEngine::Common
 	void Camera::SetRenderTarget(std::shared_ptr<GTexture> target, GDescriptor* rtv)
 	{
 		renderTarget = std::make_shared<GRenderTexture>(target, rtv);
-				
+
 		SetRenderTarget(renderTarget);
 	}
 
@@ -106,7 +138,7 @@ namespace PEPEngine::Common
 		viewport.TopLeftX = 0;
 		viewport.TopLeftY = 0;
 
-		rect = { 0, 0,  static_cast<LONG>(viewport.Width), static_cast<LONG>(viewport.Height) };
+		rect = {0, 0, static_cast<LONG>(viewport.Width), static_cast<LONG>(viewport.Height)};
 	}
 
 	GRenderTexture* Camera::GetRenderTarget() const
@@ -120,8 +152,16 @@ namespace PEPEngine::Common
 		return focusPosition;
 	}
 
-	Camera::Camera(float aspect,const  std::shared_ptr<GRenderTexture> target) : Component(), aspectRatio(aspect)
+	void Camera::InitializeCamera(const std::shared_ptr<GRenderTexture> target)
 	{
+		const auto MainWindow = D3DApp::GetApp().GetMainWindow();
+
+		gpass = std::make_shared<GPass>(MainWindow->GetClientWidth(), MainWindow->GetClientHeight());
+		ambiantPass = std::make_shared<SSAOPass>(1920, 1080, *gpass.get());
+		shadowPass = std::make_shared<ShadowPass>(2048, 2048);
+		lightPass = std::make_shared<LightPass>(MainWindow->GetClientWidth(), MainWindow->GetClientHeight(),
+		                                        *gpass.get(), *ambiantPass.get(), *shadowPass.get());
+
 		mainCamera = this;
 
 
@@ -130,9 +170,22 @@ namespace PEPEngine::Common
 			CameraConstantBuffers[i] = std::make_shared<ConstantUploadBuffer<CameraConstants>>(
 				GDeviceFactory::GetDevice(), 1, L"Camera Data Buffer" + std::to_wstring(i));
 		}
-		
-		
+
+
 		SetRenderTarget(target);
+	}
+
+	Camera::Camera(float aspect, const std::shared_ptr<GRenderTexture> target) : Component(), aspectRatio(aspect)
+	{
+		InitializeCamera(target);
+	}
+
+	void Camera::ChangeRenderSize(UINT height, UINT width) const
+	{
+		if (gpass)
+			gpass->ChangeRenderTargetSize(width, height);
+		if (lightPass)
+			lightPass->ChangeRenderTargetSize(width, height);
 	}
 
 	void Camera::SetAspectRatio(float aspect)

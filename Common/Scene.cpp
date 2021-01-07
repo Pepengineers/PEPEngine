@@ -1,8 +1,13 @@
 #include "Scene.h"
+
+#include "AssetDatabase.h"
 #include "Light.h"
 #include "Renderer.h"
 #include "Material.h"
 #include "GDeviceFactory.h"
+#include "Camera.h"
+#include "AModel.h"
+#include "AMaterial.h"
 
 
 namespace PEPEngine::Common
@@ -11,17 +16,17 @@ namespace PEPEngine::Common
 	{
 		auto currentMaterialBuffer = currentFrameResource->MaterialsBuffer.get();
 		UINT count = 0;
-		for (auto && materials : typedMaterials)
+		for (auto&& materials : typedMaterials)
 		{
-			for (auto && material : materials)
+			for (auto&& material : materials)
 			{
 				assert(count < TotalMaterialCount);
-				
+
 				material->Update();
 				auto& constantData = material->GetMaterialConstantData();
 				currentMaterialBuffer->CopyData(count++, constantData);
 			}
-		}		
+		}
 	}
 
 	void Scene::UpdateSceneLightBuffer()
@@ -29,26 +34,24 @@ namespace PEPEngine::Common
 		UINT count = 0;
 		auto currentLightsBuffer = currentFrameResource->LightsBuffer.get();
 
-		for (auto && light : sceneLights)
+		for (auto&& light : sceneLights)
 		{
 			auto& lightData = light->GetData();
 			currentLightsBuffer->CopyData(count++, lightData);
-		}		
+		}
 	}
 
 	void Scene::Prepare()
-	{		
+	{
 		currentFrameResource = frameResources[currentFrameResourceIndex];
 
 		currentScene = this;
 	}
 
 
-
-	
-	void Scene::Update()
+	void Scene::SpawnNewGO()
 	{
-		if(addedGameObjects.Size() > 0)
+		if (addedGameObjects.Size() > 0)
 		{
 			std::shared_ptr<GameObject> go;
 			while (addedGameObjects.TryPop(go))
@@ -57,7 +60,7 @@ namespace PEPEngine::Common
 				UpdateGameObjects(go);
 			}
 
-			if(currentFrameResource->LightsBuffer->GetElementCount() < sceneLights.size())
+			if (currentFrameResource->LightsBuffer->GetElementCount() < sceneLights.size())
 			{
 				for (int i = 0; i < globalCountFrameResources; ++i)
 				{
@@ -71,10 +74,14 @@ namespace PEPEngine::Common
 				{
 					frameResources[i]->UpdateMaterialBufferSizer(TotalMaterialCount + 5);
 				}
-			}			
+			}
 		}
+	}
 
-		
+	void Scene::Update()
+	{
+		SpawnNewGO();
+
 		currentFrameResource = frameResources[currentFrameResourceIndex];
 
 		for (auto&& object : objects)
@@ -95,11 +102,32 @@ namespace PEPEngine::Common
 		currentFrameResourceIndex = (currentFrameResourceIndex + 1) % globalCountFrameResources;
 	}
 
-	void Scene::Render(RenderMode::Mode mode, std::shared_ptr<GCommandList> cmdList)
+	void Scene::Render(std::shared_ptr<GCommandList> cmdList)
 	{
-		for (auto && renderer : typedRenderers[mode])
+		for (auto camera : cameras)
 		{
-			renderer->PopulateDrawCommand(cmdList);
+			camera->Render(cmdList);
+		}
+	}
+
+	void Scene::RenderTypedObjects(RenderMode::Mode mode, std::shared_ptr<GCommandList> cmdList)
+	{
+		auto materials = typedMaterials[mode];
+
+		for (auto&& material : materials)
+		{
+			auto it = typedRenderers.find(material);
+			if(it != typedRenderers.end())
+			{
+				material->SetRenderMaterialData(cmdList);
+				for (auto && renderPair : it->second)
+				{
+					for (auto && meshIndex : renderPair.second)
+					{
+						renderPair.first->PopulateDrawCommand(cmdList, meshIndex);
+					}
+				}
+			}
 		}
 	}
 
@@ -115,45 +143,86 @@ namespace PEPEngine::Common
 
 	void Scene::AddGameObject(std::shared_ptr<GameObject> gameObject)
 	{
-		addedGameObjects.Push(gameObject);		
+		addedGameObjects.Push(gameObject);
 	}
 
 	void Scene::UpdateGameObjects(std::shared_ptr<GameObject> gameObject)
 	{
 		if (gameObject == nullptr) return;
 
-		
+
 		auto light = gameObject->GetComponent<Light>();
 		if (light != nullptr)
 		{
 			sceneLights.insert(light.get());
-		}
-
-		auto renderer = gameObject->GetComponent<Renderer>();
-		if (renderer != nullptr)
-		{
-			for (auto&& material : renderer->GetSharedMaterials())
-			{
-				if (material != nullptr)
-				{
-					const auto it = typedMaterials[material->GetRenderMode()].insert(material.get());
-
-					if(it.second)
-					{
-						material->InitMaterial(device);
-						material->SetMaterialIndex(TotalMaterialCount++);
-					}
-
-					
-					typedRenderers[material->GetRenderMode()].push_back(renderer.get());					
-				}
-			}
 		}
 		auto ai = gameObject->GetComponent<AIComponent>();
 		if(ai != nullptr)
 		{
 			ai->addGlobalState(objects);
 		}
+
+		auto renderer = gameObject->GetComponent<Renderer>();
+		if (renderer != nullptr)
+		{
+			auto sharedMaterials = renderer->GetSharedMaterials();
+
+			for (int i = 0; i < sharedMaterials.size(); ++i)
+			{
+				auto material = sharedMaterials[i];
+				
+				if (material != nullptr)
+				{
+					auto gMaterial = material->GetMaterial();
+					
+					const auto it = typedMaterials[gMaterial->GetRenderMode()].insert(gMaterial.get());
+
+					if (it.second)
+					{
+						gMaterial->Init(device);
+						gMaterial->SetMaterialIndex(TotalMaterialCount++);
+					}
+
+					typedRenderers[gMaterial.get()][renderer.get()].push_back(i);
+				}
+			}			
+		}
+
+		const auto camera = gameObject->GetComponent<Camera>();
+		if (camera != nullptr)
+		{
+			cameras.insert(camera.get());
+		}
+	}
+
+	void Scene::Serialize(json& j)
+	{
+		j["GameObjectsCount"] = objects.size();
+
+		auto array = json::array();
+
+		for (auto && object : objects)
+		{
+			json element;
+			object->Serialize(element);
+			array.push_back(element);
+		}
+		j["GameObjects"] = array;		
+	}
+
+	void Scene::Deserialize(json& j)
+	{
+		UINT count;
+		assert(Asset::TryReadVariable<UINT>(j, "GameObjectsCount", &count));
+
+		json array = j["GameObjects"];
+		
+		for (int i = 0; i < count; ++i)
+		{
+			auto GO = std::make_shared<GameObject>();
+			GO->Deserialize(array[i]);
+			AddGameObject(GO);
+		}		
 	}
 
 	FrameResource* Scene::GetCurrentFrameResource() const

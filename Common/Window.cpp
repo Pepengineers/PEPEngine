@@ -188,11 +188,11 @@ namespace PEPEngine
 
 			for (int i = 0; i < globalCountFrameResources; ++i)
 			{
-				backBuffers.push_back(std::make_shared<GTexture>(windowName + L" Backbuffer[" + std::to_wstring(i) + L"]",
-				                               TextureUsage::RenderTarget));
+				backBuffers.push_back(std::make_shared<GTexture>(
+					windowName + L" Backbuffer[" + std::to_wstring(i) + L"]",
+					TextureUsage::RenderTarget));
 			}
 
-			
 
 			OnResize();
 		}
@@ -302,7 +302,7 @@ namespace PEPEngine
 			D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
 			rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
 			rtvDesc.Format = GetSRGBFormat(desc.BufferDesc.Format);
-			
+
 			for (int i = 0; i < globalCountFrameResources; ++i)
 			{
 				ComPtr<ID3D12Resource> backBuffer;
@@ -311,12 +311,12 @@ namespace PEPEngine
 
 				backBuffers[i]->SetD3D12Resource(device, backBuffer);
 
-				if(renderTargets.size() < globalCountFrameResources)
+				if (renderTargets.size() < globalCountFrameResources)
 				{
 					renderTargets.push_back(std::make_shared<GRenderTexture>(backBuffers[i], &rtvDescriptors, i));
 				}
 
-				renderTargets[i]->ChangeTexture(backBuffers[i]);				
+				renderTargets[i]->ChangeTexture(backBuffers[i]);
 			}
 		}
 

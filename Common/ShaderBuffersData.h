@@ -10,7 +10,6 @@ namespace PEPEngine
 	{
 		using namespace DirectX::SimpleMath;
 
-		static const UINT MaxMaterialTexturesMaps = 6;
 
 
 		static const DXGI_FORMAT BackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -20,12 +19,12 @@ namespace PEPEngine
 
 		enum DeferredPassSlots : UINT
 		{
-			ObjectDataBuffer = 0,
+			ObjectWorldDataBuffer = 0,
 			MaterialTextures,
 			CameraDataBuffer,
 			WorldDataBuffer,
-			MaterialsBuffer,
-			LightBuffer,
+			MaterialsDataBuffer,
+			LightDataBuffer,
 			NormalMap,
 			BaseColorMap,
 			PositionMap,
@@ -152,24 +151,12 @@ namespace PEPEngine
 		};
 
 		struct alignas(sizeof(Vector4)) MaterialData
-		{
-			Vector4 AmbientColor;
-			Vector4 EmissiveColor;
-			Vector4 DiffuseColor;
-			Vector4 SpecularColor;
-			Vector4 Reflectance;
-			float Opacity;
-			float SpecularPower;
-			float IndexOfRefraction;
-			float BumpIntensity;
-			float SpecularScale;
+		{			
+			Vector4 DiffuseColor;		
+			float SpecularPower = 1.0f;
 			float AlphaThreshold = 0.1f;
 			int DiffuseMapIndex = -1;
 			int NormalMapIndex = -1;
-			int HeightMapIndex = -1;
-			int MetallicMapIndex = -1;
-			int RounghessMapIndex = -1;
-			int AOMapIndex = -1;
 		};
 
 

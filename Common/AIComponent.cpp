@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "AIComponent.h"
 
 #include "AttackAction.h"
@@ -7,7 +6,10 @@
 #include "FleeAction.h"
 #include "PickupAction.h"
 #include "WanderingAction.h"
+#include "GameObject.h"
+#include "Transform.h"
 
+enum test { TARGET_ACQUIRED, TARGET_DEAD, IN_LOCATION };
 
 using namespace PEPEngine::Common;
 	
@@ -114,6 +116,9 @@ void AIComponent::preUpdate()
 }
 
 void AIComponent::Update()
+{
+	/*if (worldState.getVariable(PEPEngine::goap::Action::POKE_A) && worldState.
+		getVariable(PEPEngine::goap::Action::POKE_B))
 	{
 	this->preUpdate();
 		switch (currentState_)
@@ -182,7 +187,6 @@ void AIComponent::Update()
 			}
 			else
 			{
-
 				auto action = currentActions.back();
 				auto current = gameObject->GetTransform()->GetWorldPosition();
 				auto target = action->target.get()->GetWorldPosition();
@@ -212,8 +216,7 @@ void AIComponent::Update()
 		}
 		}
 	}
-
-
+}
 
 void AIComponent::PopulateDrawCommand(std::shared_ptr<PEPEngine::Graphics::GCommandList> cmdList)
 	{

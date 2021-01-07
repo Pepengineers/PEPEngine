@@ -1,5 +1,5 @@
 #pragma once
-#include "AssetsLoader.h"
+#include "AssetDatabase.h"
 #include "d3dApp.h"
 #include "GPass.h"
 #include "LightPass.h"
@@ -34,20 +34,16 @@ namespace SimpleRender
 	private:
 
 		std::shared_ptr<GDevice> device;
-		AssetsLoader assetLoader;
-
-		std::unordered_map<std::wstring, std::shared_ptr<GModel>> models;
+		AssetDatabase assetLoader;
 
 		UINT currentFrameResourceIndex = 0;
 
 		UINT64 fenceValues[globalCountFrameResources];
 
-		std::shared_ptr<Scene> scene = nullptr;
+		std::shared_ptr<AScene> level = nullptr;
 
-		std::shared_ptr<GPass> gpass;
-		std::shared_ptr < LightPass> lightPass;
-		std::shared_ptr < SSAOPass> ambiantPass;
-		std::shared_ptr<ShadowPass> shadowPass;
+		std::vector<Camera*> cameras;
+
 		std::shared_ptr<UILayer> uiPass;
 	};
 }

@@ -184,9 +184,13 @@
     <ClInclude Include="..\ThirdPerson\imgui\imstb_rectpack.h" />
     <ClInclude Include="..\ThirdPerson\imgui\imstb_textedit.h" />
     <ClInclude Include="..\ThirdPerson\imgui\imstb_truetype.h" />
+    <ClInclude Include="..\ThirdPerson\json\single_include\nlohmann\json.hpp" />
     <ClInclude Include="AIComponent.h" />
-    <ClInclude Include="AssetsLoader.h" />
-    <ClInclude Include="AttackAction.h" />
+    <ClInclude Include="AMaterial.h" />
+    <ClInclude Include="AModel.h" />
+    <ClInclude Include="Asset.h" />
+    <ClInclude Include="AssetDatabase.h" />
+    <ClInclude Include="AssimpModelLoader.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraController.h" />
     <ClInclude Include="Component.h" />
@@ -204,6 +208,8 @@
     <ClInclude Include="WorldState.h" />
     <ClInclude Include="GoToAction.h" />
     <ClInclude Include="GPass.h" />
+    <ClInclude Include="AScene.h" />
+    <ClInclude Include="ATexture.h" />
     <ClInclude Include="KeyboardDevice.h" />
     <ClInclude Include="Light.h" />
     <ClInclude Include="LightPass.h" />
@@ -239,7 +245,11 @@
     <ClCompile Include="..\ThirdPerson\imgui\imgui_tables.cpp" />
     <ClCompile Include="..\ThirdPerson\imgui\imgui_widgets.cpp" />
     <ClCompile Include="AIComponent.cpp" />
-    <ClCompile Include="AssetsLoader.cpp" />
+    <ClCompile Include="AMaterial.cpp" />
+    <ClCompile Include="AModel.cpp" />
+    <ClCompile Include="Asset.cpp" />
+    <ClCompile Include="AssetDatabase.cpp" />
+    <ClCompile Include="AssimpModelLoader.cpp" />
     <ClCompile Include="AttackAction.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CameraController.cpp" />
@@ -257,6 +267,8 @@
     <ClCompile Include="WorldState.cpp" />
     <ClCompile Include="GoToAction.cpp" />
     <ClCompile Include="GPass.cpp" />
+    <ClCompile Include="AScene.cpp" />
+    <ClCompile Include="ATexture.cpp" />
     <ClCompile Include="KeyboardDevice.cpp" />
     <ClCompile Include="Light.cpp" />
     <ClCompile Include="LightPass.cpp" />

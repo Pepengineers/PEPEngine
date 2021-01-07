@@ -1,5 +1,7 @@
 #include "ShadowPass.h"
 
+
+#include "Material.h"
 #include "Transform.h"
 
 namespace PEPEngine::Common
@@ -12,7 +14,7 @@ namespace PEPEngine::Common
 		texParam[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2, 2);
 		texParam[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 3, 2);
 		texParam[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 4, 2);
-		texParam[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, MaxMaterialTexturesMaps, 0, 0); //Material Maps
+		texParam[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, Material::MaxMaterialTexturesMaps, 0, 0); //Material Maps
 
 		rootSignature.AddConstantBufferParameter(0); // ObjectData
 		rootSignature.AddDescriptorParameter(&texParam[5], 1, D3D12_SHADER_VISIBILITY_PIXEL); //MaterialsTexture
@@ -42,7 +44,7 @@ namespace PEPEngine::Common
 
 	void ShadowPass::InitPSO()
 	{
-		pso.SetInputLayout({ VertexInputLayout, static_cast<UINT>(_countof(VertexInputLayout)) });
+		pso.SetInputLayout({VertexInputLayout, static_cast<UINT>(_countof(VertexInputLayout))});
 		pso.SetRootSignature(rootSignature.GetRootSignature().Get());
 		pso.SetPrimitiveType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
 		pso.SetRenderTargetsCount(1);
@@ -68,15 +70,16 @@ namespace PEPEngine::Common
 
 	ShadowPass::ShadowPass(float width, float height) : RenderPass(width, height)
 	{
-		viewPort = { 0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, 1.0f };
-		rect = { 0, 0, static_cast<int>(width), static_cast<int>(height) };
+		viewPort = {0.0f, 0.0f, static_cast<float>(width), static_cast<float>(height), 0.0f, 1.0f};
+		rect = {0, 0, static_cast<int>(width), static_cast<int>(height)};
 
 		srvMemory = this->device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1);
 		dsvMemory = this->device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1);
 
 		projectionMatrix = DirectX::XMMatrixOrthographicLH(width, height, 0.1f, 1000);
 
-		LightCameraBuffer = std::make_shared<ConstantUploadBuffer<CameraConstants>>(device, 1, L" Shadow Map Light Buffer");
+		LightCameraBuffer = std::make_shared<ConstantUploadBuffer<CameraConstants>>(
+			device, 1, L" Shadow Map Light Buffer");
 
 		BuildResource();
 
@@ -155,11 +158,11 @@ namespace PEPEngine::Common
 	{
 		cmdList->SetRootSignature(&rootSignature);
 		cmdList->SetPipelineState(pso);
-		
+
 		const auto scene = Scene::currentScene;
 		const auto currentFrameResource = Scene::currentScene->GetCurrentFrameResource();
 
-		cmdList->SetRootShaderResourceView(MaterialsBuffer, *currentFrameResource->MaterialsBuffer);
+		cmdList->SetRootShaderResourceView(MaterialsDataBuffer, *currentFrameResource->MaterialsBuffer);
 		cmdList->SetRootConstantBufferView(WorldDataBuffer, *currentFrameResource->WorldBuffer);
 		cmdList->SetRootConstantBufferView(CameraDataBuffer, *LightCameraBuffer.get());
 
@@ -171,10 +174,10 @@ namespace PEPEngine::Common
 
 		cmdList->SetRenderTargets(0, nullptr, 0, &dsvMemory, 0);
 		cmdList->ClearDepthStencil(&dsvMemory, 0,
-			D3D12_CLEAR_FLAG_DEPTH);
+		                           D3D12_CLEAR_FLAG_DEPTH);
 
-		scene->Render(RenderMode::Opaque, cmdList);
-		scene->Render(RenderMode::OpaqueAlphaDrop, cmdList);
+		scene->RenderTypedObjects(RenderMode::Opaque, cmdList);
+		scene->RenderTypedObjects(RenderMode::OpaqueAlphaDrop, cmdList);
 
 		cmdList->TransitionBarrier(shadowMap, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 		cmdList->FlushResourceBarriers();
@@ -224,9 +227,9 @@ namespace PEPEngine::Common
 				0.0f, 0.0f, 1.0f, 0.0f,
 				0.5f, 0.5f, 0.0f, 1.0f);
 
-			Matrix S = view * proj * T;			
+			Matrix S = view * proj * T;
 			shadowMapConstants.ShadowTransform = S;
-			
+
 			LightCameraBuffer->CopyData(0, shadowMapConstants);
 		}
 	}

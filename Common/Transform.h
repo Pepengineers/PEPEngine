@@ -16,6 +16,8 @@ namespace PEPEngine
 
 		class Transform : public Component
 		{
+			friend class GameObject;
+			
 		public:
 			Transform(Vector3 pos, Quaternion rot, Vector3 scale);
 
@@ -51,7 +53,6 @@ namespace PEPEngine
 			bool IsDirty() const;
 
 			void Update() override;;
-			void PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList) override;;
 
 			void SetParent(Transform* transform);
 
@@ -72,19 +73,66 @@ namespace PEPEngine
 
 			void SetWorldMatrix(const Matrix& mat);
 
+			SERIALIZE_FROM_JSON(Transform)
 		private:
 
+			 void Serialize(json& j) override
+			 {
+				 j["Type"] = ComponentID;
+
+				 auto jPos = json(); 
+				 jPos["x"] = localPosition.x;
+				 jPos["y"] = localPosition.y;
+				 jPos["z"] = localPosition.z;
+				 j["Position"] = jPos;
+
+				 jPos = json();
+				 jPos["x"] = localEulerAngles.x;
+				 jPos["y"] = localEulerAngles.y;
+				 jPos["z"] = localEulerAngles.z;
+				 j["Rotation"] = jPos;
+			 	
+				 jPos = json();
+				 jPos["x"] = localScale.x;
+				 jPos["y"] = localScale.y;
+				 jPos["z"] = localScale.z;
+
+				 j["Scale"] = jPos;
+			 };
+
+			void Deserialize(json& j) override
+			{
+				float x, y, z;
+				auto jPos = j["Position"];
+				assert(TryReadVariable<float>(jPos, "x", &x));
+				assert(TryReadVariable<float>(jPos, "y", &y));
+				assert(TryReadVariable<float>(jPos, "z", &z));
+
+				SetPosition(Vector3(x,y,z));
+
+				jPos = j["Rotation"];
+				assert(TryReadVariable<float>(jPos, "x", &x));
+				assert(TryReadVariable<float>(jPos, "y", &y));
+				assert(TryReadVariable<float>(jPos, "z", &z));
+
+				SetEulerRotate( Vector3(x, y, z));
+
+				jPos = j["Scale"];
+				assert(TryReadVariable<float>(jPos, "x", &x));
+				assert(TryReadVariable<float>(jPos, "y", &y));
+				assert(TryReadVariable<float>(jPos, "z", &z));
+
+				SetScale( Vector3(x, y, z));				
+			};
+			
 			Matrix world = Matrix::Identity;
 
 
 			Matrix MakeParentToLocal() const;
 			Matrix CalculateWorldMatrix() const;
 
-			static UINT gConstantBufferIndex;
-
 			Transform* Parent = nullptr;
 
-			UINT bufferIndex = -1;
 			int NumFramesDirty = globalCountFrameResources;
 
 			Vector3 localPosition = Vector3::Zero;

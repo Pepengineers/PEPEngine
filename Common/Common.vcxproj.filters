@@ -32,7 +32,10 @@
     <Filter Include="Render\Objects">
       <UniqueIdentifier>{b307ed34-1c1e-409f-b2a0-879f8e7b971b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="IMGUI">
+    <Filter Include="Assets">
+      <UniqueIdentifier>{94578003-e8d0-4ea9-913c-19613c117e63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ThirdPerson">
       <UniqueIdentifier>{860f83c5-9b22-4116-b9b9-066d1ad4ec42}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -41,12 +44,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AssetsLoader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GeometryGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SkyBox.h">
@@ -115,9 +112,6 @@
     <ClInclude Include="LightPass.h">
       <Filter>Render\Pass</Filter>
     </ClInclude>
-    <ClInclude Include="FrameResource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="GMesh.h">
       <Filter>Render\Objects</Filter>
     </ClInclude>
@@ -142,69 +136,69 @@
     <ClInclude Include="ShadowPass.h">
       <Filter>Render\Pass</Filter>
     </ClInclude>
-    <ClInclude Include="UILayer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\ThirdPerson\imgui\backends\imgui_impl_dx12.h">
-      <Filter>IMGUI</Filter>
+      <Filter>ThirdPerson</Filter>
     </ClInclude>
     <ClInclude Include="..\ThirdPerson\imgui\backends\imgui_impl_win32.h">
-      <Filter>IMGUI</Filter>
+      <Filter>ThirdPerson</Filter>
     </ClInclude>
     <ClInclude Include="..\ThirdPerson\imgui\imconfig.h">
-      <Filter>IMGUI</Filter>
+      <Filter>ThirdPerson</Filter>
     </ClInclude>
     <ClInclude Include="..\ThirdPerson\imgui\imgui.h">
-      <Filter>IMGUI</Filter>
+      <Filter>ThirdPerson</Filter>
     </ClInclude>
     <ClInclude Include="..\ThirdPerson\imgui\imgui_internal.h">
-      <Filter>IMGUI</Filter>
+      <Filter>ThirdPerson</Filter>
     </ClInclude>
     <ClInclude Include="..\ThirdPerson\imgui\imstb_rectpack.h">
-      <Filter>IMGUI</Filter>
+      <Filter>ThirdPerson</Filter>
     </ClInclude>
     <ClInclude Include="..\ThirdPerson\imgui\imstb_textedit.h">
-      <Filter>IMGUI</Filter>
+      <Filter>ThirdPerson</Filter>
     </ClInclude>
     <ClInclude Include="..\ThirdPerson\imgui\imstb_truetype.h">
-      <Filter>IMGUI</Filter>
+      <Filter>ThirdPerson</Filter>
     </ClInclude>
     <ClInclude Include="WanderingAction.h">
       <Filter>GOAP\Actions</Filter>
     </ClInclude>
-    <ClInclude Include="GoToAction.h">
-      <Filter>GOAP\Actions</Filter>
+    <ClInclude Include="Asset.h">
+      <Filter>Assets</Filter>
     </ClInclude>
-    <ClInclude Include="PickupAction.h">
-      <Filter>GOAP\Actions</Filter>
+    <ClInclude Include="AssetDatabase.h">
+      <Filter>Assets</Filter>
     </ClInclude>
-    <ClInclude Include="AttackAction.h">
-      <Filter>GOAP\Actions</Filter>
+    <ClInclude Include="FrameResource.h">
+      <Filter>Render</Filter>
     </ClInclude>
-    <ClInclude Include="FleeAction.h">
-      <Filter>GOAP\Actions</Filter>
+    <ClInclude Include="GeometryGenerator.h">
+      <Filter>Assets</Filter>
     </ClInclude>
-    <ClInclude Include="WorldState.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\ThirdPerson\json\single_include\nlohmann\json.hpp">
+      <Filter>ThirdPerson</Filter>
     </ClInclude>
-    <ClInclude Include="Action.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="AssimpModelLoader.h">
+      <Filter>Assets</Filter>
     </ClInclude>
-    <ClInclude Include="Node.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="AMaterial.h">
+      <Filter>Assets</Filter>
     </ClInclude>
-    <ClInclude Include="Planner.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="ATexture.h">
+      <Filter>Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="AModel.h">
+      <Filter>Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="UILayer.h">
+      <Filter>Render\Pass</Filter>
+    </ClInclude>
+    <ClInclude Include="AScene.h">
+      <Filter>Assets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AssetsLoader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeometryGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SkyBox.cpp">
@@ -279,9 +273,6 @@
     <ClCompile Include="GPass.cpp">
       <Filter>Render\Pass</Filter>
     </ClCompile>
-    <ClCompile Include="FrameResource.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GMesh.cpp">
       <Filter>Render\Objects</Filter>
     </ClCompile>
@@ -306,42 +297,65 @@
     <ClCompile Include="ShadowPass.cpp">
       <Filter>Render\Pass</Filter>
     </ClCompile>
-    <ClCompile Include="UILayer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\ThirdPerson\imgui\backends\imgui_impl_dx12.cpp">
-      <Filter>IMGUI</Filter>
+      <Filter>ThirdPerson</Filter>
     </ClCompile>
     <ClCompile Include="..\ThirdPerson\imgui\backends\imgui_impl_win32.cpp">
-      <Filter>IMGUI</Filter>
+      <Filter>ThirdPerson</Filter>
     </ClCompile>
     <ClCompile Include="..\ThirdPerson\imgui\imgui.cpp">
-      <Filter>IMGUI</Filter>
+      <Filter>ThirdPerson</Filter>
     </ClCompile>
     <ClCompile Include="..\ThirdPerson\imgui\imgui_demo.cpp">
-      <Filter>IMGUI</Filter>
+      <Filter>ThirdPerson</Filter>
     </ClCompile>
     <ClCompile Include="..\ThirdPerson\imgui\imgui_draw.cpp">
-      <Filter>IMGUI</Filter>
+      <Filter>ThirdPerson</Filter>
     </ClCompile>
     <ClCompile Include="..\ThirdPerson\imgui\imgui_tables.cpp">
-      <Filter>IMGUI</Filter>
+      <Filter>ThirdPerson</Filter>
     </ClCompile>
     <ClCompile Include="..\ThirdPerson\imgui\imgui_widgets.cpp">
-      <Filter>IMGUI</Filter>
+      <Filter>ThirdPerson</Filter>
     </ClCompile>
     <ClCompile Include="WanderingAction.cpp">
       <Filter>GOAP\Actions</Filter>
     </ClCompile>
+    <ClCompile Include="AssetDatabase.cpp">
+      <Filter>Assets</Filter>
     <ClCompile Include="GoToAction.cpp">
       <Filter>GOAP\Actions</Filter>
     </ClCompile>
+    <ClCompile Include="FrameResource.cpp">
+      <Filter>Render</Filter>
     <ClCompile Include="PickupAction.cpp">
       <Filter>GOAP\Actions</Filter>
     </ClCompile>
+    <ClCompile Include="GeometryGenerator.cpp">
+      <Filter>Assets</Filter>
     <ClCompile Include="AttackAction.cpp">
       <Filter>GOAP\Actions</Filter>
     </ClCompile>
+    <ClCompile Include="Asset.cpp">
+      <Filter>Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="AssimpModelLoader.cpp">
+      <Filter>Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="AMaterial.cpp">
+      <Filter>Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="ATexture.cpp">
+      <Filter>Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="AModel.cpp">
+      <Filter>Assets</Filter>
+    </ClCompile>
+    <ClCompile Include="UILayer.cpp">
+      <Filter>Render\Pass</Filter>
+    </ClCompile>
+    <ClCompile Include="AScene.cpp">
+      <Filter>Assets</Filter>
     <ClCompile Include="FleeAction.cpp">
       <Filter>GOAP\Actions</Filter>
     </ClCompile>

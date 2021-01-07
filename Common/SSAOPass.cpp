@@ -2,6 +2,7 @@
 
 #include "GPass.h"
 #include "Scene.h"
+#include "GTexture.h"
 
 namespace PEPEngine::Common
 {
@@ -225,19 +226,17 @@ namespace PEPEngine::Common
 		blurPSO.Initialize(device);
 	}
 
-	SSAOPass::SSAOPass(float width, float height, GPass& pass) :RenderPass(width,height), gpass(pass)
+	SSAOPass::SSAOPass(float width, float height, GPass& pass) : RenderPass(width, height), gpass(pass)
 	{
 		randomVectorSrvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 1);
 		ambientMapMapSrvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 2);
 		ambientMapRtvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 2);
-		
+
 		CreateSSAORS();
 
 		LoadAndCompileShaders();
 
 		CreatePSO();
-
-		
 
 
 		auto queue = device->GetCommandQueue(D3D12_COMMAND_LIST_TYPE_DIRECT);
@@ -255,7 +254,7 @@ namespace PEPEngine::Common
 		{
 			SsaoConstantUploadBuffers[i] = std::make_shared<ConstantUploadBuffer<SsaoConstants>
 			>(device, 1, L"SSAO Constant Buffer" + std::to_wstring(i));
-		}	
+		}
 	}
 
 
@@ -383,7 +382,7 @@ namespace PEPEngine::Common
 	void SSAOPass::Render(std::shared_ptr<GCommandList> cmdList)
 	{
 		cmdList->SetRootSignature(ssaoPrimeRootSignature.get());
-				
+
 		cmdList->SetViewports(&viewport, 1);
 		cmdList->SetScissorRects(&scissorRect, 1);
 
@@ -393,18 +392,18 @@ namespace PEPEngine::Common
 
 		float clearValue[] = {1.0f, 1.0f, 1.0f, 1.0f};
 		cmdList->ClearRenderTarget(&ambientMapRtvMemory, 0, clearValue);
-				
+
 		cmdList->SetRenderTargets(1, &ambientMapRtvMemory, 0);
-				
+
 		cmdList->SetPipelineState(ssaoPSO);
 
-	
+
 		cmdList->SetRootConstantBufferView(0, *SsaoConstantUploadBuffers[currentFrameResourceIndex].get());
 		cmdList->SetRoot32BitConstant(1, 0, 0);
 
 		cmdList->SetDescriptorsHeap(gpass.GetSRV());
 		cmdList->SetRootDescriptorTable(2, gpass.GetSRV(), GPass::NormalMap);
-		cmdList->SetRootDescriptorTable(3, gpass.GetSRV(), GPass::DepthMap);		
+		cmdList->SetRootDescriptorTable(3, gpass.GetSRV(), GPass::DepthMap);
 		cmdList->SetRootDescriptorTable(4, &randomVectorSrvMemory);
 
 
@@ -420,7 +419,7 @@ namespace PEPEngine::Common
 		BlurAmbientMap(cmdList, 3);
 	}
 
-	void SSAOPass::BlurAmbientMap(std::shared_ptr<GCommandList> cmdList,	                             
+	void SSAOPass::BlurAmbientMap(std::shared_ptr<GCommandList> cmdList,
 	                              int blurCount)
 	{
 		cmdList->SetPipelineState(blurPSO);
@@ -459,7 +458,7 @@ namespace PEPEngine::Common
 		cmdList->TransitionBarrier(output, D3D12_RESOURCE_STATE_RENDER_TARGET);
 		cmdList->FlushResourceBarriers();
 
-		float clearValue[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		float clearValue[] = {1.0f, 1.0f, 1.0f, 1.0f};
 		cmdList->ClearRenderTarget(&ambientMapRtvMemory, outputRtv, clearValue);
 
 		cmdList->SetRenderTargets(1, &ambientMapRtvMemory, outputRtv);
@@ -468,7 +467,7 @@ namespace PEPEngine::Common
 
 		cmdList->SetRootDescriptorTable(2, gpass.GetSRV(), GPass::NormalMap);
 		cmdList->SetRootDescriptorTable(3, gpass.GetSRV(), GPass::DepthMap);
-		
+
 		cmdList->SetRootDescriptorTable(4, &ambientMapMapSrvMemory, inputSrv);
 
 		// Draw fullscreen quad.
@@ -484,7 +483,7 @@ namespace PEPEngine::Common
 	void SSAOPass::Update()
 	{
 		currentFrameResourceIndex = (currentFrameResourceIndex + 1) % globalCountFrameResources;
-		
+
 		SsaoConstants ssaoCB;
 
 		auto camera = Camera::mainCamera;

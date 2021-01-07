@@ -1,13 +1,19 @@
+/**
+ * @class Planner
+ * @brief Implements an A* algorithm for searching the action space
+ *
+ * @date July 2014
+ * @copyright (c) 2014 Prylis Inc. All rights reserved.
+ */
 
 #pragma once
+
 #include "Action.h"
 #include "Node.h"
 #include "WorldState.h"
 #include <vector>
 
 // To support Google Test for private members
-
-		
 		class Planner
 		{
 		private:
@@ -80,4 +86,3 @@
 
 			
 		};
-

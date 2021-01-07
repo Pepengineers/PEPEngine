@@ -50,23 +50,11 @@ ConstantBuffer<WorldData> WorldBuffer : register(b2);
 
 struct MaterialData
 {
-	float4 AmbientColor;
-	float4 EmissiveColor;
 	float4 DiffuseColor;
-	float4 SpecularColor;
-	float4 Reflectance;
-	float Opacity;
 	float SpecularPower;
-	float IndexOfRefraction;
-	float BumpIntensity;
-	float SpecularScale;
 	float AlphaThreshold;
 	int DiffuseMapIndex;
 	int NormalMapIndex;
-	int HeightMapIndex;
-	int MetallicMapIndex;
-	int RoughnessMapIndex;
-	int AOMapIndex;
 };
 
 StructuredBuffer<MaterialData> Materials : register(t0, space1);

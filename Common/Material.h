@@ -6,67 +6,64 @@
 #include "GDescriptor.h"
 #include "GraphicPSO.h"
 #include "ShaderBuffersData.h"
-#include "GTexture.h"
+#include "GCommandList.h"
+
+#include "nlohmann/json.hpp"
+using json = nlohmann::json;
 
 namespace PEPEngine
 {
 	namespace Common
 	{
 		using namespace Microsoft::WRL;
-		using namespace Allocator;
 		using namespace Utils;
 		using namespace Graphics;
 
-
+		class ATexture;
 		class Material
 		{
 		public:
-			enum MaterialTypes : UINT
+			Material() = default;
+			enum MaterialSlotTypes : UINT
 			{
 				DiffuseMap = 0,
 				BaseColor = DiffuseMap,
 				NormalMap = BaseColor + 1,
-				HeightMap = NormalMap + 1,
-				MetallicMap = HeightMap + 1,
-				RoughnessMap = MetallicMap + 1,
-				AOMap = RoughnessMap + 1
+				RoughnessMap = NormalMap + 1
 			};
 
+		public:
+			void Serialize(json& j);
+			void Deserialize(json& j);
 		private:
-
-			static UINT materialIndexGlobal;
+		
 
 			UINT materialIndex = -1;
 
-			std::wstring Name;
+			std::string Name;
 
-			RenderMode::Mode type = RenderMode::Opaque;
+			RenderMode::Mode renderMode = RenderMode::Opaque;
 
 			MaterialData matConstants{};
 
 			UINT NumFramesDirty = globalCountFrameResources;
 
-			std::vector<std::shared_ptr<GTexture>> materialMaps;
+			std::vector<std::shared_ptr<ATexture>> materialMaps;
 
-			std::unordered_map<MaterialTypes, UINT> slots;
+
+			std::unordered_map<MaterialSlotTypes, UINT> slots;
 
 			GDescriptor textureMapsSRVMemory;
 
 			bool IsInited = false;
-			
+
 		public:
 
-			Vector4 AmbientColor;
-			Vector4 EmissiveColor;
-			Vector4 DiffuseColor;
-			Vector4 SpecularColor;
-			Vector4 Reflectance;
-			float Opacity;
-			float SpecularPower;
-			float IndexOfRefraction;
-			float BumpIntensity;
-			float SpecularScale;
-			float AlphaThreshold;
+			static const UINT MaxMaterialTexturesMaps = 3;
+			
+			Vector4 DiffuseColor = DirectX::Colors::White;		
+			float AlphaThreshold = 0.1;
+			float SpecularPower = 1.0f;
 
 			UINT GetMaterialIndex() const;
 
@@ -74,26 +71,25 @@ namespace PEPEngine
 
 			MaterialData& GetMaterialConstantData();
 
-
 			void SetDirty();
 
 			RenderMode::Mode GetRenderMode() const;
 
-			void SetMaterialMap(MaterialTypes type, std::shared_ptr<GTexture> texture);
+			void SetMaterialMap(MaterialSlotTypes type, std::shared_ptr<ATexture> texture);
 
 			void SetRenderMode(RenderMode::Mode pso);
 
-			Material(std::wstring name, RenderMode::Mode pso = RenderMode::Opaque);
+			Material(std::string name, RenderMode::Mode pso = RenderMode::Opaque);
 			void UpdateDescriptors();
 
-			void InitMaterial(std::shared_ptr<GDevice> device);
+			void Init(std::shared_ptr<GDevice> device);
 
-			void Draw(std::shared_ptr<GCommandList> cmdList) const;
+			void SetRenderMaterialData(std::shared_ptr<GCommandList> cmdList) const;
 
 
 			void Update();
 
-			std::wstring& GetName();
+			std::string& GetName();
 		};
 	}
 }

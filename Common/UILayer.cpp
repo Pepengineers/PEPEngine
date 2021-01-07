@@ -1,6 +1,9 @@
 #include "UILayer.h"
 
+
+#include "d3dUtil.h"
 #include "GDescriptorHeap.h"
+#include "GDevice.h"
 
 
 #include "imgui.h"
@@ -14,8 +17,6 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 namespace PEPEngine::Common
 {
-	
-
 	void UILayer::SetupRenderBackend()
 	{
 		srvMemory = device->AllocateDescriptors(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, globalCountFrameResources);
@@ -36,17 +37,17 @@ namespace PEPEngine::Common
 		// Setup Dear ImGui context
 		IMGUI_CHECKVERSION();
 		ImGui::CreateContext();
-		
+
 		//ImGuiIO& io = ImGui::GetIO(); (void)io;
 		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
 		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 		//
 
 		ImGuiIO& io = ImGui::GetIO(); //(void)io;
-		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard; // Enable Keyboard Controls
 		//io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;           // Enable Docking
-		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;         // Enable Multi-Viewport / Platform Windows
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable; // Enable Docking
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable; // Enable Multi-Viewport / Platform Windows
 
 		ImGuiStyle& style = ImGui::GetStyle();
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -55,7 +56,7 @@ namespace PEPEngine::Common
 			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 		}
 
-		
+
 		SetupRenderBackend();
 	}
 
@@ -107,11 +108,10 @@ namespace PEPEngine::Common
 
 		RenderMainWindowAsDockPanel();
 
-		
+
 		ImGui::ShowDemoWindow();
 
 
-		
 		ImGui::Render();
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), cmdList->GetGraphicsCommandList().Get());
 		ImGuiIO& io = ImGui::GetIO();
@@ -120,7 +120,6 @@ namespace PEPEngine::Common
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
 		}
-		
 	}
 
 	void UILayer::Update()
@@ -143,7 +142,7 @@ namespace PEPEngine::Common
 		ImGui_ImplDX12_InvalidateDeviceObjects();
 	}
 
-	
+
 	LRESULT UILayer::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		if (ImGui_ImplWin32_WndProcHandler(hwnd, msg, wParam, lParam))

@@ -6,12 +6,14 @@
 #include "GMesh.h"
 #include "GModel.h"
 #include "Transform.h"
+#include "GTexture.h"
+#include "AModel.h"
 
 namespace PEPEngine::Common
 {
-	SkyBox::SkyBox(const std::shared_ptr<GDevice>& device, const std::shared_ptr<GModel>& model,
+	SkyBox::SkyBox(const std::shared_ptr<AModel>& model,
 	               GTexture& skyMapTexture,
-	               GDescriptor* srvMemory, UINT offset) : ModelRenderer(device, model)
+	               GDescriptor* srvMemory, UINT offset) : ModelRenderer(model)
 	{
 		gpuTextureHandle = srvMemory->GetGPUHandle(offset);
 		cpuTextureHandle = srvMemory->GetCPUHandle(offset);
@@ -27,18 +29,21 @@ namespace PEPEngine::Common
 		skyMapTexture.CreateShaderResourceView(&srvDesc, srvMemory, offset);
 	}
 
-	void SkyBox::PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList)
+	void SkyBox::Render(std::shared_ptr<GCommandList> cmdList)
 	{
 		cmdList->GetGraphicsCommandList()->SetGraphicsRootDescriptorTable(
 			SkyMap, gpuTextureHandle);
 
-		for (int i = 0; i < model->GetMeshesCount(); ++i)
-		{
-			const auto mesh = model->GetMesh(i);
 
-			cmdList->SetRootConstantBufferView(ObjectDataBuffer,
+		auto gmodel = model->GetGModel();
+		
+		for (int i = 0; i < gmodel->GetMeshesCount(); ++i)
+		{
+			const auto mesh = gmodel->GetMesh(i);
+
+			cmdList->SetRootConstantBufferView(ObjectWorldDataBuffer,
 			                                   *modelDataBuffer, i);
-			mesh->Draw(cmdList);
+			mesh->Render(cmdList);
 		}
 	}
 
@@ -48,11 +53,12 @@ namespace PEPEngine::Common
 
 		if (transform->IsDirty())
 		{
-			objectWorldData.TextureTransform = transform->TextureTransform.Transpose();
-			objectWorldData.World = (transform->GetWorldMatrix() * model->scaleMatrix).Transpose();
-			for (int i = 0; i < model->GetMeshesCount(); ++i)
+			auto gmodel = model->GetGModel();
+			modelWorldData.TextureTransform = transform->TextureTransform.Transpose();
+			modelWorldData.World = (transform->GetWorldMatrix() * gmodel->scaleMatrix).Transpose();
+			for (int i = 0; i < gmodel->GetMeshesCount(); ++i)
 			{
-				modelDataBuffer->CopyData(i, objectWorldData);
+				modelDataBuffer->CopyData(i, modelWorldData);
 			}
 		}
 	}

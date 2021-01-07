@@ -1,8 +1,8 @@
 #pragma once
 
+#include "Asset.h"
 #include "SimpleMath.h"
 #include "MemoryAllocator.h"
-#include "GCommandList.h"
 
 using namespace DirectX::SimpleMath;
 
@@ -11,15 +11,13 @@ namespace PEPEngine
 	namespace Common
 	{
 		using namespace Allocator;
-		using namespace Graphics;
 
 		class ModelRenderer;
 		class Component;
 		class Transform;
 		class Renderer;
 
-
-		class GameObject
+		class GameObject : public Asset
 		{
 		public:
 
@@ -30,8 +28,6 @@ namespace PEPEngine
 			GameObject(std::string name, Vector3 position, Vector3 scale, Quaternion rotate);
 
 			void virtual Update();
-
-			void virtual Draw(std::shared_ptr<GCommandList> cmdList);
 
 			std::shared_ptr<Transform> GetTransform() const;
 
@@ -47,7 +43,11 @@ namespace PEPEngine
 
 			void SetScale(Vector3& scale) const;
 
-			std::string& GetName() { return name; }
+			std::string& GetName();
+
+			void Serialize(json& j) override;
+
+			void Deserialize(json& j) override;
 
 		protected:
 

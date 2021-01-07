@@ -1,6 +1,8 @@
 #pragma once
 #include "Renderer.h"
 #include "GCommandList.h"
+#include "DirectXBuffers.h"
+#include "ShaderBuffersData.h"
 
 namespace PEPEngine
 {
@@ -11,28 +13,36 @@ namespace PEPEngine
 		using namespace Graphics;
 
 		class Transform;
-		class GModel;
+		class AModel;
+		class AMaterial;
 
 		class ModelRenderer : public Renderer
 		{
 		protected:
-
-			ObjectConstants objectWorldData{};
+			ObjectConstants modelWorldData{};
 			std::shared_ptr<ConstantUploadBuffer<ObjectConstants>> modelDataBuffer = nullptr;
-			std::shared_ptr<GDevice> device;
-			std::shared_ptr<GModel> model;
+			std::shared_ptr<AModel> model;
 
-
-			void PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList) override;
+			void PopulateDrawCommand(std::shared_ptr<GCommandList> cmdList, UINT meshIndex = 0) override;
 
 			void Update() override;
 
+			std::vector<std::shared_ptr<AMaterial>> materials;
+			
+			void Serialize(json& j) override;
+
+			void Deserialize(json& j) override;		
+
 		public:
 
-			ModelRenderer(std::shared_ptr<GDevice> device, std::shared_ptr<GModel> model);
-
-			void SetModel(std::shared_ptr<GModel> asset);
-			std::vector<std::shared_ptr<Material>>& GetSharedMaterials() override;;
+			SERIALIZE_FROM_JSON(ModelRenderer, Renderer)
+			
+			void SetMaterial(std::shared_ptr<AMaterial> material, UINT slot);
+			ModelRenderer(std::shared_ptr<AModel> model);
+			void SetModel(std::shared_ptr<AModel> asset);
+			UINT GetMeshCount() override;
+			std::shared_ptr<GMesh> GetMesh(UINT index) override;
+			std::vector<std::shared_ptr<AMaterial>>& GetSharedMaterials() override;
 		};
 	}
 }

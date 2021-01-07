@@ -11,7 +11,6 @@ namespace PEPEngine::Common
 
 	class RenderPass
 	{
-
 	protected:
 		float width;
 		float height;
@@ -22,13 +21,16 @@ namespace PEPEngine::Common
 		{
 		};
 
-		RenderPass(const float width, const float height): width(width), height(height), device(GDeviceFactory::GetDevice()) {  }
+		RenderPass(const float width, const float height): width(width), height(height),
+		                                                   device(GDeviceFactory::GetDevice())
+		{
+		}
 
 
 		void virtual Render(std::shared_ptr<GCommandList> cmdList) = 0;
 
 		void virtual Update() = 0;
-		
+
 		void virtual ChangeRenderTargetSize(float newWidth, float newHeight) = 0;
 	};
 }
