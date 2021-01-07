@@ -4,13 +4,15 @@
 namespace PEPEngine::Common
 {
 	class Scene;
-	class Level : public Asset
+	class AScene : public Asset
 	{
 	private:
 		std::shared_ptr<Scene> scene;
-		static inline const std::wstring DEFAULT_EXTENSION = L".scene";
+		
 	public:
-		Level();
+		static inline const std::wstring DEFAULT_EXTENSION = L".scene";
+		
+		AScene();
 
 		std::shared_ptr<Scene> GetScene() const;
 

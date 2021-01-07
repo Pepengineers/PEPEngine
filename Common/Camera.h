@@ -81,7 +81,7 @@ namespace PEPEngine
 				assert(TryReadVariable<float>(jPos, "farZ", &farZ));
 				assert(TryReadVariable<float>(jPos, "fov", &fov));
 
-				InitializeCamera(nullptr);				
+				InitializeCamera(nullptr);
 			};
 			
 		public:

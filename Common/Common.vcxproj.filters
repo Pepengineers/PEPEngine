@@ -193,9 +193,6 @@
     <ClInclude Include="AssimpModelLoader.h">
       <Filter>Assets</Filter>
     </ClInclude>
-    <ClInclude Include="Level.h">
-      <Filter>Assets</Filter>
-    </ClInclude>
     <ClInclude Include="AMaterial.h">
       <Filter>Assets</Filter>
     </ClInclude>
@@ -207,6 +204,9 @@
     </ClInclude>
     <ClInclude Include="UILayer.h">
       <Filter>Render\Pass</Filter>
+    </ClInclude>
+    <ClInclude Include="AScene.h">
+      <Filter>Assets</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -348,9 +348,6 @@
     <ClCompile Include="AssimpModelLoader.cpp">
       <Filter>Assets</Filter>
     </ClCompile>
-    <ClCompile Include="Level.cpp">
-      <Filter>Assets</Filter>
-    </ClCompile>
     <ClCompile Include="AMaterial.cpp">
       <Filter>Assets</Filter>
     </ClCompile>
@@ -362,6 +359,9 @@
     </ClCompile>
     <ClCompile Include="UILayer.cpp">
       <Filter>Render\Pass</Filter>
+    </ClCompile>
+    <ClCompile Include="AScene.cpp">
+      <Filter>Assets</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

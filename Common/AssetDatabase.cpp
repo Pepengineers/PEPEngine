@@ -11,7 +11,7 @@
 #include "GModel.h"
 #include "GTexture.h"
 #include "IDGenerator.hpp"
-#include "Level.h"
+#include "AScene.h"
 #include "NativeModel.h"
 #include "ATexture.h"
 #include "AMaterial.h"
@@ -370,7 +370,7 @@ namespace PEPEngine::Common
 
 		for (auto& loadAssets : sortedLoadedAssets[AssetType::Type::Level])
 		{
-			std::shared_ptr<Level> asset = std::make_shared<Level>();
+			std::shared_ptr<AScene> asset = std::make_shared<AScene>();
 			CreatePEPEFile(asset, loadAssets);
 		}
 

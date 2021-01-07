@@ -1,7 +1,7 @@
 #pragma once
 #include "AModel.h"
 #include "AMaterial.h"
-#include "Level.h"
+#include "AScene.h"
 #include "Asset.h"
 #include "ATexture.h"
 #include "GeometryGenerator.h"
@@ -174,6 +174,23 @@ namespace PEPEngine
 				return asset;
 			};
 
+			template <class T = Asset>
+			static std::shared_ptr<T> CreateAsset(std::wstring createAssetName)
+			{
+				if (createAssetName.find(ASSET_EXTENSION_NAME) == std::wstring::npos)
+				{
+					createAssetName = createAssetName + T::DEFAULT_EXTENSION + (ASSET_EXTENSION_NAME);
+				}
+
+				auto path = std::filesystem::path(AssetFolderPath.wstring() + L"\\" + createAssetName);
+
+				auto asset = std::make_shared<T>();
+
+				CreatePEPEFile(asset, path);
+
+				return asset;
+			}
+			
 
 			static std::shared_ptr<ATexture> AddTexture(std::filesystem::path loadAssetFile,
 			                                            std::filesystem::path savePathInAssetFolder = L"");

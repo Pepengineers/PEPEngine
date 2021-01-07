@@ -214,8 +214,8 @@ namespace PEPEngine::Common
 		
 		for (int i = 0; i < count; ++i)
 		{
-			auto GO = std::shared_ptr<GameObject>();
-			GO->Serialize(array[i]);
+			auto GO = std::make_shared<GameObject>();
+			GO->Deserialize(array[i]);
 			AddGameObject(GO);
 		}		
 	}

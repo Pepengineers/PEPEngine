@@ -14,7 +14,7 @@ namespace PEPEngine::Common
 
 	class Scene
 	{
-		friend class Level;
+		friend class AScene;
 		
 		custom_vector<std::shared_ptr<GameObject>> objects = MemoryAllocator::CreateVector<std::shared_ptr<GameObject>
 		>();

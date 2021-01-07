@@ -16,7 +16,7 @@
 #include "Transform.h"
 #include "Window.h"
 #include "AssetDatabase.h"
-#include "Level.h"
+#include "AScene.h"
 
 namespace SimpleRender
 {
@@ -45,122 +45,77 @@ namespace SimpleRender
 		if(atlas == nullptr)
 		{
 			atlas = AssetDatabase::AddModel("Data\\Objects\\Atlas\\Atlas.obj");
-		}
-
-		
-		
-		//auto atlas = assetLoader.CreateModelFromFile(cmdList, "Data\\Objects\\Atlas\\Atlas.obj");
-		//models[L"atlas"] = std::move(atlas);
-
-		//auto PBody = assetLoader.CreateModelFromFile(cmdList, "Data\\Objects\\P-Body\\P-Body.obj");
-		//models[L"PBody"] = std::move(PBody);
-
+		}	
 		
 
-	/*	auto seamlessTex = GTexture::LoadTextureFromFile(L"Data\\Textures\\seamless_grass.jpg", cmdList);
-		seamlessTex->SetName(L"seamless");*/
-		//assetLoader.AddTexture(seamlessTex);
-
-
-		//auto allTextures = assetLoader.GetTextures();
-
-		/*for (auto&& texture : allTextures)
-		{
-			texture->ClearTrack();
-
-			if (texture->GetD3D12Resource()->GetDesc().Flags != D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS)
-				continue;
-
-			if (!texture->HasMipMap)
-			{
-				noMipMapsTextures.push_back(texture.get());
-			}
-		}*/		
-
-		level = std::static_pointer_cast<Level>( AssetDatabase::Get(AssetType::Level));
+		level = AssetDatabase::Get<AScene>(L"DefaultScene");
 
 		if(level == nullptr)
 		{
-			level = std::static_pointer_cast<Level>(AssetDatabase::CreateAsset<Level>(std::filesystem::path("MainScene")));
-		}
+			level = AssetDatabase::CreateAsset<AScene>(L"DefaultScene");
 
-		auto scene = level->GetScene();
-		
-		//scene = AssetDatabase;
+			auto scene = level->GetScene();
 
 
-		//auto tex = assetLoader.GetTextureIndex(L"seamless");
-		//seamless->SetMaterialMap(Material::DiffuseMap, assetLoader.GetTexture(tex));
-		//tex = assetLoader.GetTextureIndex(L"defaultNormalMap");
-		//seamless->SetMaterialMap(Material::NormalMap, assetLoader.GetTexture(tex));
-		//assetLoader.AddMaterial(seamless);
+			auto cameraGO = std::make_unique<GameObject>("MainCamera");
+			cameraGO->GetTransform()->SetEulerRotate(Vector3(-30, 120, 0));
+			cameraGO->GetTransform()->SetPosition(Vector3(30, 20, -130));
 
+			cameraGO->AddComponent(std::make_shared<Camera>(AspectRatio()));
+			cameraGO->AddComponent(std::make_shared<CameraController>());
 
-		auto cameraGO = std::make_unique<GameObject>("MainCamera");
-		cameraGO->GetTransform()->SetEulerRotate(Vector3(-30, 120, 0));
-		cameraGO->GetTransform()->SetPosition(Vector3(30, 20, -130));
+			scene->AddGameObject(std::move(cameraGO));
 
-		cameraGO->AddComponent(std::make_shared<Camera>(AspectRatio()));
-		cameraGO->AddComponent(std::make_shared<CameraController>());
+			auto sun = std::make_unique<GameObject>("Directional Light");
+			auto light = std::make_shared<Light>();
+			light->Type = LightType::Directional;
+			light->Direction = Vector3(0.57735f, -0.57735f, 0.57735f);
+			light->Intensity = 0.1f;
+			sun->AddComponent(light);
+			scene->AddGameObject(std::move(sun));
 
-		json j;
-
-		cameraGO->Serialize(j);
-
-		std::string s = j.dump(4);
-		
-		OutputDebugStringA(s.c_str());
-
-
-		auto testGO = std::make_shared < GameObject>();
-		testGO->Deserialize(j);
-		
-		scene->AddGameObject(std::move(cameraGO));
-
-		auto sun = std::make_unique<GameObject>("Directional Light");
-		auto light = std::make_shared<Light>();
-		light->Type = LightType::Directional;
-		light->Direction = Vector3( 0.57735f, -0.57735f, 0.57735f );
-		light->Intensity = 0.1f;
-		sun->AddComponent(light);
-		scene->AddGameObject(std::move(sun));
-
-		for (int i = 0; i < 12; ++i)
-		{
-			for (int j = 0; j < 3; ++j)
+			for (int i = 0; i < 12; ++i)
 			{
-				auto rModel = std::make_unique<GameObject>();
-				/*auto renderer = std::make_shared<ModelRenderer>(models[L"atlas"]);
-				rModel->AddComponent(renderer);*/
-				rModel->GetTransform()->SetPosition(
-					Vector3::Right * -30 * j + Vector3::Forward * 10 * i);
+				for (int j = 0; j < 3; ++j)
+				{
+					auto rModel = std::make_unique<GameObject>();
+					auto renderer = std::make_shared<ModelRenderer>(atlas);
+					rModel->AddComponent(renderer);
+					rModel->GetTransform()->SetPosition(
+						Vector3::Right * -30 * j + Vector3::Forward * 10 * i);
 
-				/*	auto ai = std::make_shared<AIComponent>();
-					rModel->AddComponent(ai);*/
-
-
-				auto pos = rModel->GetTransform()->GetWorldPosition() + (Vector3::Up * 1 * 10);
-
-				auto sun1 = std::make_unique<GameObject>("Light");
-				sun1->GetTransform()->SetPosition(pos);
-				auto light = std::make_shared<Light>();
-				light->Color = Vector4(MathHelper::RandF(), MathHelper::RandF(), MathHelper::RandF(), 1);
-				light->Intensity = 1;
-				(i + j) % 2 == 1 ? light->Type = Spot : light->Type = Point;
+					/*	auto ai = std::make_shared<AIComponent>();
+						rModel->AddComponent(ai);*/
 
 
-				sun1->AddComponent(light);
+					auto pos = rModel->GetTransform()->GetWorldPosition() + (Vector3::Up * 1 * 10);
 
+					auto sun1 = std::make_unique<GameObject>("Light");
+					sun1->GetTransform()->SetPosition(pos);
+					auto light = std::make_shared<Light>();
+					light->Color = Vector4(MathHelper::RandF(), MathHelper::RandF(), MathHelper::RandF(), 1);
+					light->Intensity = 1;
+					(i + j) % 2 == 1 ? light->Type = Spot : light->Type = Point;
 
-				scene->AddGameObject(std::move(sun1));
+					sun1->AddComponent(light);
 
-				scene->AddGameObject(std::move(rModel));
+					scene->AddGameObject(std::move(sun1));
+
+					scene->AddGameObject(std::move(rModel));
+				}
 			}
+			
+			scene->Prepare();
+			scene->Update();
+			
+			AssetDatabase::UpdateAsset(level);
+		}
+		else
+		{
+			auto scene = level->GetScene();
+			scene->Prepare();
+			scene->Update();
 		}		
-
-		scene->Prepare();
-
-		AssetDatabase::UpdateAsset(level);
 	}
 
 

@@ -100,6 +100,8 @@ namespace PEPEngine::Common
 		uint32_t materialCount;
 		assert(Asset::TryReadVariable<uint32_t>(j, "MaterialCount", &materialCount));
 
+		materials.resize(materialCount);
+		
 		auto jMaterials = j["Materials"];
 
 		for(uint32_t i = 0u; i < materialCount; ++i){
@@ -109,7 +111,7 @@ namespace PEPEngine::Common
 			auto aMaterial = std::static_pointer_cast<AMaterial>(AssetDatabase::FindAssetByID(materialId));
 
 			if (aMaterial) {
-				materials.push_back(aMaterial);
+				materials[i] = (aMaterial);
 			}
 			else{
 
