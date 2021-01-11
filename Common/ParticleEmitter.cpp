@@ -89,8 +89,8 @@ namespace PEPEngine::Common
 		                                                               L"Particles Dead Index Buffer");
 
 		{
-			std::vector<UINT> deadIndex;
-			deadIndex.resize(emitterData.ParticlesTotalCount);
+			DWORD* deadIndex = new DWORD[emitterData.ParticlesTotalCount * 2];
+			
 			
 			for (int i = 0; i < emitterData.ParticlesTotalCount; ++i)
 			{
@@ -100,7 +100,7 @@ namespace PEPEngine::Common
 			auto queue = device->GetCommandQueue();
 			auto cmdList = queue->GetCommandList();
 
-			ParticlesDead->LoadData(deadIndex.data(), cmdList);
+			ParticlesDead->LoadData(deadIndex, cmdList);
 			ParticlesDead->SetCounterValue(cmdList, emitterData.ParticlesTotalCount);
 
 			cmdList->TransitionBarrier(ParticlesDead->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON);
@@ -108,6 +108,8 @@ namespace PEPEngine::Common
 
 			queue->ExecuteCommandList(cmdList);
 			queue->Flush();
+
+			delete deadIndex;
 		}
 
 		ParticlesDead->ReadCounter(&emitterData.ParticlesAliveCount);

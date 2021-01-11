@@ -214,4 +214,9 @@ namespace PEPEngine::Common
 	{
 		return this->projection;
 	}
+
+	void Camera::SetShadowTransform(const Matrix& shadowTransformMatrix)
+	{
+		cameraData.ShadowTransform = shadowTransformMatrix;
+	}
 }

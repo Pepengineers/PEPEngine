@@ -121,6 +121,8 @@ namespace PEPEngine
 			const Matrix& GetViewMatrix() const;
 
 			const Matrix& GetProjectionMatrix() const;
+
+			void SetShadowTransform(const Matrix& shadowTransformMatrix);
 		};
 	}
 }

@@ -210,6 +210,42 @@ float4 ScreenToView(float4 screen)
 	return ClipToView(clip);
 }
 
+//---------------------------------------------------------------------------------------
+// PCF for shadow mapping.
+//---------------------------------------------------------------------------------------
+
+float CalcShadowFactor(float4 shadowPosH)
+{
+	// Complete projection by doing division by w.
+    shadowPosH.xyz /= shadowPosH.w;
+
+	// Depth in NDC space.
+    float depth = shadowPosH.z;
+
+    uint width, height, numMips;
+    ShadowMap.GetDimensions(0, width, height, numMips);
+
+	// Texel size.
+    float dx = 1.0f / (float) width;
+
+    float percentLit = 0.0f;
+    const float2 offsets[9] =
+    {
+        float2(-dx, -dx), float2(0.0f, -dx), float2(dx, -dx),
+		float2(-dx, 0.0f), float2(0.0f, 0.0f), float2(dx, 0.0f),
+		float2(-dx, +dx), float2(0.0f, +dx), float2(dx, +dx)
+    };
+
+	[unroll]
+    for (int i = 0; i < 9; ++i)
+    {
+        percentLit += ShadowMap.SampleCmpLevelZero(gsamShadow,
+		                                           shadowPosH.xy + offsets[i], depth).r;
+    }
+
+    return percentLit / 9.0f;
+}
+
 
 //
 // Constants
@@ -749,14 +785,14 @@ LightingResult DoPointLight(LightData light, MaterialData mat, float4 V, float4 
 	return result;
 }
 
-LightingResult DoDirectionalLight(LightData light, MaterialData mat, float4 V, float4 P, float4 N)
+LightingResult DoDirectionalLight(LightData light, MaterialData mat, float4 V, float4 P, float4 N, float shadowFactor)
 {
 	LightingResult result;
 
 	float4 L = normalize(float4(-light.DirectionView, 1));
 
-	result.Diffuse = DoDiffuse(light, L, N) * light.Intensity;
-	result.Specular = DoSpecular(light, mat, V, L, N) * light.Intensity;
+    result.Diffuse = shadowFactor *   DoDiffuse(light, L, N) * light.Intensity;
+    result.Specular = shadowFactor *   DoSpecular(light, mat, V, L, N) * light.Intensity;
 
 	return result;
 }

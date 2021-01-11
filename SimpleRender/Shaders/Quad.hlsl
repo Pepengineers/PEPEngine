@@ -43,13 +43,18 @@ float4 PS(VertexOut input) : SV_Target
 	const float4 normal = NormalMap.Load(fragmentPositionScreenSpace);
 	const float4 diffuse = BaseColorMap.Load(fragmentPositionScreenSpace);
 
+    float4 ShadowPosH = mul(position, CameraBuffer.ShadowTransform);
+
+
+	
 	float4 viewDir = normalize(float4(CameraBuffer.CameraWorldPosition, 0.0) - position);
 	
     float ambientAccess = AmbientMap.Sample(gsamAnisotropicWrap, input.UV, 0.0f).r;
 		
-    float4 resultColor = ambientAccess * diffuse;
+    float4 resultColor = ambientAccess * diffuse * 0.1;
 
-
+	// Only the first light casts a shadow.
+    float factor = CalcShadowFactor(ShadowPosH);
 	
 	[loop]
 	for (int i = 0; i < WorldBuffer.LightsCount; ++i)
@@ -84,14 +89,14 @@ float4 PS(VertexOut input) : SV_Target
 			}
 		case DIRECTIONAL_LIGHT:
 			{
-				result = DoDirectionalLight(Lights[i], material, viewDir, position, normal);
+				result = DoDirectionalLight(Lights[i], material, viewDir, position, normal, factor);
 				break;
 			}
 		}
 
 		float4 totalColor = saturate(result.Diffuse) + saturate(result.Specular);
-		resultColor += totalColor;
-	}
+        resultColor +=  totalColor;
+    }
 
 
 	return resultColor;
