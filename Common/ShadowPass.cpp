@@ -1,6 +1,8 @@
 #include "ShadowPass.h"
 
 
+
+#include "Camera.h"
 #include "Material.h"
 #include "Transform.h"
 
@@ -78,8 +80,13 @@ namespace PEPEngine::Common
 
 		projectionMatrix = DirectX::XMMatrixOrthographicLH(width, height, 0.1f, 1000);
 
-		LightCameraBuffer = std::make_shared<ConstantUploadBuffer<CameraConstants>>(
-			device, 1, L" Shadow Map Light Buffer");
+		for (int i = 0; i < globalCountFrameResources; ++i)
+		{
+			LightCameraBuffer[i] = std::make_shared<ConstantUploadBuffer<CameraConstants>>(
+				device, 1, L" Shadow Map Light Buffer");
+		}
+		
+	
 
 		BuildResource();
 
@@ -89,6 +96,8 @@ namespace PEPEngine::Common
 		LoadAndCompileShaders();
 
 		InitPSO();
+
+		currentBuffer = LightCameraBuffer[currentIndex];
 	}
 
 	GDescriptor* ShadowPass::GetSrvMemory()
@@ -164,7 +173,7 @@ namespace PEPEngine::Common
 
 		cmdList->SetRootShaderResourceView(MaterialsDataBuffer, *currentFrameResource->MaterialsBuffer);
 		cmdList->SetRootConstantBufferView(WorldDataBuffer, *currentFrameResource->WorldBuffer);
-		cmdList->SetRootConstantBufferView(CameraDataBuffer, *LightCameraBuffer.get());
+		cmdList->SetRootConstantBufferView(CameraDataBuffer, *currentBuffer.get());
 
 		cmdList->SetViewports(&viewPort, 1);
 		cmdList->SetScissorRects(&rect, 1);
@@ -185,6 +194,8 @@ namespace PEPEngine::Common
 
 	void ShadowPass::Update()
 	{
+		
+		
 		if (mainDirectionalLight == nullptr)
 		{
 			auto* scene = Scene::currentScene;
@@ -230,8 +241,13 @@ namespace PEPEngine::Common
 			Matrix S = view * proj * T;
 			shadowMapConstants.ShadowTransform = S;
 
-			LightCameraBuffer->CopyData(0, shadowMapConstants);
+			Camera::mainCamera->SetShadowTransform(S);
+			
+			currentBuffer->CopyData(0, shadowMapConstants);
 		}
+
+		currentIndex = (currentIndex + 1) % globalCountFrameResources;
+		currentBuffer = LightCameraBuffer[currentIndex];
 	}
 
 	void ShadowPass::ChangeRenderTargetSize(float newWidth, float newHeight)

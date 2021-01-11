@@ -4,6 +4,7 @@
 #include "Light.h"
 #include "GTexture.h"
 #include "GDescriptor.h"
+#include "d3dUtil.h"
 
 namespace PEPEngine::Common
 {
@@ -32,7 +33,9 @@ namespace PEPEngine::Common
 
 		CameraConstants shadowMapConstants;
 
-		std::shared_ptr<ConstantUploadBuffer<CameraConstants>> LightCameraBuffer;
+		std::array<std::shared_ptr<ConstantUploadBuffer<CameraConstants>>, globalCountFrameResources> LightCameraBuffer;
+		UINT currentIndex = 0;
+		std::shared_ptr<ConstantUploadBuffer<CameraConstants>> currentBuffer;
 
 	public:
 		void InitRootSignature();
