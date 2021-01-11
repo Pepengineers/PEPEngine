@@ -73,24 +73,24 @@ namespace PEPEngine::Common
 		float x, y, z, w;
 
 		auto jType = jPos["Direction"];
-		assert(TryReadVariable<float>(jType, "x", &x));
-		assert(TryReadVariable<float>(jType, "y", &y));
-		assert(TryReadVariable<float>(jType, "z", &z));
+		(TryReadVariable<float>(jType, "x", &x));
+		(TryReadVariable<float>(jType, "y", &y));
+		(TryReadVariable<float>(jType, "z", &z));
 		Direction = Vector3(x, y, z);
 
 
 		jType = jPos["Color"];
-		assert(TryReadVariable<float>(jType, "x", &x));
-		assert(TryReadVariable<float>(jType, "y", &y));
-		assert(TryReadVariable<float>(jType, "z", &z));
-		assert(TryReadVariable<float>(jType, "w", &w));
+		(TryReadVariable<float>(jType, "x", &x));
+		(TryReadVariable<float>(jType, "y", &y));
+		(TryReadVariable<float>(jType, "z", &z));
+		(TryReadVariable<float>(jType, "w", &w));
 		Color = Vector4(x, y, z, w);
 
 
-		assert(TryReadVariable<float>(jPos, "SpotlightAngle", &SpotlightAngle));
-		assert(TryReadVariable<float>(jPos, "Range", &Range));
-		assert(TryReadVariable<float>(jPos, "Intensity", &Intensity));
-		assert(TryReadVariable<bool>(jPos, "Enabled", &Enabled));
+		(TryReadVariable<float>(jPos, "SpotlightAngle", &SpotlightAngle));
+		(TryReadVariable<float>(jPos, "Range", &Range));
+		(TryReadVariable<float>(jPos, "Intensity", &Intensity));
+		(TryReadVariable<bool>(jPos, "Enabled", &Enabled));
 	}
 
 	Light::Light(): Type(Spot)
@@ -109,7 +109,7 @@ namespace PEPEngine::Common
 	}
 
 
-	Matrix& Light::GetViewMatrix() const
+	Matrix Light::GetViewMatrix() const
 	{
 		Vector3 postiton;
 

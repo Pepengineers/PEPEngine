@@ -45,7 +45,7 @@ namespace PEPEngine
 			void Deserialize(json& j) override
 			{
 				auto jPos = j["Variables"];
-				assert(TryReadVariable<float>(jPos, "speed", &speed));
+				(TryReadVariable<float>(jPos, "speed", &speed));
 				
 			};
 		};

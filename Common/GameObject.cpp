@@ -109,7 +109,7 @@ namespace PEPEngine::Common
 		DeserializeIDAndType(j);
 		
 		UINT size;
-		assert(TryReadVariable<UINT>(j, "ComponentCount", &size));
+		(TryReadVariable<UINT>(j, "ComponentCount", &size));
 		
 		std::vector<UINT> componentID;
 
@@ -119,7 +119,7 @@ namespace PEPEngine::Common
 		for (int i = 0; i < size; ++i)
 		{
 			std::string id;
-			assert(TryReadVariable<std::string>(array[i], "Type", &id));
+			(TryReadVariable<std::string>(array[i], "Type", &id));
 
 			if(id == Transform::ComponentID)
 			{

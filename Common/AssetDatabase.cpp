@@ -303,7 +303,7 @@ namespace PEPEngine::Common
 					Asset::ReadFromFile(path, j);
 
 					AssetType::Type type;
-					assert(Asset::TryReadVariable< AssetType::Type>(j, "Type", &type));
+					(Asset::TryReadVariable< AssetType::Type>(j, "Type", &type));
 
 					sortedLoadedAssets[type].push_back(path);
 				}
@@ -348,7 +348,7 @@ namespace PEPEngine::Common
 					Asset::ReadFromFile(path, j);
 
 					AssetType::Type type;
-					assert(Asset::TryReadVariable< AssetType::Type>(j, "Type", &type));
+					(Asset::TryReadVariable< AssetType::Type>(j, "Type", &type));
 
 					sortedLoadedAssets[type].push_back(path);
 				}

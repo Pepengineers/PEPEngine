@@ -193,9 +193,7 @@ namespace PEPEngine::Common
 	}
 
 	void ShadowPass::Update()
-	{
-		
-		
+	{		
 		if (mainDirectionalLight == nullptr)
 		{
 			auto* scene = Scene::currentScene;
@@ -232,7 +230,7 @@ namespace PEPEngine::Common
 			shadowMapConstants.InvRenderTargetSize = Vector2(1.0f / width, 1.0f / height);
 
 			// Transform NDC space [-1,+1]^2 to texture space [0,1]^2
-			Matrix T(
+			static Matrix T(
 				0.5f, 0.0f, 0.0f, 0.0f,
 				0.0f, -0.5f, 0.0f, 0.0f,
 				0.0f, 0.0f, 1.0f, 0.0f,

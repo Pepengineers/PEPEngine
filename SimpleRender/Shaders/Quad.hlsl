@@ -56,6 +56,7 @@ float4 PS(VertexOut input) : SV_Target
 	// Only the first light casts a shadow.
     float factor = CalcShadowFactor(ShadowPosH);
 	
+	
 	[loop]
 	for (int i = 0; i < WorldBuffer.LightsCount; ++i)
 	{

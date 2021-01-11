@@ -98,7 +98,7 @@ namespace PEPEngine::Common
 	void GModel::Deserialize(json& j)
 	{
 		uint32_t materialCount;
-		assert(Asset::TryReadVariable<uint32_t>(j, "MaterialCount", &materialCount));
+		(Asset::TryReadVariable<uint32_t>(j, "MaterialCount", &materialCount));
 
 		materials.resize(materialCount);
 		
@@ -106,7 +106,7 @@ namespace PEPEngine::Common
 
 		for(uint32_t i = 0u; i < materialCount; ++i){
 			uint64_t materialId;
-			assert(Asset::TryReadVariable<uint64_t>(jMaterials[i], "id", &materialId));
+			(Asset::TryReadVariable<uint64_t>(jMaterials[i], "id", &materialId));
 
 			auto aMaterial = std::static_pointer_cast<AMaterial>(AssetDatabase::FindAssetByID(materialId));
 

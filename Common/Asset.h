@@ -77,7 +77,7 @@ namespace PEPEngine::Common
 				*variable = json[varName].get<T>();
 				return true;
 			}
-
+			assert(varName.c_str());
 			return false;
 		}
 

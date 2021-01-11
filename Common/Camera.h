@@ -76,10 +76,10 @@ namespace PEPEngine
 			void Deserialize(json& j) override
 			{
 				auto jPos = j["CameraData"];
-				assert(TryReadVariable<float>(jPos, "aspect", &aspectRatio));
-				assert(TryReadVariable<float>(jPos, "nearZ", &nearZ));
-				assert(TryReadVariable<float>(jPos, "farZ", &farZ));
-				assert(TryReadVariable<float>(jPos, "fov", &fov));
+				(TryReadVariable<float>(jPos, "aspect", &aspectRatio));
+				(TryReadVariable<float>(jPos, "nearZ", &nearZ));
+				(TryReadVariable<float>(jPos, "farZ", &farZ));
+				(TryReadVariable<float>(jPos, "fov", &fov));
 
 				InitializeCamera(nullptr);
 			};

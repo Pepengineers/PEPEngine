@@ -236,7 +236,7 @@ namespace PEPEngine::Common
 	void Scene::Deserialize(json& j)
 	{
 		UINT count;
-		assert(Asset::TryReadVariable<UINT>(j, "GameObjectsCount", &count));
+		(Asset::TryReadVariable<UINT>(j, "GameObjectsCount", &count));
 
 		json array = j["GameObjects"];
 		

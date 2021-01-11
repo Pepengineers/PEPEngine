@@ -19,8 +19,8 @@ namespace PEPEngine::Common
 		const float version = json["Version"];
 
 		assert(version == SCHEMA_VERSION);
-		assert(TryReadVariable<unsigned long long>(json, "GUID", &ID));
-		assert(TryReadVariable<AssetType::Type>(json, "Type", &type));
+		(TryReadVariable<unsigned long long>(json, "GUID", &ID));
+		(TryReadVariable<AssetType::Type>(json, "Type", &type));
 	}
 
 	void Asset::Remove()

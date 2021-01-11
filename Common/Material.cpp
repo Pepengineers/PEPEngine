@@ -183,20 +183,20 @@ namespace PEPEngine::Common
 
 	void Material::Deserialize(json& j)
 	{		
-		assert(Asset::TryReadVariable<RenderMode::Mode>(j, "Mode", &renderMode));
-		assert(Asset::TryReadVariable<std::string>(j, "Name", &Name));
+		(Asset::TryReadVariable<RenderMode::Mode>(j, "Mode", &renderMode));
+		(Asset::TryReadVariable<std::string>(j, "Name", &Name));
 		
 		float x, y, z, w;
 		auto jcolor = j["DiffuseColor"];
-		assert(Asset::TryReadVariable<float>(jcolor, "x", &x));
-		assert(Asset::TryReadVariable<float>(jcolor, "y", &y));
-		assert(Asset::TryReadVariable<float>(jcolor, "z", &z));
-		assert(Asset::TryReadVariable<float>(jcolor, "w", &w));
+		(Asset::TryReadVariable<float>(jcolor, "x", &x));
+		(Asset::TryReadVariable<float>(jcolor, "y", &y));
+		(Asset::TryReadVariable<float>(jcolor, "z", &z));
+		(Asset::TryReadVariable<float>(jcolor, "w", &w));
 		DiffuseColor = Vector4{ x, y, z, w };
-		assert(Asset::TryReadVariable<float>(j, "AlphaThreshold", &AlphaThreshold));
-		assert(Asset::TryReadVariable<float>(j, "SpecularPower", &SpecularPower));
+		(Asset::TryReadVariable<float>(j, "AlphaThreshold", &AlphaThreshold));
+		(Asset::TryReadVariable<float>(j, "SpecularPower", &SpecularPower));
 		UINT count = 0u;
-		assert(Asset::TryReadVariable<UINT>(j, "TexturesCount", &count));
+		(Asset::TryReadVariable<UINT>(j, "TexturesCount", &count));
 
 
 		auto jTextureSlots = j["MaterialMapSlots"];
@@ -206,8 +206,8 @@ namespace PEPEngine::Common
 		for(auto& jSlot : jTextureSlots){
 			MaterialSlotTypes slotType;
 			UINT index;
-			assert(Asset::TryReadVariable<MaterialSlotTypes>(jSlot, "SlotType", &slotType));
-			assert(Asset::TryReadVariable<UINT>(jSlot, "Index", &index));
+			(Asset::TryReadVariable<MaterialSlotTypes>(jSlot, "SlotType", &slotType));
+			(Asset::TryReadVariable<UINT>(jSlot, "Index", &index));
 
 			tempSlots[index] = slotType;
 		}
@@ -217,7 +217,7 @@ namespace PEPEngine::Common
 
 		for(uint32_t i = 0u; i < count; ++i){
 			uint64_t textureId;
-			assert(Asset::TryReadVariable<uint64_t>(jTextures[i], "id", &textureId));
+			(Asset::TryReadVariable<uint64_t>(jTextures[i], "id", &textureId));
 			auto textureAsset = std::static_pointer_cast<ATexture>(AssetDatabase::FindAssetByID(textureId));
 			if(textureAsset){
 				materialMaps.push_back(textureAsset);

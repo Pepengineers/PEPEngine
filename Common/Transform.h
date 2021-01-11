@@ -104,23 +104,23 @@ namespace PEPEngine
 			{
 				float x, y, z;
 				auto jPos = j["Position"];
-				assert(TryReadVariable<float>(jPos, "x", &x));
-				assert(TryReadVariable<float>(jPos, "y", &y));
-				assert(TryReadVariable<float>(jPos, "z", &z));
+				(TryReadVariable<float>(jPos, "x", &x));
+				(TryReadVariable<float>(jPos, "y", &y));
+				(TryReadVariable<float>(jPos, "z", &z));
 
 				SetPosition(Vector3(x,y,z));
 
 				jPos = j["Rotation"];
-				assert(TryReadVariable<float>(jPos, "x", &x));
-				assert(TryReadVariable<float>(jPos, "y", &y));
-				assert(TryReadVariable<float>(jPos, "z", &z));
+				(TryReadVariable<float>(jPos, "x", &x));
+				(TryReadVariable<float>(jPos, "y", &y));
+				(TryReadVariable<float>(jPos, "z", &z));
 
 				SetEulerRotate( Vector3(x, y, z));
 
 				jPos = j["Scale"];
-				assert(TryReadVariable<float>(jPos, "x", &x));
-				assert(TryReadVariable<float>(jPos, "y", &y));
-				assert(TryReadVariable<float>(jPos, "z", &z));
+				(TryReadVariable<float>(jPos, "x", &x));
+				(TryReadVariable<float>(jPos, "y", &y));
+				(TryReadVariable<float>(jPos, "z", &z));
 
 				SetScale( Vector3(x, y, z));				
 			};

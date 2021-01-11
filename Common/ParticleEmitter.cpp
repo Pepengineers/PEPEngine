@@ -189,10 +189,10 @@ namespace PEPEngine::Common
 
 		DWORD count;
 
-		assert(Asset::TryReadVariable(jPos, "ParticlesTotalCount", &count));
+		(Asset::TryReadVariable(jPos, "ParticlesTotalCount", &count));
 
 		UINT atlasSize;
-		assert(Asset::TryReadVariable(jPos, "AtlasTexturesCount", &atlasSize));
+		(Asset::TryReadVariable(jPos, "AtlasTexturesCount", &atlasSize));
 
 		Atlas.resize(atlasSize);
 		
@@ -200,7 +200,7 @@ namespace PEPEngine::Common
 		for (int i = 0; i < atlasSize; ++i)
 		{
 			UINT64 id;
-			assert(Asset::TryReadVariable(atlasMaps[i], "id", &id));
+			(Asset::TryReadVariable(atlasMaps[i], "id", &id));
 			
 			auto texture = AssetDatabase::FindAssetByID<ATexture>(id);
 			

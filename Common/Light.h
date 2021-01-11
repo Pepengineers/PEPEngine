@@ -50,7 +50,7 @@ namespace PEPEngine
 
 			//, type(LightType::Point)
 
-			Matrix& GetViewMatrix() const;
+			Matrix GetViewMatrix() const;
 
 
 			LightData& GetData();
