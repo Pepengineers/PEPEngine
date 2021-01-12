@@ -40,8 +40,6 @@ namespace SimpleRender
 		uiPass = std::make_shared<UILayer>(MainWindow->GetClientWidth(), MainWindow->GetClientHeight(), MainWindow->GetWindowHandle());
 
 		
-		
-
 		auto atlas = AssetDatabase::Get<AModel>(L"Atlas");
 		if(atlas == nullptr)
 		{

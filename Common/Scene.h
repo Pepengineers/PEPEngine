@@ -17,9 +17,10 @@ namespace PEPEngine::Common
 	class Scene
 	{
 		friend class AScene;
-		
+	public:
 		custom_vector<std::shared_ptr<GameObject>> objects = MemoryAllocator::CreateVector<std::shared_ptr<GameObject>
 		>();
+	private:
 
 		custom_vector<std::shared_ptr<FrameResource>> frameResources = MemoryAllocator::CreateVector<std::shared_ptr<
 			FrameResource>>();
@@ -43,7 +44,7 @@ namespace PEPEngine::Common
 		UINT currentFrameResourceIndex = 0;
 
 		LockThreadQueue<std::shared_ptr<GameObject>> addedGameObjects;
-
+		LockThreadQueue < std::shared_ptr<GameObject>> gameObjectsToRemove;
 
 		void UpdateSceneMaterialBuffer();
 
@@ -59,6 +60,8 @@ namespace PEPEngine::Common
 		FrameResource* GetCurrentFrameResource() const;
 
 		void Prepare();
+
+		void DeleteOldGO();
 		void SpawnNewGO();
 
 		void Dispatch(std::shared_ptr<GCommandList> cmdList);
@@ -76,7 +79,9 @@ namespace PEPEngine::Common
 
 		void AddGameObject(std::shared_ptr<GameObject> gameObject);
 
-		void UpdateGameObjects(std::shared_ptr<GameObject> gameObject);
+		void UpdateGameObject(std::shared_ptr<GameObject> gameObject);
+
+		void RemoveGameObject(std::shared_ptr<GameObject> gameObject);
 
 		void Serialize(json& j) ;
 		void Deserialize(json& j) ;
