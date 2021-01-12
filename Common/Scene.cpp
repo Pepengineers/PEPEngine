@@ -57,7 +57,7 @@ namespace PEPEngine::Common
 			while (addedGameObjects.TryPop(go))
 			{
 				objects.push_back(go);
-				UpdateGameObjects(go);
+				UpdateGameObject(go);
 			}
 
 			if (currentFrameResource->LightsBuffer->GetElementCount() < sceneLights.size())
@@ -78,8 +78,56 @@ namespace PEPEngine::Common
 		}
 	}
 
+	void Scene::DeleteOldGO()
+	{
+		std::shared_ptr<GameObject> go = nullptr;
+
+		while(gameObjectsToRemove.TryPop(go)){
+			
+			auto pCamera	= go->GetComponent<Camera>();
+			auto pRenderer	= go->GetComponent<Renderer>();
+			auto pLight		= go->GetComponent<Light>();
+
+
+			if(pCamera != nullptr && cameras.find(pCamera.get()) != cameras.end()){
+				cameras.erase(pCamera.get());
+			}
+
+			if(pRenderer != nullptr){
+				auto sharedMaterials = pRenderer->GetSharedMaterials();
+				for(uint32_t i = 0u; i < sharedMaterials.size(); ++i){
+					auto sharedMaterial = sharedMaterials[i];
+					if(sharedMaterial != nullptr){
+						auto material = sharedMaterial->GetMaterial();
+
+						const auto it = typedMaterials->find(material.get());
+
+						if(it != typedMaterials->end()){
+							typedMaterials->erase(it);
+						}
+
+						if (typedRenderers.find(material.get()) != typedRenderers.end()) {
+							typedRenderers.erase(material.get());
+						}
+					}
+				}
+			}
+			
+			if(pLight != nullptr){
+				sceneLights.erase(pLight.get());
+			}
+
+			const auto it = std::find(objects.begin(), objects.end(), go);
+
+			if(it != objects.end()){
+				objects.erase(it);
+			}
+		}
+	}
+
 	void Scene::Update()
 	{
+		DeleteOldGO();
 		SpawnNewGO();
 
 		currentFrameResource = frameResources[currentFrameResourceIndex];
@@ -146,8 +194,7 @@ namespace PEPEngine::Common
 		addedGameObjects.Push(gameObject);
 	}
 
-	void Scene::UpdateGameObjects(std::shared_ptr<GameObject> gameObject)
-	{
+	void Scene::UpdateGameObject(std::shared_ptr<GameObject> gameObject){
 		if (gameObject == nullptr) return;
 
 
@@ -190,6 +237,14 @@ namespace PEPEngine::Common
 		}
 	}
 
+	void Scene::RemoveGameObject(std::shared_ptr<GameObject> gameObject){
+		if(gameObject == nullptr){
+			return;
+		}
+
+		gameObjectsToRemove.Push(gameObject);
+	}
+
 	void Scene::Serialize(json& j)
 	{
 		j["GameObjectsCount"] = objects.size();
@@ -224,4 +279,8 @@ namespace PEPEngine::Common
 	{
 		return currentFrameResource.get();
 	}
+
+
+
+
 }
