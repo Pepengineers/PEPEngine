@@ -58,7 +58,7 @@ namespace PEPEngine::Common
 			while (addedGameObjects.TryPop(go))
 			{
 				objects.push_back(go);
-				UpdateGameObjects(go);
+				UpdateGameObject(go);
 			}
 
 			if (currentFrameResource->LightsBuffer->GetElementCount() < sceneLights.size())
@@ -81,53 +81,62 @@ namespace PEPEngine::Common
 
 	void Scene::Dispatch(std::shared_ptr<GCommandList> cmdList)
 	{
-		for (auto && emitter : emitters)
+		for (auto&& emitter : emitters)
 		{
 			emitter->Dispatch(cmdList);
-		}		
+		}
 	}
-void Scene::DeleteOldGO()
+
+	void Scene::DeleteOldGO()
 	{
 		std::shared_ptr<GameObject> go = nullptr;
 
-		while(gameObjectsToRemove.TryPop(go)){
-			
-			auto pCamera	= go->GetComponent<Camera>();
-			auto pRenderer	= go->GetComponent<Renderer>();
-			auto pLight		= go->GetComponent<Light>();
+		while (gameObjectsToRemove.TryPop(go))
+		{
+			auto pCamera = go->GetComponent<Camera>();
+			auto pRenderer = go->GetComponent<Renderer>();
+			auto pLight = go->GetComponent<Light>();
 
 
-			if(pCamera != nullptr && cameras.find(pCamera.get()) != cameras.end()){
+			if (pCamera != nullptr && cameras.find(pCamera.get()) != cameras.end())
+			{
 				cameras.erase(pCamera.get());
 			}
 
-			if(pRenderer != nullptr){
+			if (pRenderer != nullptr)
+			{
 				auto sharedMaterials = pRenderer->GetSharedMaterials();
-				for(uint32_t i = 0u; i < sharedMaterials.size(); ++i){
+				for (uint32_t i = 0u; i < sharedMaterials.size(); ++i)
+				{
 					auto sharedMaterial = sharedMaterials[i];
-					if(sharedMaterial != nullptr){
+					if (sharedMaterial != nullptr)
+					{
 						auto material = sharedMaterial->GetMaterial();
 
 						const auto it = typedMaterials->find(material.get());
 
-						if(it != typedMaterials->end()){
+						if (it != typedMaterials->end())
+						{
 							typedMaterials->erase(it);
 						}
 
-						if (typedRenderers.find(material.get()) != typedRenderers.end()) {
+						if (typedRenderers.find(material.get()) != typedRenderers.end())
+						{
 							typedRenderers.erase(material.get());
 						}
 					}
 				}
 			}
-			
-			if(pLight != nullptr){
+
+			if (pLight != nullptr)
+			{
 				sceneLights.erase(pLight.get());
 			}
 
 			const auto it = std::find(objects.begin(), objects.end(), go);
 
-			if(it != objects.end()){
+			if (it != objects.end())
+			{
 				objects.erase(it);
 			}
 		}
@@ -136,7 +145,7 @@ void Scene::DeleteOldGO()
 
 	void Scene::Update()
 	{
-DeleteOldGO();
+		DeleteOldGO();
 		SpawnNewGO();
 
 		currentFrameResource = frameResources[currentFrameResourceIndex];
@@ -158,9 +167,10 @@ DeleteOldGO();
 
 		currentFrameResourceIndex = (currentFrameResourceIndex + 1) % globalCountFrameResources;
 	}
-void Scene::RenderParticle(std::shared_ptr<GCommandList> cmdList)
+
+	void Scene::RenderParticle(std::shared_ptr<GCommandList> cmdList)
 	{
-		for (auto && emitter : emitters)
+		for (auto&& emitter : emitters)
 		{
 			emitter->PopulateDrawCommand(cmdList);
 		}
@@ -181,12 +191,12 @@ void Scene::RenderParticle(std::shared_ptr<GCommandList> cmdList)
 		for (auto&& material : materials)
 		{
 			auto it = typedRenderers.find(material);
-			if(it != typedRenderers.end())
+			if (it != typedRenderers.end())
 			{
 				material->SetRenderMaterialData(cmdList);
-				for (auto && renderPair : it->second)
+				for (auto&& renderPair : it->second)
 				{
-					for (auto && meshIndex : renderPair.second)
+					for (auto&& meshIndex : renderPair.second)
 					{
 						renderPair.first->PopulateDrawCommand(cmdList, meshIndex);
 					}
@@ -210,7 +220,7 @@ void Scene::RenderParticle(std::shared_ptr<GCommandList> cmdList)
 		addedGameObjects.Push(gameObject);
 	}
 
-	void Scene::UpdateGameObjects(std::shared_ptr<GameObject> gameObject)
+	void Scene::UpdateGameObject(std::shared_ptr<GameObject> gameObject)
 	{
 		if (gameObject == nullptr) return;
 
@@ -221,7 +231,7 @@ void Scene::RenderParticle(std::shared_ptr<GCommandList> cmdList)
 			sceneLights.insert(light.get());
 		}
 		auto ai = gameObject->GetComponent<AIComponent>();
-		if(ai != nullptr)
+		if (ai != nullptr)
 		{
 			ai->addGlobalState(objects);
 		}
@@ -234,11 +244,11 @@ void Scene::RenderParticle(std::shared_ptr<GCommandList> cmdList)
 			for (int i = 0; i < sharedMaterials.size(); ++i)
 			{
 				auto material = sharedMaterials[i];
-				
+
 				if (material != nullptr)
 				{
 					auto gMaterial = material->GetMaterial();
-					
+
 					const auto it = typedMaterials[gMaterial->GetRenderMode()].insert(gMaterial.get());
 
 					if (it.second)
@@ -249,10 +259,10 @@ void Scene::RenderParticle(std::shared_ptr<GCommandList> cmdList)
 
 					typedRenderers[gMaterial.get()][renderer.get()].push_back(i);
 				}
-			}			
+			}
 		}
 		auto emitter = gameObject->GetComponent<Emitter>();
-		if(emitter != nullptr)
+		if (emitter != nullptr)
 		{
 			emitters.insert(emitter.get());
 		}
@@ -263,8 +273,11 @@ void Scene::RenderParticle(std::shared_ptr<GCommandList> cmdList)
 			cameras.insert(camera.get());
 		}
 	}
-void Scene::RemoveGameObject(std::shared_ptr<GameObject> gameObject){
-		if(gameObject == nullptr){
+
+	void Scene::RemoveGameObject(std::shared_ptr<GameObject> gameObject)
+	{
+		if (gameObject == nullptr)
+		{
 			return;
 		}
 
@@ -277,28 +290,28 @@ void Scene::RemoveGameObject(std::shared_ptr<GameObject> gameObject){
 
 		auto array = json::array();
 
-		for (auto && object : objects)
+		for (auto&& object : objects)
 		{
 			json element;
 			object->Serialize(element);
 			array.push_back(element);
 		}
-		j["GameObjects"] = array;		
+		j["GameObjects"] = array;
 	}
 
 	void Scene::Deserialize(json& j)
 	{
-		UINT count;
-		assert(Asset::TryReadVariable<UINT>(j, "GameObjectsCount", &count));
+		UINT count = 0;
+		(Asset::TryReadVariable<UINT>(j, "GameObjectsCount", &count));
 
 		json array = j["GameObjects"];
-		
+
 		for (int i = 0; i < count; ++i)
 		{
 			auto GO = std::make_shared<GameObject>();
 			GO->Deserialize(array[i]);
 			AddGameObject(GO);
-		}		
+		}
 	}
 
 	FrameResource* Scene::GetCurrentFrameResource() const
