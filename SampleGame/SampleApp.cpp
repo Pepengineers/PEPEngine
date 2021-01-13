@@ -25,6 +25,9 @@ namespace SimpleRender
 	{
 	}
 
+	inline static std::vector<ParticleEmitter*> emitters;
+
+	
 	void SampleApp::Pick(const MousePoint& mouse_point)
 	{
 		auto P = Camera::mainCamera->GetProjectionMatrix();
@@ -46,8 +49,19 @@ namespace SimpleRender
 
 		if(pickedGO != nullptr)
 		{
-			level->GetScene()->RemoveGameObject(pickedGO);
+			
 			killcount++;
+
+			auto newGoEmmiter = std::make_shared<GameObject>("Emmiter");
+			newGoEmmiter->GetTransform()->SetPosition(pickedGO->GetTransform()->GetWorldPosition());
+			auto emitter = std::make_shared<ParticleEmitter>(250);
+			newGoEmmiter->AddComponent(emitter);
+
+			level->GetScene()->AddGameObject(std::move(newGoEmmiter));
+
+			emitters.push_back(emitter.get());
+
+			level->GetScene()->RemoveGameObject(pickedGO);
 		}
 	}
 
@@ -99,11 +113,7 @@ namespace SimpleRender
 
 			for (int i = 0; i < 6; ++i)
 			{
-				auto particleEmitter = std::make_unique<GameObject>("Particle " + std::to_string(i));
-				particleEmitter->AddComponent(std::make_shared<ParticleEmitter>(1500));
-				particleEmitter->GetTransform()->SetPosition(
-					Vector3::Right * -30  + Vector3::Forward * 10 * i);
-				scene->AddGameObject(std::move(particleEmitter));
+				
 				for (int j = 0; j < 3; ++j)
 				{
 					auto rModel = std::make_unique<GameObject>("Atlas" + std::to_string(i+j));
@@ -195,21 +205,9 @@ namespace SimpleRender
 					level->GetScene()->AddGameObject(std::move(rModel));
 				}
 			}
-		}
-		
+		}	
 		
 
-		static bool sceneSaved = false;
-		if (keyboard.KeyIsPressed('I'))
-		{
-			if(!sceneSaved)
-			{
-				sceneSaved = true;
-				
-				AssetDatabase::UpdateAsset(level);
-			}
-		}
-		else sceneSaved = false;
 
 		static bool picked = false;
 		
@@ -223,7 +221,20 @@ namespace SimpleRender
 			}
 		}
 		else picked = false;
-		
+
+
+		for(int i =0; i < emitters.size(); ++i)
+		{
+			auto emitter = emitters[i];
+
+			if(emitter->isWorked)
+			{
+				if(emitter->ActiveTime > 0.7f)
+				{
+					emitter->isWorked = false;
+				}
+			}					
+		}		
 	}
 
 	void SampleApp::Draw(const GameTimer& gt)
@@ -235,7 +246,7 @@ namespace SimpleRender
 		auto computeQueue = device->GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COMPUTE);
 		auto cmdList = computeQueue->GetCommandList();
 
-		//level->GetScene()->Dispatch(cmdList);
+		level->GetScene()->Dispatch(cmdList);
 
 		computeQueue->Wait(renderQueue);
 		

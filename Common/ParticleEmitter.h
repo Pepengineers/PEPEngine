@@ -29,7 +29,6 @@ namespace PEPEngine::Common
 
 		int dirtyCount = Utils::globalCountFrameResources;
 
-		bool isWorked = false;
 		
 
 	protected:
@@ -48,6 +47,9 @@ namespace PEPEngine::Common
 
 	public:	
 
+		bool isWorked = true;
+		float ActiveTime = 0.0f;
+		
 		SERIALIZE_FROM_JSON(ParticleEmitter, Emitter)
 		
 		void ChangeParticleCount(UINT count);

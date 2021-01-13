@@ -9,6 +9,7 @@
 #include "MathHelper.h"
 #include "Transform.h"
 #include "ATexture.h"
+#include "d3dApp.h"
 
 namespace PEPEngine::Common
 {
@@ -266,6 +267,7 @@ namespace PEPEngine::Common
 		DescriptorInitialize();
 
 		BufferInitialize();
+	
 	}
 
 	ParticleEmitter::ParticleEmitter(DWORD particleCount): Emitter()
@@ -275,123 +277,133 @@ namespace PEPEngine::Common
 
 	void ParticleEmitter::Update()
 	{
-		const auto transform = gameObject->GetTransform();
-
-		if (transform->IsDirty())
+		if (isWorked)
 		{
-			objectWorldData.TextureTransform = transform->TextureTransform.Transpose();
-			objectWorldData.World = (transform->GetWorldMatrix()).Transpose();
-			objectPositionBuffer->CopyData(0, objectWorldData);
+			const auto transform = gameObject->GetTransform();
+
+			if (transform->IsDirty())
+			{
+				objectWorldData.TextureTransform = transform->TextureTransform.Transpose();
+				objectWorldData.World = (transform->GetWorldMatrix()).Transpose();
+				objectPositionBuffer->CopyData(0, objectWorldData);
+			}
+
+			ActiveTime += D3DApp::GetApp().GetTimer()->DeltaTime();
 		}
 	}
 
 	void ParticleEmitter::PopulateDrawCommand(std::shared_ptr<Graphics::GCommandList> cmdList)
 	{
-		cmdList->TransitionBarrier(ParticlesPool->GetD3D12Resource(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-		cmdList->TransitionBarrier(ParticlesAlive->GetD3D12Resource(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-		cmdList->FlushResourceBarriers();
+		if (isWorked)
+		{
+			cmdList->TransitionBarrier(ParticlesPool->GetD3D12Resource(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+			cmdList->TransitionBarrier(ParticlesAlive->GetD3D12Resource(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+			cmdList->FlushResourceBarriers();
 
-		cmdList->SetRootSignature(renderSignature.get());
-		cmdList->SetDescriptorsHeap(&particlesRenderDescriptors);
+			cmdList->SetRootSignature(renderSignature.get());
+			cmdList->SetDescriptorsHeap(&particlesRenderDescriptors);
 
-		cmdList->SetRootConstantBufferView(ParticleRenderSlot::ObjectData, *objectPositionBuffer.get());
+			cmdList->SetRootConstantBufferView(ParticleRenderSlot::ObjectData, *objectPositionBuffer.get());
 
-		cmdList->SetRoot32BitConstants(ParticleRenderSlot::EmitterData, sizeof(EmitterData) / sizeof(float),
-		                               &emitterData, 0);
+			cmdList->SetRoot32BitConstants(ParticleRenderSlot::EmitterData, sizeof(EmitterData) / sizeof(float),
+				&emitterData, 0);
 
-		cmdList->SetRootDescriptorTable(ParticleRenderSlot::ParticlesPool, &particlesRenderDescriptors, 0);
+			cmdList->SetRootDescriptorTable(ParticleRenderSlot::ParticlesPool, &particlesRenderDescriptors, 0);
 
-		cmdList->SetRootDescriptorTable(ParticleRenderSlot::ParticlesAliveIndex, &particlesRenderDescriptors, 1);
+			cmdList->SetRootDescriptorTable(ParticleRenderSlot::ParticlesAliveIndex, &particlesRenderDescriptors, 1);
 
-		cmdList->SetRootDescriptorTable(ParticleRenderSlot::Atlas, &particlesRenderDescriptors, 2);
+			cmdList->SetRootDescriptorTable(ParticleRenderSlot::Atlas, &particlesRenderDescriptors, 2);
 
 
-		cmdList->SetPipelineState(*renderPSO.get());
-		cmdList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
-		cmdList->SetIBuffer();
-		cmdList->SetVBuffer();
-		cmdList->Draw(emitterData.ParticlesAliveCount);
+			cmdList->SetPipelineState(*renderPSO.get());
+			cmdList->SetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
+			cmdList->SetIBuffer();
+			cmdList->SetVBuffer();
+			cmdList->Draw(emitterData.ParticlesAliveCount);
 
-		cmdList->TransitionBarrier(ParticlesPool->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON);
-		cmdList->TransitionBarrier(ParticlesAlive->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON);
-		cmdList->FlushResourceBarriers();
+			cmdList->TransitionBarrier(ParticlesPool->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON);
+			cmdList->TransitionBarrier(ParticlesAlive->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON);
+			cmdList->FlushResourceBarriers();
+		}
 	}
 
 
 	void ParticleEmitter::Dispatch(std::shared_ptr<GCommandList> cmdList)
 	{
-		isWorked = true;
-
-		ParticlesAlive->ReadCounter(&emitterData.ParticlesAliveCount);
-
-		emitterData.ParticlesAliveCount = std::clamp(emitterData.ParticlesAliveCount, static_cast<DWORD>(0),
-		                                             emitterData.ParticlesTotalCount);
-
-
-		cmdList->TransitionBarrier(ParticlesPool->GetD3D12Resource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-		cmdList->TransitionBarrier(ParticlesAlive->GetD3D12Resource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-		cmdList->TransitionBarrier(ParticlesDead->GetD3D12Resource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-		cmdList->FlushResourceBarriers();
-
-		cmdList->SetRootSignature(computeSignature.get());
-		cmdList->SetDescriptorsHeap(&particlesComputeDescriptors);
-
-		cmdList->SetRootDescriptorTable(ParticleComputeSlot::ParticlesPool, &particlesComputeDescriptors,
-		                                ParticleComputeSlot::ParticlesPool - 1);
-		cmdList->SetRootDescriptorTable(ParticleComputeSlot::ParticleDead, &particlesComputeDescriptors,
-		                                ParticleComputeSlot::ParticleDead - 1);
-		cmdList->SetRootDescriptorTable(ParticleComputeSlot::ParticleAlive, &particlesComputeDescriptors,
-		                                ParticleComputeSlot::ParticleAlive - 1);
-
-		if (emitterData.ParticlesTotalCount > emitterData.ParticlesAliveCount)
+		if (isWorked)
 		{
-			if (emitterData.ParticlesAliveCount + emitterData.ParticleInjectCount <= emitterData.ParticlesTotalCount)
+
+			ParticlesAlive->ReadCounter(&emitterData.ParticlesAliveCount);
+
+			emitterData.ParticlesAliveCount = std::clamp(emitterData.ParticlesAliveCount, static_cast<DWORD>(0),
+				emitterData.ParticlesTotalCount);
+
+
+			cmdList->TransitionBarrier(ParticlesPool->GetD3D12Resource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+			cmdList->TransitionBarrier(ParticlesAlive->GetD3D12Resource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+			cmdList->TransitionBarrier(ParticlesDead->GetD3D12Resource(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+			cmdList->FlushResourceBarriers();
+
+			cmdList->SetRootSignature(computeSignature.get());
+			cmdList->SetDescriptorsHeap(&particlesComputeDescriptors);
+
+			cmdList->SetRootDescriptorTable(ParticleComputeSlot::ParticlesPool, &particlesComputeDescriptors,
+				ParticleComputeSlot::ParticlesPool - 1);
+			cmdList->SetRootDescriptorTable(ParticleComputeSlot::ParticleDead, &particlesComputeDescriptors,
+				ParticleComputeSlot::ParticleDead - 1);
+			cmdList->SetRootDescriptorTable(ParticleComputeSlot::ParticleAlive, &particlesComputeDescriptors,
+				ParticleComputeSlot::ParticleAlive - 1);
+
+			if (emitterData.ParticlesTotalCount > emitterData.ParticlesAliveCount)
 			{
-				cmdList->TransitionBarrier(InjectedParticles->GetD3D12Resource(),
-				                           D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-
-				cmdList->FlushResourceBarriers();
-
-				for (int i = 0; i < emitterData.ParticleInjectCount; ++i)
+				if (emitterData.ParticlesAliveCount + emitterData.ParticleInjectCount <= emitterData.ParticlesTotalCount)
 				{
-					newParticles[i] = GenerateParticle();
+					cmdList->TransitionBarrier(InjectedParticles->GetD3D12Resource(),
+						D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+
+					cmdList->FlushResourceBarriers();
+
+					for (int i = 0; i < emitterData.ParticleInjectCount; ++i)
+					{
+						newParticles[i] = GenerateParticle();
+					}
+
+					InjectedParticles->LoadData(newParticles.data(), cmdList);
+
+					cmdList->SetPipelineState(*injectedPSO.get());
+
+					cmdList->SetRootDescriptorTable(ParticleComputeSlot::ParticleInjection, &particlesComputeDescriptors,
+						ParticleComputeSlot::ParticleInjection - 1);
+
+					cmdList->SetRoot32BitConstants(ParticleComputeSlot::EmitterData, sizeof(EmitterData) / sizeof(float),
+						&emitterData, 0);
+
+					cmdList->Dispatch(emitterData.InjectedGroupCount, emitterData.InjectedGroupCount, 1);
+
+					cmdList->UAVBarrier(InjectedParticles->GetD3D12Resource());
+					cmdList->FlushResourceBarriers();
 				}
+			}
 
-				InjectedParticles->LoadData(newParticles.data(), cmdList);
-
-				cmdList->SetPipelineState(*injectedPSO.get());
-
-				cmdList->SetRootDescriptorTable(ParticleComputeSlot::ParticleInjection, &particlesComputeDescriptors,
-				                                ParticleComputeSlot::ParticleInjection - 1);
+			if (emitterData.ParticlesAliveCount > 0)
+			{
+				emitterData.SimulatedGroupCount = CalculateGroupCount(emitterData.ParticlesAliveCount);
 
 				cmdList->SetRoot32BitConstants(ParticleComputeSlot::EmitterData, sizeof(EmitterData) / sizeof(float),
-				                               &emitterData, 0);
+					&emitterData, 0);
 
-				cmdList->Dispatch(emitterData.InjectedGroupCount, emitterData.InjectedGroupCount, 1);
+				cmdList->SetPipelineState(*simulatedPSO.get());
 
-				cmdList->UAVBarrier(InjectedParticles->GetD3D12Resource());
-				cmdList->FlushResourceBarriers();
+
+				cmdList->Dispatch(emitterData.SimulatedGroupCount, emitterData.SimulatedGroupCount, 1);
 			}
+
+			ParticlesAlive->CopyCounterForRead(cmdList);
+
+			cmdList->TransitionBarrier(ParticlesPool->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON);
+			cmdList->TransitionBarrier(ParticlesAlive->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON);
+			cmdList->TransitionBarrier(ParticlesDead->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON);
+			cmdList->FlushResourceBarriers();
 		}
-
-		if (emitterData.ParticlesAliveCount > 0)
-		{
-			emitterData.SimulatedGroupCount = CalculateGroupCount(emitterData.ParticlesAliveCount);
-
-			cmdList->SetRoot32BitConstants(ParticleComputeSlot::EmitterData, sizeof(EmitterData) / sizeof(float),
-			                               &emitterData, 0);
-
-			cmdList->SetPipelineState(*simulatedPSO.get());
-
-
-			cmdList->Dispatch(emitterData.SimulatedGroupCount, emitterData.SimulatedGroupCount, 1);
-		}
-
-		ParticlesAlive->CopyCounterForRead(cmdList);
-
-		cmdList->TransitionBarrier(ParticlesPool->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON);
-		cmdList->TransitionBarrier(ParticlesAlive->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON);
-		cmdList->TransitionBarrier(ParticlesDead->GetD3D12Resource(), D3D12_RESOURCE_STATE_COMMON);
-		cmdList->FlushResourceBarriers();
 	}
 }
