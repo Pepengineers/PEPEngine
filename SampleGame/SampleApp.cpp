@@ -269,7 +269,7 @@ namespace SimpleRender
 		auto computeQueue = device->GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COMPUTE);
 		auto cmdList = computeQueue->GetCommandList();
 
-		//level->GetScene()->Dispatch(cmdList);
+		level->GetScene()->Dispatch(cmdList);
 
 		computeQueue->Wait(renderQueue);
 		
