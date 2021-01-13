@@ -11,7 +11,7 @@ void FleeAction::prePerform(PEPEngine::Common::GameObject* g)
 	
 	auto project = Vector3(vectorFromPlayer.x, 0, vectorFromPlayer.z);
 	project.Normalize();
-	target->SetPosition( selfTransform + project * fleeRange/10);
+	target->SetPosition( selfTransform + project * fleeRange/5);
 	
 }
 

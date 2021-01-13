@@ -57,6 +57,11 @@ void AIComponent::SetStartWorldState()
 	worldState.setVariable(Action::TARGET_ALIVE, true);
 }
 
+void AIComponent::gotaGoFast()
+{
+	movementSpeed *= 2.5;
+}
+
 void AIComponent::setWorldState(int id, bool state)
 {
 	auto currentValue = worldState.getVariable(id);

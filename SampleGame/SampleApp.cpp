@@ -49,8 +49,10 @@ namespace SimpleRender
 
 		if(pickedGO != nullptr)
 		{
-			
+			if(pickedGO->GetName() == "Atlas") scorecount++;
+			if (pickedGO->GetName() == "P-body") scorecount += 5;
 			killcount++;
+			
 
 			auto newGoEmmiter = std::make_shared<GameObject>("Emmiter");
 			newGoEmmiter->GetTransform()->SetPosition(pickedGO->GetTransform()->GetWorldPosition());
@@ -79,7 +81,7 @@ namespace SimpleRender
 		uiPass = std::make_shared<UILayer>(MainWindow->GetClientWidth(), MainWindow->GetClientHeight(), MainWindow->GetWindowHandle());
 
 		
-		auto atlas = AssetDatabase::Get<AModel>(L"Atlas");
+		 atlas = AssetDatabase::Get<AModel>(L"Atlas");
 		if(atlas == nullptr)
 		{
 			atlas = AssetDatabase::AddModel("Data\\Objects\\Atlas\\Atlas.obj");
@@ -116,7 +118,7 @@ namespace SimpleRender
 				
 				for (int j = 0; j < 3; ++j)
 				{
-					auto rModel = std::make_unique<GameObject>("Atlas" + std::to_string(i+j));
+					auto rModel = std::make_unique<GameObject>("Atlas");
 					auto renderer = std::make_shared<ModelRenderer>(atlas);
 					rModel->AddComponent(renderer);
 
@@ -175,34 +177,55 @@ namespace SimpleRender
 		level->GetScene()->Update();
 		static float next = false;
 	
-		uiPass->setCount(killcount, timeElapsed);
+		uiPass->setCount(scorecount, timeElapsed);
 		if((int)killcount % 18 == 0 && killcount > next)
 		{
 			next = killcount;
 			for (int i = 0; i < 6; ++i)
 			{
+				
 				for (int j = 0; j < 3; ++j)
 				{
-					auto rModel = std::make_unique<GameObject>("Atlas" + std::to_string(killcount+i + j));
-					auto renderer = std::make_shared<ModelRenderer>(pbody);
-					
-					rModel->AddComponent(renderer);
-			
-					rModel->GetTransform()->SetPosition(
-						Vector3(Camera::mainCamera->gameObject->GetTransform()->GetWorldPosition().x+ (static_cast<float>(rand()) / static_cast<float>((RAND_MAX)) *2) - 1,0, Camera::mainCamera->gameObject->GetTransform()->GetWorldPosition().z + (static_cast<float>(rand()) / static_cast<float>((RAND_MAX)) * 2) - 1));
+					if(j < killcount / 18)
+					{
+						auto rModel = std::make_unique<GameObject>("P-body");
+						auto renderer = std::make_shared<ModelRenderer>(pbody);
 
-					auto light = std::make_shared<Light>();
-					light->Color = Vector4(MathHelper::RandF(), MathHelper::RandF(), MathHelper::RandF(), 1);
-					light->Intensity = 0.9;
-					light->Range = 7;
-					light->Type = Point;
-					/*sun1->AddComponent(light);*/
-					rModel->AddComponent(light);
-					auto ai = std::make_shared<AIComponent>();
-					rModel->AddComponent(ai);
+						rModel->AddComponent(renderer);
 
+						rModel->GetTransform()->SetPosition(
+							Vector3(Camera::mainCamera->gameObject->GetTransform()->GetWorldPosition().x + (static_cast<float>(rand()) / static_cast<float>((RAND_MAX)) * 2) - 1, 0, Camera::mainCamera->gameObject->GetTransform()->GetWorldPosition().z + (static_cast<float>(rand()) / static_cast<float>((RAND_MAX)) * 2) - 1));
 
-					level->GetScene()->AddGameObject(std::move(rModel));
+						auto light = std::make_shared<Light>();
+						light->Color = Vector4(MathHelper::RandF(), MathHelper::RandF(), MathHelper::RandF(), 1);
+						light->Intensity = 0.9;
+						light->Range = 7;
+						light->Type = Point;
+						rModel->AddComponent(light);
+						auto ai = std::make_shared<AIComponent>();
+						ai->gotaGoFast();
+						rModel->AddComponent(ai);
+						level->GetScene()->AddGameObject(std::move(rModel));
+					}
+					else {
+						auto rModel = std::make_unique<GameObject>("Atlas");
+						auto renderer = std::make_shared<ModelRenderer>(atlas);
+
+						rModel->AddComponent(renderer);
+
+						rModel->GetTransform()->SetPosition(
+							Vector3(Camera::mainCamera->gameObject->GetTransform()->GetWorldPosition().x + (static_cast<float>(rand()) / static_cast<float>((RAND_MAX)) * 2) - 1, 0, Camera::mainCamera->gameObject->GetTransform()->GetWorldPosition().z + (static_cast<float>(rand()) / static_cast<float>((RAND_MAX)) * 2) - 1));
+
+						auto light = std::make_shared<Light>();
+						light->Color = Vector4(MathHelper::RandF(), MathHelper::RandF(), MathHelper::RandF(), 1);
+						light->Intensity = 0.9;
+						light->Range = 7;
+						light->Type = Point;
+						rModel->AddComponent(light);
+						auto ai = std::make_shared<AIComponent>();
+						rModel->AddComponent(ai);
+						level->GetScene()->AddGameObject(std::move(rModel));
+					}
 				}
 			}
 		}	
@@ -246,7 +269,7 @@ namespace SimpleRender
 		auto computeQueue = device->GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COMPUTE);
 		auto cmdList = computeQueue->GetCommandList();
 
-		level->GetScene()->Dispatch(cmdList);
+		//level->GetScene()->Dispatch(cmdList);
 
 		computeQueue->Wait(renderQueue);
 		

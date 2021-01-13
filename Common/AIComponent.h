@@ -43,6 +43,7 @@ class AIComponent : public PEPEngine::Common::Component
 			AIComponent();
 			void SetActionList();
 			void SetStartWorldState();
+			void gotaGoFast();
 			void setWorldState(int, bool);
 			void setGoalState(int, bool);
 			float getDistanceToPlayer();

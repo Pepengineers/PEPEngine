@@ -38,6 +38,7 @@ namespace SimpleRender
 		
 	
 		float killcount = 0;
+		float scorecount = 0;
 		float timer = 0;
 		std::shared_ptr<GDevice> device;
 		AssetDatabase assetLoader;
@@ -49,6 +50,7 @@ namespace SimpleRender
 
 		std::shared_ptr<AScene> level = nullptr;
 		std::shared_ptr<AModel> pbody = nullptr;
+		std::shared_ptr<AModel> atlas = nullptr;
 
 		
 		std::vector<Camera*> cameras;
