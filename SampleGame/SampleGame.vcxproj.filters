@@ -24,9 +24,15 @@
     <ClCompile Include="SampleApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SpawnController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SampleApp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SpawnController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -35,6 +41,9 @@
     <None Include="Shaders\Common.hlsl">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Shaders\ComputeParticle.hlsl" />
+    <None Include="Shaders\ParticleCommon.hlsl" />
+    <None Include="Shaders\ParticleDraw.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\Default.hlsl">
@@ -44,15 +53,6 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\Quad.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\ComputeParticle.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\ParticleCommon.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\ParticleDraw.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

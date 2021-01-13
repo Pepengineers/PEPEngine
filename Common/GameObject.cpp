@@ -131,5 +131,13 @@ namespace PEPEngine::Common
 				AddComponent(std::move(component));
 			}
 		}		
+	}
+
+	void GameObject::DrawGUI()
+	{
+		for (auto&& component : components)
+		{
+			component->OnGUI();
+		}
 	};
 }

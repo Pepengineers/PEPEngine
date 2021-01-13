@@ -123,6 +123,7 @@ namespace PEPEngine
 			const Matrix& GetProjectionMatrix() const;
 
 			void SetShadowTransform(const Matrix& shadowTransformMatrix);
+			void OnGUI() override;
 		};
 	}
 }

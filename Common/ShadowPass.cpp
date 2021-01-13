@@ -210,6 +210,27 @@ namespace PEPEngine::Common
 		if (mainDirectionalLight != nullptr)
 		{
 			auto view = mainDirectionalLight->GetViewMatrix();
+			
+			auto worldPos = mainDirectionalLight->gameObject->GetTransform()->GetWorldPosition();
+			
+			Vector3 shadowMapCenter = Vector3::Transform(worldPos, view);
+
+			float Size = 150;
+			
+			float l = shadowMapCenter.x - Size;
+			float b = shadowMapCenter.y - Size;
+			float n = shadowMapCenter.z - Size;
+			float r = shadowMapCenter.x + Size;
+			float t = shadowMapCenter.y + Size;
+			float f = shadowMapCenter.z + Size;
+
+			
+			projectionMatrix = DirectX::XMMatrixOrthographicOffCenterLH(l, r, b, t, n, f);
+
+
+			
+			
+
 			auto proj = projectionMatrix;
 
 			auto viewProj = (view * proj);
@@ -255,7 +276,7 @@ namespace PEPEngine::Common
 			width = newWidth;
 			height = newHeight;
 
-			projectionMatrix = DirectX::XMMatrixOrthographicLH(width, height, 0.1f, 1000);
+			
 
 			BuildResource();
 		}

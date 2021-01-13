@@ -83,7 +83,7 @@ namespace PEPEngine::Common
 		texture->texture->SetName(pathToTextureInAssetFolder.filename());
 		
 		AddAssetInCache(texture);		
-		UpdateAsset(texture);
+		UpdateAsset(texture.get());
 		return texture;
 	}
 
@@ -159,7 +159,7 @@ namespace PEPEngine::Common
 		
 		LoadMaterialsFromModelFile(loadAssetFile, aModel);
 
-		UpdateAsset(aModel);
+		UpdateAsset(aModel.get());
 		
 		return aModel;		
 	}
@@ -174,12 +174,12 @@ namespace PEPEngine::Common
 		amaterial->material = material;
 
 		AddAssetInCache(amaterial);		
-		UpdateAsset(amaterial);
+		UpdateAsset(amaterial.get());
 		
 		return amaterial;		
 	}
 
-	void AssetDatabase::UpdateAsset(std::shared_ptr<Asset> asset)
+	void AssetDatabase::UpdateAsset(Asset* asset)
 	{
 		assert(asset->ID != UINT64_MAX);
 
@@ -187,9 +187,9 @@ namespace PEPEngine::Common
 
 		assert(it != loadedAssets.end());
 
-		SaveToFile(asset, asset->pathToFile);
+		SaveToFile(it->second, asset->pathToFile);
 
-		AddAssetInCache(asset);
+		AddAssetInCache(it->second);
 	}
 
 	void AssetDatabase::RemoveAsset(const UINT64 id)

@@ -51,6 +51,9 @@ namespace PEPEngine
 
 			GameObject* gameObject = nullptr;
 
+			virtual void OnGUI()
+			{
+			};
 
 			Component();
 

@@ -83,6 +83,7 @@ namespace PEPEngine::Common
 		void UpdateGameObject(std::shared_ptr<GameObject> gameObject);
 
 		void RemoveGameObject(std::shared_ptr<GameObject> gameObject);
+		void DrawGUI();
 
 		void Serialize(json& j) ;
 		void Deserialize(json& j) ;

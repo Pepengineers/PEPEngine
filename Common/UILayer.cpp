@@ -9,6 +9,7 @@
 #include "imgui.h"
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx12.h"
+#include "Scene.h"
 
 
 // Forward declare message handler from imgui_impl_win32.cpp
@@ -109,8 +110,11 @@ namespace PEPEngine::Common
 		RenderMainWindowAsDockPanel();
 
 
-		ImGui::ShowDemoWindow();
+		//ImGui::ShowDemoWindow();
 
+		Scene::currentScene->DrawGUI();
+
+		
 
 		ImGui::Render();
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), cmdList->GetGraphicsCommandList().Get());

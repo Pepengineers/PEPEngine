@@ -49,6 +49,8 @@ namespace PEPEngine
 
 			void Deserialize(json& j) override;
 
+			void DrawGUI();
+
 		protected:
 
 			std::vector<std::shared_ptr<Component>> components;

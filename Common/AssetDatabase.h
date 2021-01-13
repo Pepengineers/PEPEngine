@@ -201,7 +201,7 @@ namespace PEPEngine
 			static std::shared_ptr<AMaterial> AddMaterial(std::shared_ptr<Material> material,
 			                                              std::filesystem::path savePathInAssetFolder = L"");
 
-			static void UpdateAsset(std::shared_ptr<Asset> asset);
+			static void UpdateAsset(Asset* asset);
 
 			static void RemoveAsset(UINT64 id);
 			static void RemoveAsset(Asset* asset);

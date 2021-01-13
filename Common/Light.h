@@ -33,7 +33,7 @@ namespace PEPEngine
 
 		public:
 			SERIALIZE_FROM_JSON(Light)
-			
+
 			LightType Type;
 			Vector3 Direction;
 			Vector4 Color;
@@ -44,11 +44,8 @@ namespace PEPEngine
 			bool Selected;
 
 
-			void Render(std::shared_ptr<Graphics::GCommandList> cmdList);
 
 			Light();
-
-			//, type(LightType::Point)
 
 			Matrix GetViewMatrix() const;
 

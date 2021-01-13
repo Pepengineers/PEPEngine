@@ -335,6 +335,14 @@ namespace PEPEngine::Common
 		gameObjectsToRemove.Push(gameObject);
 	}
 
+	void Scene::DrawGUI()
+	{
+		for (auto && object : objects)
+		{
+			object->DrawGUI();
+		}
+	}
+	
 	void Scene::Serialize(json& j)
 	{
 		j["GameObjectsCount"] = objects.size();

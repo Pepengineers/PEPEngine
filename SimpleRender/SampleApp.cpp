@@ -226,7 +226,7 @@ namespace SimpleRender
 
 		level->GetScene()->Dispatch(cmdList);
 
-		computeQueue->Wait(renderQueue);
+		computeQueue->Wait(renderQueue->GetFence(), renderFenceValues[currentFrameResourceIndex]);
 		
 		computeFenceValues[currentFrameResourceIndex] = computeQueue->ExecuteCommandList(cmdList);
 		

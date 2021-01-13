@@ -12,6 +12,8 @@
 #include "LightPass.h"
 #include "ShadowPass.h"
 #include "SSAOPass.h"
+#include "imgui.h"
+#include "SSAOPass.h"
 
 namespace PEPEngine::Common
 {
@@ -218,5 +220,61 @@ namespace PEPEngine::Common
 	void Camera::SetShadowTransform(const Matrix& shadowTransformMatrix)
 	{
 		cameraData.ShadowTransform = shadowTransformMatrix;
+	}
+
+	void Camera::OnGUI()
+	{
+#if defined(DEBUG) || defined(_DEBUG)
+
+		// Exceptionally add an extra assert here for people confused about initial Dear ImGui setup
+		// Most ImGui functions would normally just crash if the context is missing.
+		IM_ASSERT(ImGui::GetCurrentContext() != NULL && "Missing dear imgui context. Refer to examples app!");
+
+		// We specify a default position/size in case there's no data in the .ini file.
+		// We only do it to make the demo applications a little more welcoming, but typically this isn't required.
+		ImGuiViewport* main_viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(ImVec2(main_viewport->GetWorkPos().x + main_viewport->GetWorkSize().x - 500, 0),
+		                        ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(550, main_viewport->GetWorkSize().y), ImGuiCond_FirstUseEver);
+
+		// Main body of the Demo window starts here.
+		if (!ImGui::Begin("Render Maps"))
+		{
+			// Early out if the window is collapsed, as an optimization.
+			ImGui::End();
+			return;
+		}
+		ImGui::BeginGroup();
+		{
+			(ImGui::Text("Shadow"));
+			{
+				auto shadowMap = shadowPass->GetSrvMemory()->GetGPUHandle();
+
+				ImGui::Image((ImTextureID)shadowMap.ptr, ImVec2(500, 500));
+			}
+			(ImGui::Text("Position"));
+			{
+				auto shadowMap = gpass->GetSRV()->GetGPUHandle(GPass::PositionMap);
+
+				ImGui::Image((ImTextureID)shadowMap.ptr, ImVec2(500, 500));
+			}
+			(ImGui::Text("Normal"));
+			{
+				auto shadowMap = gpass->GetSRV()->GetGPUHandle(GPass::NormalMap);
+
+				ImGui::Image((ImTextureID)shadowMap.ptr, ImVec2(500, 500));
+			}		
+			(ImGui::Text("Ambient"));
+			{
+				auto shadowMap = ambiantPass->AmbientMapSrv()->GetGPUHandle();
+
+				ImGui::Image((ImTextureID)shadowMap.ptr, ImVec2(500, 500));
+			}
+		}
+		ImGui::EndGroup();
+
+
+		ImGui::End();
+#endif
 	}
 }

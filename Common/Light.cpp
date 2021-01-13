@@ -104,25 +104,12 @@ namespace PEPEngine::Common
 	{
 	}
 
-	void Light::Render(std::shared_ptr<GCommandList> cmdList)
-	{
-	}
-
 
 	Matrix Light::GetViewMatrix() const
 	{
-		Vector3 postiton;
-
-		if (Type == Directional)
-		{
-			postiton = Vector3::One * 150;
-		}
-		else
-		{
-			postiton = gameObject->GetTransform()->GetWorldPosition();
-		}
-
-		return Matrix(XMMatrixLookAtLH(postiton, Vector3::Zero, Vector3::Up));
+		const auto focusPosition = gameObject->GetTransform()->GetForwardVector() + gameObject->GetTransform()->GetWorldPosition();
+		
+		return Matrix(XMMatrixLookAtLH(gameObject->GetTransform()->GetWorldPosition(), focusPosition, gameObject->GetTransform()->GetUpVector()));
 	}
 
 
