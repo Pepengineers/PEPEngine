@@ -23,7 +23,7 @@ namespace PEPEngine
 			GameTimer* timer{};
 
 
-			float xMouseSpeed = 100;
+			float xMouseSpeed = 25;
 			float yMouseSpeed = 70;
 
 			void Serialize(json& j) override

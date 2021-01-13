@@ -27,9 +27,9 @@ void AIComponent::Initialize()
 	this->SetStartWorldState();
 	this->SetActionList();
 	this->currentState_ = FSMState::Idle;
-	this->currentAIType = AIType::Aggressive;
+	this->currentAIType = AIType::Frightened;
 	rotationSpeed = 0.02;
-	movementSpeed = 0.5 + (static_cast<float>(rand()) / static_cast<float>((RAND_MAX)) * 0.2);
+	movementSpeed = 0.7 + (static_cast<float>(rand()) / static_cast<float>((RAND_MAX)) * 0.2);
 }
 
 AIComponent::AIComponent() : Component()
@@ -99,7 +99,7 @@ void AIComponent::preUpdate()
 		}
 	case AIType::Frightened:
 		{
-			if (this->getDistanceToPlayer() < 50)
+			if (this->getDistanceToPlayer() < 100)
 			{
 				setGoalState(Action::NEED_FLEE, false);
 				setWorldState(Action::NEED_FLEE, true);

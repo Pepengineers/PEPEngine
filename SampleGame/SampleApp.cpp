@@ -1,5 +1,4 @@
 #include "SampleApp.h"
-
 #include "AIComponent.h"
 #include "CameraController.h"
 #include "GameObject.h"
@@ -33,7 +32,7 @@ namespace SimpleRender
 		// Compute picking ray in view space.
 		float vx = (+2.0f * mouse_point.x / MainWindow->GetClientWidth() - 1.0f) / P(0, 0);
 		float vy = (-2.0f * mouse_point.y / MainWindow->GetClientHeight() + 1.0f) / P(1, 1);
-
+	
 		// Ray definition in view space.
 		Vector3 rayOrigin = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
 		Vector3 rayDir = XMVectorSet(vx, vy, 1.0f, 0.0f);
@@ -47,7 +46,8 @@ namespace SimpleRender
 
 		if(pickedGO != nullptr)
 		{
-			level->GetScene()->RemoveGameObject(pickedGO);			
+			level->GetScene()->RemoveGameObject(pickedGO);
+			killcount++;
 		}
 	}
 
@@ -71,8 +71,15 @@ namespace SimpleRender
 			atlas = AssetDatabase::AddModel("Data\\Objects\\Atlas\\Atlas.obj");
 		}	
 		
-
+		
 		level = AssetDatabase::Get<AScene>(L"DefaultScene");
+		ShowCursor(false);
+		RECT a = { 0,0,MainWindow->GetClientWidth(),MainWindow->GetClientHeight() };
+		//ClipCursor(&a);
+
+		
+	
+	
 
 		if(level == nullptr)
 		{
@@ -82,23 +89,15 @@ namespace SimpleRender
 
 
 			auto cameraGO = std::make_unique<GameObject>("MainCamera");
-			cameraGO->GetTransform()->SetEulerRotate(Vector3(-30, 120, 0));
-			cameraGO->GetTransform()->SetPosition(Vector3(30, 20, -130));
+			cameraGO->GetTransform()->SetEulerRotate(Vector3(0, 120, 0));
+			cameraGO->GetTransform()->SetPosition(Vector3(0, 5, 0));
 
 			cameraGO->AddComponent(std::make_shared<Camera>(AspectRatio()));
 			cameraGO->AddComponent(std::make_shared<CameraController>());
 
 			scene->AddGameObject(std::move(cameraGO));
 
-			auto sun = std::make_unique<GameObject>("Directional Light");
-			auto light = std::make_shared<Light>();
-			light->Type = LightType::Directional;
-			light->Direction = Vector3(0.57735f, -0.57735f, 0.57735f);
-			light->Intensity = 0.1f;
-			sun->AddComponent(light);
-			scene->AddGameObject(std::move(sun));
-
-			for (int i = 0; i < 12; ++i)
+			for (int i = 0; i < 6; ++i)
 			{
 				auto particleEmitter = std::make_unique<GameObject>("Particle " + std::to_string(i));
 				particleEmitter->AddComponent(std::make_shared<ParticleEmitter>(1500));
@@ -110,25 +109,22 @@ namespace SimpleRender
 					auto rModel = std::make_unique<GameObject>("Atlas" + std::to_string(i+j));
 					auto renderer = std::make_shared<ModelRenderer>(atlas);
 					rModel->AddComponent(renderer);
+
 					rModel->GetTransform()->SetPosition(
-						Vector3::Right * -30 * j + Vector3::Forward * 10 * i);
-
-					/*	auto ai = std::make_shared<AIComponent>();
-						rModel->AddComponent(ai);*/
+						Vector3(Camera::mainCamera->gameObject->GetTransform()->GetWorldPosition().x + (static_cast<float>(rand()) / static_cast<float>((RAND_MAX)) * 2) - 1, 0, Camera::mainCamera->gameObject->GetTransform()->GetWorldPosition().z + (static_cast<float>(rand()) / static_cast<float>((RAND_MAX)) * 2) - 1));
 
 
-					auto pos = rModel->GetTransform()->GetWorldPosition() + (Vector3::Up * 1 * 10);
+						auto ai = std::make_shared<AIComponent>();
+						rModel->AddComponent(ai);
 
-					auto sun1 = std::make_unique<GameObject>("Light");
-					sun1->GetTransform()->SetPosition(pos);
 					auto light = std::make_shared<Light>();
+					light->Range = 7;
 					light->Color = Vector4(MathHelper::RandF(), MathHelper::RandF(), MathHelper::RandF(), 1);
-					light->Intensity = 1;
-					(i + j) % 2 == 1 ? light->Type = Spot : light->Type = Point;
-
-					sun1->AddComponent(light);
-
-					scene->AddGameObject(std::move(sun1));
+					light->Intensity =1;
+					 light->Type = Point;
+					rModel->AddComponent(light);
+				
+				
 
 					scene->AddGameObject(std::move(rModel));
 				}
@@ -167,28 +163,41 @@ namespace SimpleRender
 		}
 
 		level->GetScene()->Update();
-		
-
-		static bool spawned = false;
-
-		if(keyboard.KeyIsPressed('P'))
+		static float next = false;
+	
+		uiPass->setCount(killcount, timeElapsed);
+		if((int)killcount % 18 == 0 && killcount > next)
 		{
-			if(!spawned)
+			next = killcount;
+			for (int i = 0; i < 6; ++i)
 			{
-				auto rModel = std::make_shared<GameObject>();
-				auto renderer = std::make_shared<ModelRenderer>(pbody);
-				rModel->AddComponent(renderer);
-				rModel->GetTransform()->SetPosition(Camera::mainCamera->gameObject->GetTransform()->GetWorldPosition());
+				for (int j = 0; j < 3; ++j)
+				{
+					auto rModel = std::make_unique<GameObject>("Atlas" + std::to_string(killcount+i + j));
+					auto renderer = std::make_shared<ModelRenderer>(pbody);
+					
+					rModel->AddComponent(renderer);
+			
+					rModel->GetTransform()->SetPosition(
+						Vector3(Camera::mainCamera->gameObject->GetTransform()->GetWorldPosition().x+ (static_cast<float>(rand()) / static_cast<float>((RAND_MAX)) *2) - 1,0, Camera::mainCamera->gameObject->GetTransform()->GetWorldPosition().z + (static_cast<float>(rand()) / static_cast<float>((RAND_MAX)) * 2) - 1));
 
-				level->GetScene()->AddGameObject(std::move(rModel));
+					auto light = std::make_shared<Light>();
+					light->Color = Vector4(MathHelper::RandF(), MathHelper::RandF(), MathHelper::RandF(), 1);
+					light->Intensity = 0.9;
+					light->Range = 7;
+					light->Type = Point;
+					/*sun1->AddComponent(light);*/
+					rModel->AddComponent(light);
+					auto ai = std::make_shared<AIComponent>();
+					rModel->AddComponent(ai);
 
-				spawned = true;
+
+					level->GetScene()->AddGameObject(std::move(rModel));
+				}
 			}
 		}
-		else
-		{
-			spawned = false;
-		}
+		
+		
 
 		static bool sceneSaved = false;
 		if (keyboard.KeyIsPressed('I'))
@@ -196,6 +205,7 @@ namespace SimpleRender
 			if(!sceneSaved)
 			{
 				sceneSaved = true;
+				
 				AssetDatabase::UpdateAsset(level);
 			}
 		}
@@ -203,11 +213,12 @@ namespace SimpleRender
 
 		static bool picked = false;
 		
-		if (mouse.IsLeftDown())
+		if (mouse.IsLeftDown() && timeElapsed < 60)
 		{
 			if (!picked)
 			{
-				Pick(mouse.GetPos());
+				MousePoint ye = { MainWindow->GetClientWidth()/2 ,MainWindow->GetClientHeight()/2 };
+				Pick(ye);
 				picked = true;
 			}
 		}
@@ -224,7 +235,7 @@ namespace SimpleRender
 		auto computeQueue = device->GetCommandQueue(D3D12_COMMAND_LIST_TYPE_COMPUTE);
 		auto cmdList = computeQueue->GetCommandList();
 
-		level->GetScene()->Dispatch(cmdList);
+		//level->GetScene()->Dispatch(cmdList);
 
 		computeQueue->Wait(renderQueue);
 		

@@ -11,7 +11,6 @@ public:
 		setCost(5);
 		setRequiresInRange(true);
 		setPrecondition(NEED_ATTACK, true);
-		setPrecondition(HAS_WEAPON, true);
 		setEffect(TARGET_ALIVE, false);
 		
 	}

@@ -8,6 +8,8 @@
 #include "SSAOPass.h"
 #include "UILayer.h"
 
+
+
 namespace SimpleRender
 {
 	using namespace PEPEngine;
@@ -33,7 +35,10 @@ namespace SimpleRender
 		LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
 
 	private:
-
+		
+	
+		float killcount = 0;
+		float timer = 0;
 		std::shared_ptr<GDevice> device;
 		AssetDatabase assetLoader;
 

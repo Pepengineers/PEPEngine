@@ -17,6 +17,8 @@ namespace PEPEngine::Common
 
 
 	public:
+		float killcount = 0;
+		float timer = 0;
 		UILayer(float width, float height, HWND hwnd);
 
 		~UILayer();
@@ -27,6 +29,8 @@ namespace PEPEngine::Common
 		void Update() override;;
 
 		void ChangeRenderTargetSize(float newWidth, float newHeight) override;;
+
+		void setCount(float count, float time);
 
 		static void CreateDeviceObject();;
 

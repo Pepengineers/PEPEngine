@@ -48,15 +48,14 @@ namespace PEPEngine::Common
 		while (!mouse->EventBufferIsEmpty())
 		{
 			MouseEvent me = mouse->ReadEvent();
-			if (mouse->IsRightDown())
-			{
+			
 				if (me.GetType() == MouseEvent::EventType::RAW_MOVE)
 				{
 					gameObject->GetTransform()->AdjustEulerRotation(
-						-1 * static_cast<float>(me.GetPosY()) * dt * yMouseSpeed,
+						0,
 						static_cast<float>(me.GetPosX()) * dt * xMouseSpeed, 0);
 				}
-			}
+			
 		}
 
 

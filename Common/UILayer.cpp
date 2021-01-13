@@ -105,13 +105,35 @@ namespace PEPEngine::Common
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 
-
 		RenderMainWindowAsDockPanel();
+		//ImGui::Begin("Cross");
+	
+		ImVec2 s = { ImGui::GetWindowPos().x + width/2 - 64  , ImGui::GetWindowPos().y + height/2 - 64 };
 
+		ImGui::SetWindowPos("Cross",s);
+		ImGui::Begin("Cross",nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs);
+		ImGui::Text("+");               // Display some text (you can use a format strings too)
+		ImGui::End();
+		ImGui::Begin("Stats", nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoInputs);
 
-		ImGui::ShowDemoWindow();
+		std::string kills = std::string("Kills:") + std::to_string((int)killcount);
+		std::string timer = std::string("Time:") + std::to_string( 60 - (int)this->timer);
+		ImGui::Text(&kills[0]);
+		ImGui::Text(&timer[0]);
+		ImGui::End();
 
+		if(this->timer == 60)
+		{
+			ImVec2 s = { ImGui::GetWindowPos().x + width / 2 - 64  , ImGui::GetWindowPos().y + height / 2 - 64 };
 
+			ImGui::SetWindowPos("End", s);
+			ImGui::Begin("End", nullptr, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoDecoration );
+			ImGui::Text("THE END");
+			std::string kills = std::string("Kills:") + std::to_string((int)killcount);
+			ImGui::Text(&kills[0]);
+			ImGui::End();
+		}
+		
 		ImGui::Render();
 		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), cmdList->GetGraphicsCommandList().Get());
 		ImGuiIO& io = ImGui::GetIO();
@@ -130,6 +152,12 @@ namespace PEPEngine::Common
 	{
 		width = newWidth;
 		height = newHeight;
+	}
+
+	void UILayer::setCount(float count, float time)
+	{
+		killcount = count;
+		time > 60 ? this->timer = 60 : this->timer = time;
 	}
 
 	void UILayer::CreateDeviceObject()
