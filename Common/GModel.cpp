@@ -6,6 +6,7 @@
 #include "GMesh.h"
 #include "NativeModel.h"
 #include "AssetDatabase.h"
+#include "MathHelper.h"
 
 namespace PEPEngine::Common
 {
@@ -45,21 +46,31 @@ namespace PEPEngine::Common
 	}
 
 	GModel:: GModel(std::shared_ptr<NativeModel> model, std::shared_ptr<GCommandList> uploadCmdList): model(model)
-	{		
+	{
+		Vector3 minPos(+MathHelper::Infinity, +MathHelper::Infinity, +MathHelper::Infinity);
+		Vector3 maxPos(-MathHelper::Infinity, -MathHelper::Infinity, -MathHelper::Infinity);
+		
 		for (int i = 0; i < model->GetMeshesCount(); ++i)
 		{
 			auto nativeMesh = model->GetMesh(i);
+			for (auto&& vertex : nativeMesh->GetVertexes())
+			{
+				minPos = XMVectorMin(minPos, vertex.Position);
+				maxPos = XMVectorMax(maxPos, vertex.Position);
+			}
+			
 			gmeshes.push_back(std::make_shared<GMesh>(nativeMesh, uploadCmdList));
 		}
 
-		materials.resize(model->GetMeshesCount());
-
-		
+		materials.resize(model->GetMeshesCount());		
 		device = uploadCmdList->GetDevice();
+
+		XMStoreFloat3(&Bounds.Center, 0.5f * (minPos + maxPos));
+		XMStoreFloat3(&Bounds.Extents, 0.5f * (maxPos - minPos));
 	}
 
 
-	GModel::GModel(const GModel& copy) : model(copy.model)
+	GModel::GModel(const GModel& copy) : model(copy.model), Bounds(copy.Bounds)
 	{
 		gmeshes.resize(copy.gmeshes.size());
 

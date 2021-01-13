@@ -26,6 +26,31 @@ namespace SimpleRender
 	{
 	}
 
+	void SampleApp::Pick(const MousePoint& mouse_point)
+	{
+		auto P = Camera::mainCamera->GetProjectionMatrix();
+
+		// Compute picking ray in view space.
+		float vx = (+2.0f * mouse_point.x / MainWindow->GetClientWidth() - 1.0f) / P(0, 0);
+		float vy = (-2.0f * mouse_point.y / MainWindow->GetClientHeight() + 1.0f) / P(1, 1);
+
+		// Ray definition in view space.
+		Vector3 rayOrigin = XMVectorSet(0.0f, 0.0f, 0.0f, 1.0f);
+		Vector3 rayDir = XMVectorSet(vx, vy, 1.0f, 0.0f);
+
+		auto  V = Camera::mainCamera->GetViewMatrix();
+
+		V = XMMatrixInverse(&XMMatrixDeterminant(V), V);
+
+
+		auto pickedGO = level->GetScene()->TryToPickObject(rayOrigin, rayDir, V);
+
+		if(pickedGO != nullptr)
+		{
+			level->GetScene()->RemoveGameObject(pickedGO);			
+		}
+	}
+
 	bool SampleApp::Initialize()
 	{
 		device = GDeviceFactory::GetDevice();		
@@ -82,7 +107,7 @@ namespace SimpleRender
 				scene->AddGameObject(std::move(particleEmitter));
 				for (int j = 0; j < 3; ++j)
 				{
-					auto rModel = std::make_unique<GameObject>();
+					auto rModel = std::make_unique<GameObject>("Atlas" + std::to_string(i+j));
 					auto renderer = std::make_shared<ModelRenderer>(atlas);
 					rModel->AddComponent(renderer);
 					rModel->GetTransform()->SetPosition(
@@ -175,6 +200,18 @@ namespace SimpleRender
 			}
 		}
 		else sceneSaved = false;
+
+		static bool picked = false;
+		
+		if (mouse.IsLeftDown())
+		{
+			if (!picked)
+			{
+				Pick(mouse.GetPos());
+				picked = true;
+			}
+		}
+		else picked = false;
 		
 	}
 

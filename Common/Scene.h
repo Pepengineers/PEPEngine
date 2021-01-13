@@ -18,8 +18,7 @@ namespace PEPEngine::Common
 	{
 		friend class AScene;
 	public:
-		custom_vector<std::shared_ptr<GameObject>> objects = MemoryAllocator::CreateVector<std::shared_ptr<GameObject>
-		>();
+		std::vector<std::shared_ptr<GameObject>> objects;
 	private:
 
 		custom_vector<std::shared_ptr<FrameResource>> frameResources = MemoryAllocator::CreateVector<std::shared_ptr<
@@ -72,6 +71,8 @@ namespace PEPEngine::Common
 		void RenderParticle(std::shared_ptr<GCommandList> cmdList);
 
 		void RenderTypedObjects(RenderMode::Mode mode, std::shared_ptr<GCommandList> cmdList);
+		std::shared_ptr<GameObject> TryToPickObject(const Vector3& originRay, const Vector3& dirRay,
+		                                            const Matrix& invertViewMatrix);
 
 		Scene();
 

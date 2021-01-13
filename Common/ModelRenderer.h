@@ -40,9 +40,11 @@ namespace PEPEngine
 			void SetMaterial(std::shared_ptr<AMaterial> material, UINT slot);
 			ModelRenderer(std::shared_ptr<AModel> model);
 			void SetModel(std::shared_ptr<AModel> asset);
+						
 			UINT GetMeshCount() override;
 			std::shared_ptr<GMesh> GetMesh(UINT index) override;
 			std::vector<std::shared_ptr<AMaterial>>& GetSharedMaterials() override;
+			std::shared_ptr<AModel> GetModel() override;
 		};
 	}
 }

@@ -87,6 +87,63 @@ namespace PEPEngine::Common
 		}
 	}
 
+	void Scene::UpdateGameObject(std::shared_ptr<GameObject> gameObject)
+	{
+		if (gameObject == nullptr) return;
+
+
+		auto light = gameObject->GetComponent<Light>();
+		if (light != nullptr)
+		{
+			sceneLights.insert(light.get());
+		}
+		
+
+		auto renderer = gameObject->GetComponent<Renderer>();
+		if (renderer != nullptr)
+		{
+			auto sharedMaterials = renderer->GetSharedMaterials();
+
+			for (int i = 0; i < sharedMaterials.size(); ++i)
+			{
+				auto material = sharedMaterials[i];
+
+				if (material != nullptr)
+				{
+					auto gMaterial = material->GetMaterial();
+
+					const auto it = typedMaterials[gMaterial->GetRenderMode()].insert(gMaterial.get());
+
+					if (it.second)
+					{
+						gMaterial->Init(device);
+						gMaterial->SetMaterialIndex(TotalMaterialCount++);
+					}
+
+					typedRenderers[gMaterial.get()][renderer.get()].push_back(i);
+				}
+			}
+		}
+		auto emitter = gameObject->GetComponent<Emitter>();
+		if (emitter != nullptr)
+		{
+			emitters.insert(emitter.get());
+		}
+
+		const auto camera = gameObject->GetComponent<Camera>();
+		if (camera != nullptr)
+		{
+			cameras.insert(camera.get());
+		}
+
+		auto ai = gameObject->GetComponent<AIComponent>();
+		if (ai != nullptr)
+		{
+			ai->addGlobalState(&objects);
+		}
+	}
+	
+
 	void Scene::DeleteOldGO()
 	{
 		std::shared_ptr<GameObject> go = nullptr;
@@ -103,6 +160,12 @@ namespace PEPEngine::Common
 				cameras.erase(pCamera.get());
 			}
 
+			auto emitter = go->GetComponent<Emitter>();
+			if (emitter != nullptr && emitters.find(emitter.get()) != emitters.end())
+			{
+				emitters.insert(emitter.get());
+			}
+
 			if (pRenderer != nullptr)
 			{
 				auto sharedMaterials = pRenderer->GetSharedMaterials();
@@ -113,22 +176,24 @@ namespace PEPEngine::Common
 					{
 						auto material = sharedMaterial->GetMaterial();
 
-						const auto it = typedMaterials->find(material.get());
+						const std::set<Material*>::iterator it = typedMaterials[material->GetRenderMode()].find(
+							material.get());
 
-						if (it != typedMaterials->end())
+						if (it != typedMaterials[material->GetRenderMode()].end())
 						{
-							typedMaterials->erase(it);
-						}
+							typedRenderers[material.get()].erase(pRenderer.get());
 
-						if (typedRenderers.find(material.get()) != typedRenderers.end())
-						{
-							typedRenderers.erase(material.get());
+							if(typedRenderers[material.get()].size() <= 0)
+							{
+								typedRenderers.erase(material.get());
+								typedMaterials[material->GetRenderMode()].erase(material.get());
+							}
 						}
 					}
 				}
 			}
 
-			if (pLight != nullptr)
+			if (pLight != nullptr && sceneLights.find(pLight.get()) != sceneLights.end())
 			{
 				sceneLights.erase(pLight.get());
 			}
@@ -141,7 +206,6 @@ namespace PEPEngine::Common
 			}
 		}
 	}
-
 
 	void Scene::Update()
 	{
@@ -205,6 +269,45 @@ namespace PEPEngine::Common
 		}
 	}
 
+	std::shared_ptr<GameObject> Scene::TryToPickObject(const Vector3& originRay, const Vector3& dirRay,
+	                                                   const Matrix& invertViewMatrix)
+	{
+		for (auto && typedPair : typedRenderers)
+		{
+			for (auto&& typedRederers : typedPair.second)
+			{
+				auto renderer = typedRederers.first;
+				auto aModel = renderer->GetModel();
+
+				auto model = aModel->GetGModel();
+
+				auto W = (renderer->gameObject->GetTransform()->GetWorldMatrix());
+				
+				auto invWorld = XMMatrixInverse(&XMMatrixDeterminant(W), W);
+
+				// Tranform ray to vi space of Mesh.
+				XMMATRIX toLocal = XMMatrixMultiply(invertViewMatrix, invWorld);
+
+				auto rayOrigin = XMVector3TransformCoord(originRay, toLocal);
+				auto rayDir = XMVector3TransformNormal(dirRay, toLocal);
+
+				rayDir = XMVector3Normalize(rayDir);
+
+				static float tmin = 0.0f;
+				if (model->Bounds.Intersects(rayOrigin, rayDir, tmin))
+				{
+					for (auto && object : objects)
+					{
+						if (object.get() == renderer->gameObject)
+							return object;
+					}
+				}				
+			}
+		}
+
+		return nullptr;
+	}
+
 	Scene::Scene() : device(GDeviceFactory::GetDevice())
 	{
 		for (int i = 0; i < globalCountFrameResources; ++i)
@@ -220,59 +323,7 @@ namespace PEPEngine::Common
 		addedGameObjects.Push(gameObject);
 	}
 
-	void Scene::UpdateGameObject(std::shared_ptr<GameObject> gameObject)
-	{
-		if (gameObject == nullptr) return;
-
-
-		auto light = gameObject->GetComponent<Light>();
-		if (light != nullptr)
-		{
-			sceneLights.insert(light.get());
-		}
-		auto ai = gameObject->GetComponent<AIComponent>();
-		if (ai != nullptr)
-		{
-			ai->addGlobalState(objects);
-		}
-
-		auto renderer = gameObject->GetComponent<Renderer>();
-		if (renderer != nullptr)
-		{
-			auto sharedMaterials = renderer->GetSharedMaterials();
-
-			for (int i = 0; i < sharedMaterials.size(); ++i)
-			{
-				auto material = sharedMaterials[i];
-
-				if (material != nullptr)
-				{
-					auto gMaterial = material->GetMaterial();
-
-					const auto it = typedMaterials[gMaterial->GetRenderMode()].insert(gMaterial.get());
-
-					if (it.second)
-					{
-						gMaterial->Init(device);
-						gMaterial->SetMaterialIndex(TotalMaterialCount++);
-					}
-
-					typedRenderers[gMaterial.get()][renderer.get()].push_back(i);
-				}
-			}
-		}
-		auto emitter = gameObject->GetComponent<Emitter>();
-		if (emitter != nullptr)
-		{
-			emitters.insert(emitter.get());
-		}
-
-		const auto camera = gameObject->GetComponent<Camera>();
-		if (camera != nullptr)
-		{
-			cameras.insert(camera.get());
-		}
-	}
+	
 
 	void Scene::RemoveGameObject(std::shared_ptr<GameObject> gameObject)
 	{

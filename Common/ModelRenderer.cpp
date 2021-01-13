@@ -103,4 +103,9 @@ namespace PEPEngine::Common
 		
 		return materials;
 	}
+
+	std::shared_ptr<AModel> ModelRenderer::GetModel()
+	{
+		return model;
+	}
 }

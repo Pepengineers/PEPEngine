@@ -16,7 +16,9 @@ namespace PEPEngine
 	{
 		using namespace Allocator;
 		using namespace Graphics;
+		using namespace DirectX;
 
+		
 		class NativeModel;
 		class GMesh;
 		class AMaterial;
@@ -30,9 +32,12 @@ namespace PEPEngine
 			std::shared_ptr<GDevice> device;
 
 			std::vector<std::shared_ptr<AMaterial>> materials;
+
 			
 		public:
 
+			BoundingBox Bounds;
+			
 			void Serialize(json& j);
 			void Deserialize(json& j);
 

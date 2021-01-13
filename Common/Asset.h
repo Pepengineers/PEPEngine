@@ -24,7 +24,7 @@ namespace PEPEngine::Common
 	};
 
 
-	class Asset : std::enable_shared_from_this<Asset>
+	class Asset
 	{
 		friend class AssetDatabase;
 	protected:

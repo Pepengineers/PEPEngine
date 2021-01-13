@@ -10,6 +10,7 @@ namespace PEPEngine
 	{
 		class AMaterial;
 		class GMesh;
+		class AModel;
 		
 		class Renderer : public Component
 		{
@@ -26,6 +27,8 @@ namespace PEPEngine
 			uint32_t virtual GetMeshCount() = 0;
 
 			std::shared_ptr<GMesh> virtual GetMesh(uint32_t index) = 0;
+
+			std::shared_ptr<AModel> virtual GetModel() = 0;
 
 			Renderer() : Component()
 			{

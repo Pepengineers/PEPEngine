@@ -105,7 +105,7 @@ namespace PEPEngine::Common
 
 	void Asset::UpdatePepe()
 	{
-		AssetDatabase::UpdateAsset(shared_from_this());
+		AssetDatabase::UpdateAsset(std::shared_ptr<Asset>(this));
 	}
 
 }

@@ -51,9 +51,7 @@ namespace PEPEngine
 
 		protected:
 
-
-			custom_vector<std::shared_ptr<Component>> components = MemoryAllocator::CreateVector<std::shared_ptr<
-				Component>>();
+			std::vector<std::shared_ptr<Component>> components;
 			std::shared_ptr<Transform> transform = nullptr;
 			std::shared_ptr<ModelRenderer> renderer = nullptr;
 			std::string name;

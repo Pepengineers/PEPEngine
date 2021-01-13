@@ -83,9 +83,9 @@ float AIComponent::getDistanceToPlayer()
 }
 
 void AIComponent::addGlobalState(
-	custom_vector<std::shared_ptr<GameObject>>& objects)
+	std::vector<std::shared_ptr<GameObject>>* objects)
 {
-	otherObjects = &objects;
+	otherObjects = objects;
 }
 
 

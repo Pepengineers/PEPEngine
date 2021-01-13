@@ -26,7 +26,7 @@ class AIComponent : public PEPEngine::Common::Component
 
 			std::vector<Action*> currentActions;
 			std::vector<Action*> availableActions;
-			PEPEngine::Allocator::custom_vector<std::shared_ptr<PEPEngine::Common::GameObject>>* otherObjects;
+			std::vector<std::shared_ptr<PEPEngine::Common::GameObject>>* otherObjects;
 
 			FSMState currentState_;
 			AIType currentAIType;
@@ -46,7 +46,7 @@ class AIComponent : public PEPEngine::Common::Component
 			void setWorldState(int, bool);
 			void setGoalState(int, bool);
 			float getDistanceToPlayer();
-			void addGlobalState(PEPEngine::Allocator::custom_vector<std::shared_ptr<PEPEngine::Common::GameObject>>& objects);
+			void addGlobalState(std::vector<std::shared_ptr<PEPEngine::Common::GameObject>>* objects);
 			PEPEngine::Common::GameObject* getPlayer();
 			void Update() override;;
 			void preUpdate();

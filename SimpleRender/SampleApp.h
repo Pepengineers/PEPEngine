@@ -23,6 +23,7 @@ namespace SimpleRender
 		SampleApp(HINSTANCE hInstance);
 
 	protected:
+		void Pick(const MousePoint& mouse_point);
 		void Update(const GameTimer& gt) override;
 		void Draw(const GameTimer& gt) override;
 	public:
