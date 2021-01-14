@@ -1,5 +1,5 @@
 #include "Windows.h"
-#include "SampleApp.h"
+#include "Snake.h"
 
 //using namespace PEPEngine;
 
@@ -13,7 +13,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 
 	try
 	{
-		SimpleRender::SampleApp theApp(hInstance);
+		Snake::SnakeApp& theApp = Snake::SnakeApp::Instance(&hInstance);
 		if (!theApp.Initialize())
 			return 0;
 

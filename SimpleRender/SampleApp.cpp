@@ -19,14 +19,14 @@
 #include "AScene.h"
 #include "ParticleEmitter.h"
 
-namespace SimpleRender
+namespace Snake
 {
-	SampleApp::SampleApp(HINSTANCE hInstance) : D3DApp(hInstance)
+	SnakeApp::SnakeApp(HINSTANCE hInstance) : D3DApp(hInstance)
 	                                            
 	{
 	}
 
-	void SampleApp::Pick(const MousePoint& mouse_point)
+	void SnakeApp::Pick(const MousePoint& mouse_point)
 	{
 		auto P = Camera::mainCamera->GetProjectionMatrix();
 
@@ -51,7 +51,7 @@ namespace SimpleRender
 		}
 	}
 
-	bool SampleApp::Initialize()
+	bool SnakeApp::Initialize()
 	{
 		device = GDeviceFactory::GetDevice();		
 		
@@ -155,7 +155,7 @@ namespace SimpleRender
 	}
 
 
-	void SampleApp::Update(const GameTimer& gt)
+	void SnakeApp::Update(const GameTimer& gt)
 	{
 		auto renderQueue = device->GetCommandQueue();
 
@@ -215,7 +215,7 @@ namespace SimpleRender
 		
 	}
 
-	void SampleApp::Draw(const GameTimer& gt)
+	void SnakeApp::Draw(const GameTimer& gt)
 	{
 		if (isResizing) return;
 
@@ -249,7 +249,7 @@ namespace SimpleRender
 		currentFrameResourceIndex = MainWindow->Present();
 	}
 
-	void SampleApp::OnResize()
+	void SnakeApp::OnResize()
 	{
 		D3DApp::OnResize();
 
@@ -268,7 +268,7 @@ namespace SimpleRender
 		
 	}
 
-	LRESULT SampleApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+	LRESULT SnakeApp::MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		if (uiPass)
 			uiPass->MsgProc(hwnd, msg, wParam, lParam);		

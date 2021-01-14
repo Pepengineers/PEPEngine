@@ -51,11 +51,11 @@ float4 PS(VertexOut input) : SV_Target
 	
     float ambientAccess = AmbientMap.Sample(gsamAnisotropicWrap, input.UV, 0.0f).r;
 		
-    float4 resultColor = ambientAccess * diffuse * 0.1;
+	float4 resultColor = ambientAccess * diffuse * 0.5f;
 
 	// Only the first light casts a shadow.
     float factor = CalcShadowFactor(ShadowPosH);
-	
+	factor = 1.0f;
 	
 	[loop]
 	for (int i = 0; i < WorldBuffer.LightsCount; ++i)

@@ -13,7 +13,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 
 	try
 	{
-		SimpleRender::SampleApp theApp(hInstance);
+		Snake::SnakeApp theApp(hInstance);
 		if (!theApp.Initialize())
 			return 0;
 

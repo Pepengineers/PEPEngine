@@ -8,7 +8,7 @@
 #include "SSAOPass.h"
 #include "UILayer.h"
 
-namespace SimpleRender
+namespace Snake
 {
 	using namespace PEPEngine;
 	using namespace Common;
@@ -16,12 +16,15 @@ namespace SimpleRender
 	using namespace Graphics;
 	using namespace Allocator;
 
-	class SampleApp :
-		public D3DApp
+	class SnakeApp : public D3DApp
 	{
 	public:
-		SampleApp(HINSTANCE hInstance);
+		SnakeApp(HINSTANCE hInstance);
 
+	public:
+		static SnakeApp& Instance() {
+
+		}
 	protected:
 		void Pick(const MousePoint& mouse_point);
 		void Update(const GameTimer& gt) override;
@@ -33,6 +36,8 @@ namespace SimpleRender
 		LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) override;
 
 	private:
+
+		static SnakeApp instance;
 
 		std::shared_ptr<GDevice> device;
 		AssetDatabase assetLoader;
